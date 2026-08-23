@@ -4,6 +4,7 @@ import type { TeamMember } from '../lib/supabase'
 import { AddUserDialog } from '../components/AddUserDialog'
 import { EditUserDialog } from '../components/EditUserDialog'
 import { TeamList } from '../components/TeamList'
+import { Logo } from '../components/Marke'
 
 type Props = {
   profile: AppUser | null
@@ -32,10 +33,7 @@ export function Dashboard({ profile, onSignOut }: Props) {
   return (
     <div className="app">
       <header className="topbar">
-        <div>
-          <strong>Rikscha-Fahrten</strong>
-          <span className="topbar__sub">Hospizinitiative Melle</span>
-        </div>
+        <Logo className="topbar__logo" />
         <button className="btn btn--ghost" onClick={onSignOut}>
           Abmelden
         </button>

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { checkLoginName, linkAuthAccount, supabase, isSupabaseConfigured } from '../lib/supabase'
 import { toGermanError } from '../lib/errors'
 import { PasswordField, validatePassword } from '../components/PasswordField'
+import { Logo } from '../components/Marke'
 
 type Step = 'name' | 'password' | 'create-password' | 'confirm-mail'
 
@@ -103,12 +104,14 @@ export function Login() {
 
   return (
     <div className="auth">
-      <div className="auth__card">
-        <header className="auth__header">
-          <div className="auth__logo" aria-hidden="true">🚲</div>
-          <h1>Rikscha-Fahrten</h1>
-          <p className="auth__sub">Hospizinitiative Melle</p>
-        </header>
+      <div className="auth__inner">
+        <Logo className="marke-logo" />
+
+        <div className="auth__card">
+          <header className="auth__header">
+            <h1>Rikscha-Fahrten</h1>
+            <p className="auth__sub">Anmeldung für Fahrer:innen und Koordination</p>
+          </header>
 
         {!isSupabaseConfigured && (
           <p className="alert alert--warn">
@@ -212,7 +215,8 @@ export function Login() {
           </div>
         )}
 
-        {error && <p className="alert alert--error">{error}</p>}
+          {error && <p className="alert alert--error">{error}</p>}
+        </div>
       </div>
     </div>
   )

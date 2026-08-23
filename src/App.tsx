@@ -8,7 +8,7 @@ export default function App() {
   if (loading) {
     return (
       <div className="auth">
-        <p className="muted">Einen Moment …</p>
+        <p style={{ color: '#fff' }}>Einen Moment …</p>
       </div>
     )
   }

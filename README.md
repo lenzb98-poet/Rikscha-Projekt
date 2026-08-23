@@ -53,6 +53,19 @@ values ('Vorname Nachname', 'vorname.nachname@example.de', 'fahrer');
 
 Rollen: `admin`, `koordinator`, `fahrer`.
 
+## Gestaltung
+
+Die Oberfläche folgt dem Auftritt des Vereins:
+
+- Markenfarbe `#245892`, aus dem Hintergrundbild der Website entnommen
+- Wortmarke und Möwe liegen als `src/assets/logo.png` und `src/assets/moewe.png`
+- Das Logo ist weiß und darf nur auf blauem Grund stehen – deshalb steht es auf
+  der Anmeldeseite über der weißen Karte und in der angemeldeten Ansicht in der
+  blauen Kopfzeile
+- Die Möwe liegt als dezentes Motiv hinter dem Anmeldeformular
+
+Farben sind als CSS-Variablen in `src/styles.css` unter `:root` gesammelt.
+
 ## Technik
 
 - React 18 + TypeScript + Vite
