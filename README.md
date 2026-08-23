@@ -5,15 +5,30 @@ Aktueller Stand: **Benutzer-Login mit Supabase** (Schritt 1 des Projekts).
 
 ## Anmelde-Ablauf
 
-1. Die Person gibt ihre **E-Mail-Adresse** ein.
-2. Die App sucht die Adresse in der Supabase-Tabelle `app_users`
-   (über die Funktion `check_login_email`).
+Angemeldet wird sich mit dem **vollen Namen**, nicht mit einer E-Mail-Adresse.
+
+1. Die Person gibt ihren **Vor- und Nachnamen** ein.
+2. Die App sucht den Namen in der Supabase-Tabelle `app_users`
+   (über die Funktion `check_login_name`).
    - Nicht gefunden → Hinweis, sich an die Koordination zu wenden.
    - Gefunden, aber deaktiviert → Hinweis auf den gesperrten Zugang.
 3. **Erste Anmeldung** (noch kein Auth-Konto verknüpft):
    Die Person legt ihr **eigenes Passwort** fest. Danach wird das Auth-Konto
    über `link_auth_account()` mit dem Eintrag in `app_users` verknüpft.
 4. **Weitere Anmeldungen**: normale Passwort-Anmeldung.
+
+### Warum trotzdem eine E-Mail in der Tabelle steht
+
+Supabase Auth benötigt intern immer eine E-Mail-Adresse als Kennung. Deshalb
+gibt es zwei Spalten:
+
+- `full_name` – der Anmeldename, eindeutig (Groß-/Kleinschreibung egal)
+- `login_email` – technische Kennung, wird nie angezeigt. Für neue Benutzer
+  automatisch aus dem Namen abgeleitet: `Lenz Becker` → `lenz.becker@rikscha-melle.de`
+- `contact_email` – die echte Adresse, rein zur Kontaktaufnahme, optional
+
+Weil Namen der Login sind, müssen sie eindeutig sein. Bei zwei gleichen Namen
+muss die Koordination sie unterscheidbar machen (z. B. „Lenz Becker (Melle)").
 
 ## Einrichtung
 
@@ -29,11 +44,11 @@ npm run dev
 2. Unter *Authentication → Providers → Email*: **Confirm email** ausschalten,
    damit die Fahrer:innen nach der Passwortvergabe sofort angemeldet sind.
    Bleibt die Bestätigung an, zeigt die App den entsprechenden Hinweis an.
-3. Benutzer freischalten:
+3. Benutzer freischalten – der Name ist der Login, die Kontaktadresse optional:
 
 ```sql
-insert into public.app_users (email, full_name, role)
-values ('vorname.nachname@example.de', 'Vorname Nachname', 'fahrer');
+insert into public.app_users (full_name, contact_email, role)
+values ('Vorname Nachname', 'vorname.nachname@example.de', 'fahrer');
 ```
 
 Rollen: `admin`, `koordinator`, `fahrer`.

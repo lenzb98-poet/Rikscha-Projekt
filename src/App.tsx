@@ -15,11 +15,5 @@ export default function App() {
 
   if (!session) return <Login />
 
-  return (
-    <Dashboard
-      profile={profile}
-      email={session.user.email ?? ''}
-      onSignOut={() => void signOut()}
-    />
-  )
+  return <Dashboard profile={profile} onSignOut={() => void signOut()} />
 }

@@ -2,11 +2,16 @@ import type { AppUser } from '../lib/useAuth'
 
 type Props = {
   profile: AppUser | null
-  email: string
   onSignOut: () => void
 }
 
-export function Dashboard({ profile, email, onSignOut }: Props) {
+const ROLLEN: Record<AppUser['role'], string> = {
+  admin: 'Administration',
+  koordinator: 'Koordination',
+  fahrer: 'Fahrer:in',
+}
+
+export function Dashboard({ profile, onSignOut }: Props) {
   return (
     <div className="app">
       <header className="topbar">
@@ -20,11 +25,8 @@ export function Dashboard({ profile, email, onSignOut }: Props) {
       </header>
 
       <main className="content">
-        <h2>Hallo {profile?.full_name ?? email}!</h2>
-        <p className="muted">
-          Angemeldet als <strong>{email}</strong>
-          {profile ? ` · Rolle: ${profile.role}` : ''}
-        </p>
+        <h2>Hallo {profile?.full_name ?? 'zusammen'}!</h2>
+        {profile && <p className="muted">Angemeldet als {ROLLEN[profile.role]}</p>}
 
         <section className="card">
           <h3>Nächste Schritte</h3>

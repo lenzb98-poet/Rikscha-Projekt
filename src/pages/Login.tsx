@@ -1,39 +1,38 @@
 import { useState } from 'react'
-import { checkLoginEmail, linkAuthAccount, supabase, isSupabaseConfigured } from '../lib/supabase'
+import { checkLoginName, linkAuthAccount, supabase, isSupabaseConfigured } from '../lib/supabase'
 import { toGermanError } from '../lib/errors'
 import { PasswordField, validatePassword } from '../components/PasswordField'
 
-type Step = 'email' | 'password' | 'create-password' | 'confirm-mail'
+type Step = 'name' | 'password' | 'create-password' | 'confirm-mail'
 
 export function Login() {
-  const [step, setStep] = useState<Step>('email')
-  const [email, setEmail] = useState('')
+  const [step, setStep] = useState<Step>('name')
+  const [name, setName] = useState('')
   const [fullName, setFullName] = useState<string | null>(null)
+  // Technische Kennung fuer Supabase Auth - wird nie angezeigt.
+  const [loginEmail, setLoginEmail] = useState<string | null>(null)
   const [password, setPassword] = useState('')
   const [repeat, setRepeat] = useState('')
   const [error, setError] = useState<string | null>(null)
-  const [info, setInfo] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
   function reset() {
-    setStep('email')
+    setStep('name')
     setPassword('')
     setRepeat('')
     setError(null)
-    setInfo(null)
   }
 
-  /** Schritt 1: E-Mail in der Benutzertabelle suchen. */
-  async function handleEmailSubmit(e: React.FormEvent) {
+  /** Schritt 1: Namen in der Benutzertabelle suchen. */
+  async function handleNameSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
-    setInfo(null)
     setBusy(true)
     try {
-      const check = await checkLoginEmail(email)
-      if (!check.exists_in_whitelist) {
+      const check = await checkLoginName(name)
+      if (!check.found || !check.login_email) {
         setError(
-          'Diese E-Mail-Adresse ist nicht hinterlegt. Bitte wende dich an die Koordination der Hospizinitiative Melle.',
+          'Dieser Name ist nicht hinterlegt. Bitte achte auf die genaue Schreibweise oder wende dich an die Koordination der Hospizinitiative Melle.',
         )
         return
       }
@@ -42,6 +41,7 @@ export function Login() {
         return
       }
       setFullName(check.full_name)
+      setLoginEmail(check.login_email)
       setStep(check.has_account ? 'password' : 'create-password')
     } catch (err) {
       setError(toGermanError(err))
@@ -53,11 +53,12 @@ export function Login() {
   /** Schritt 2a: Anmeldung mit vorhandenem Passwort. */
   async function handleSignIn(e: React.FormEvent) {
     e.preventDefault()
+    if (!loginEmail) return
     setError(null)
     setBusy(true)
     try {
       const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: email.trim().toLowerCase(),
+        email: loginEmail,
         password,
       })
       if (signInError) throw signInError
@@ -72,6 +73,7 @@ export function Login() {
   /** Schritt 2b: Erstanmeldung – eigenes Passwort vergeben. */
   async function handleCreatePassword(e: React.FormEvent) {
     e.preventDefault()
+    if (!loginEmail) return
     setError(null)
     const problem = validatePassword(password, repeat)
     if (problem) {
@@ -81,13 +83,12 @@ export function Login() {
     setBusy(true)
     try {
       const { data, error: signUpError } = await supabase.auth.signUp({
-        email: email.trim().toLowerCase(),
+        email: loginEmail,
         password,
       })
       if (signUpError) throw signUpError
 
       if (data.session) {
-        // Konto ist sofort aktiv: Whitelist-Eintrag verknüpfen
         await linkAuthAccount()
       } else {
         // Projekt verlangt eine E-Mail-Bestätigung
@@ -116,22 +117,24 @@ export function Login() {
           </p>
         )}
 
-        {step === 'email' && (
-          <form onSubmit={handleEmailSubmit} className="auth__form">
+        {step === 'name' && (
+          <form onSubmit={handleNameSubmit} className="auth__form">
             <p className="auth__intro">
-              Bitte gib deine E-Mail-Adresse ein. Wir prüfen, ob du für die Rikscha-App
+              Bitte gib deinen vollständigen Namen ein. Wir prüfen, ob du für die Rikscha-App
               freigeschaltet bist.
             </p>
-            <label className="field" htmlFor="email">
-              <span className="field__label">E-Mail-Adresse</span>
+            <label className="field" htmlFor="name">
+              <span className="field__label">Vor- und Nachname</span>
               <div className="field__wrap">
                 <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  autoComplete="username"
+                  id="name"
+                  type="text"
+                  value={name}
+                  autoComplete="name"
+                  autoCapitalize="words"
+                  placeholder="z. B. Lenz Becker"
                   autoFocus
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => setName(e.target.value)}
                   required
                 />
               </div>
@@ -145,10 +148,9 @@ export function Login() {
         {step === 'password' && (
           <form onSubmit={handleSignIn} className="auth__form">
             <p className="auth__intro">
-              {fullName ? `Willkommen zurück, ${fullName}.` : 'Willkommen zurück.'} Bitte gib dein
-              Passwort ein.
+              Willkommen zurück! Bitte gib dein Passwort ein.
             </p>
-            <p className="auth__email">{email}</p>
+            <p className="auth__email">{fullName}</p>
             <PasswordField
               id="password"
               label="Passwort"
@@ -161,7 +163,7 @@ export function Login() {
               {busy ? 'Melde an …' : 'Anmelden'}
             </button>
             <button type="button" className="btn btn--link" onClick={reset}>
-              Andere E-Mail-Adresse verwenden
+              Anderer Name
             </button>
           </form>
         )}
@@ -169,10 +171,9 @@ export function Login() {
         {step === 'create-password' && (
           <form onSubmit={handleCreatePassword} className="auth__form">
             <p className="auth__intro">
-              {fullName ? `Hallo ${fullName}!` : 'Hallo!'} Das ist deine erste Anmeldung – bitte
-              lege jetzt dein eigenes Passwort fest.
+              Hallo {fullName}! Das ist deine erste Anmeldung – bitte lege jetzt dein eigenes
+              Passwort fest.
             </p>
-            <p className="auth__email">{email}</p>
             <PasswordField
               id="new-password"
               label="Neues Passwort"
@@ -201,9 +202,9 @@ export function Login() {
         {step === 'confirm-mail' && (
           <div className="auth__form">
             <p className="alert alert--ok">
-              Fast geschafft! Wir haben dir eine E-Mail an <strong>{email}</strong> geschickt.
-              Bitte bestätige den Link darin, danach kannst du dich mit deinem neuen Passwort
-              anmelden.
+              Dein Konto wurde angelegt. In den Supabase-Einstellungen ist die E-Mail-Bestätigung
+              noch aktiv – bitte lasse sie von der Koordination deaktivieren, danach kannst du dich
+              direkt anmelden.
             </p>
             <button type="button" className="btn" onClick={reset}>
               Zur Anmeldung
@@ -212,7 +213,6 @@ export function Login() {
         )}
 
         {error && <p className="alert alert--error">{error}</p>}
-        {info && <p className="alert alert--ok">{info}</p>}
       </div>
     </div>
   )

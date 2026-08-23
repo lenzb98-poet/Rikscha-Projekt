@@ -4,8 +4,8 @@ import { supabase } from './supabase'
 
 export type AppUser = {
   id: string
-  email: string
-  full_name: string | null
+  full_name: string
+  contact_email: string | null
   phone: string | null
   role: 'admin' | 'koordinator' | 'fahrer'
   is_active: boolean
@@ -36,8 +36,8 @@ export function useAuth() {
     let cancelled = false
     supabase
       .from('app_users')
-      .select('id, email, full_name, phone, role, is_active')
-      .eq('email', session.user.email?.toLowerCase() ?? '')
+      .select('id, full_name, contact_email, phone, role, is_active')
+      .eq('login_email', session.user.email?.toLowerCase() ?? '')
       .maybeSingle()
       .then(({ data }) => {
         if (!cancelled) setProfile((data as AppUser) ?? null)

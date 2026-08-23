@@ -8,9 +8,9 @@ export function toGermanError(error: unknown): string {
         : 'Unbekannter Fehler'
 
   const m = message.toLowerCase()
-  if (m.includes('invalid login credentials')) return 'E-Mail oder Passwort ist falsch.'
-  if (m.includes('email not confirmed')) return 'Bitte bestätige zuerst die E-Mail aus deinem Postfach.'
-  if (m.includes('user already registered')) return 'Für diese E-Mail gibt es bereits ein Passwort. Bitte melde dich an.'
+  if (m.includes('invalid login credentials')) return 'Das Passwort ist falsch.'
+  if (m.includes('email not confirmed')) return 'Das Konto ist noch nicht freigeschaltet. Bitte wende dich an die Koordination.'
+  if (m.includes('user already registered')) return 'Für diesen Namen gibt es bereits ein Passwort. Bitte melde dich an.'
   if (m.includes('password should be at least')) return 'Das Passwort ist zu kurz (mindestens 8 Zeichen).'
   if (m.includes('rate limit') || m.includes('too many')) return 'Zu viele Versuche. Bitte warte einen Moment.'
   if (m.includes('failed to fetch') || m.includes('networkerror'))
