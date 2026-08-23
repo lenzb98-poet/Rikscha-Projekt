@@ -68,3 +68,40 @@ export async function createUser(fullName: string, isAdmin: boolean): Promise<Cr
   const row = Array.isArray(data) ? data[0] : data
   return row as CreatedUser
 }
+
+export type Rolle = 'admin' | 'koordinator' | 'fahrer'
+
+export type TeamMember = {
+  id: string
+  full_name: string
+  role: Rolle
+  is_active: boolean
+}
+
+/** Lädt alle Einträge. Nicht-Admins erhalten durch RLS nur den eigenen. */
+export async function listUsers(): Promise<TeamMember[]> {
+  const { data, error } = await supabase
+    .from('app_users')
+    .select('id, full_name, role, is_active')
+    .order('full_name')
+  if (error) throw error
+  return (data ?? []) as TeamMember[]
+}
+
+/** Ändert Name, Rolle und Freischaltung. Rechteprüfung erfolgt in der Datenbank. */
+export async function updateUser(
+  id: string,
+  fullName: string,
+  role: Rolle,
+  isActive: boolean,
+): Promise<TeamMember> {
+  const { data, error } = await supabase.rpc('admin_update_user', {
+    p_id: id,
+    p_full_name: fullName.trim(),
+    p_role: role,
+    p_is_active: isActive,
+  })
+  if (error) throw error
+  const row = Array.isArray(data) ? data[0] : data
+  return row as TeamMember
+}

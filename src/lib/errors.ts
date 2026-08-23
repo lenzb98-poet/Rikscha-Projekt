@@ -1,11 +1,16 @@
 /** Übersetzt Supabase-Fehlermeldungen in verständliches Deutsch. */
 export function toGermanError(error: unknown): string {
+  // Achtung: Fehler aus supabase.rpc() sind einfache Objekte mit .message,
+  // keine Error-Instanzen. Ohne diesen Zweig landet jede Datenbankmeldung
+  // bei "Unbekannter Fehler".
   const message =
     typeof error === 'string'
       ? error
       : error instanceof Error
         ? error.message
-        : 'Unbekannter Fehler'
+        : typeof error === 'object' && error !== null && 'message' in error
+          ? String((error as { message: unknown }).message)
+          : 'Unbekannter Fehler'
 
   const m = message.toLowerCase()
   if (m.includes('invalid login credentials')) return 'Das Passwort ist falsch.'

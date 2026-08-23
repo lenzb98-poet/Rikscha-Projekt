@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import type { AppUser } from '../lib/useAuth'
+import type { TeamMember } from '../lib/supabase'
 import { AddUserDialog } from '../components/AddUserDialog'
+import { EditUserDialog } from '../components/EditUserDialog'
+import { TeamList } from '../components/TeamList'
 
 type Props = {
   profile: AppUser | null
@@ -14,10 +17,17 @@ const ROLLEN: Record<AppUser['role'], string> = {
 }
 
 export function Dashboard({ profile, onSignOut }: Props) {
-  const [dialogOffen, setDialogOffen] = useState(false)
+  const [addOffen, setAddOffen] = useState(false)
+  const [bearbeitet, setBearbeitet] = useState<TeamMember | null>(null)
   const [hinweis, setHinweis] = useState<string | null>(null)
+  const [version, setVersion] = useState(0)
 
   const istAdmin = profile?.role === 'admin'
+
+  function aktualisiert(text: string) {
+    setHinweis(text)
+    setVersion((v) => v + 1)
+  }
 
   return (
     <div className="app">
@@ -39,14 +49,13 @@ export function Dashboard({ profile, onSignOut }: Props) {
 
         {istAdmin && (
           <section className="card">
-            <h3>Team verwalten</h3>
-            <p className="muted card__text">
-              Neue Fahrer:innen freischalten. Sie melden sich anschließend mit ihrem Namen an
-              und vergeben dabei selbst ein Passwort.
-            </p>
-            <button className="btn" onClick={() => setDialogOffen(true)}>
-              Fahrer hinzufügen
-            </button>
+            <div className="card__head">
+              <h3>Team verwalten</h3>
+              <button className="btn" onClick={() => setAddOffen(true)}>
+                Fahrer hinzufügen
+              </button>
+            </div>
+            <TeamList version={version} onEdit={setBearbeitet} />
           </section>
         )}
 
@@ -60,14 +69,29 @@ export function Dashboard({ profile, onSignOut }: Props) {
         </section>
       </main>
 
-      {dialogOffen && (
+      {addOffen && (
         <AddUserDialog
-          onClose={() => setDialogOffen(false)}
+          onClose={() => setAddOffen(false)}
           onCreated={(name, alsAdmin) => {
-            setDialogOffen(false)
-            setHinweis(
+            setAddOffen(false)
+            aktualisiert(
               `${name} wurde hinzugefügt${alsAdmin ? ' – mit Administratorrechten' : ''}. ` +
                 'Die Anmeldung erfolgt mit diesem Namen.',
+            )
+          }}
+        />
+      )}
+
+      {bearbeitet && (
+        <EditUserDialog
+          member={bearbeitet}
+          onClose={() => setBearbeitet(null)}
+          onSaved={(m) => {
+            setBearbeitet(null)
+            aktualisiert(
+              m.is_active
+                ? `${m.full_name} wurde gespeichert.`
+                : `${m.full_name} wurde deaktiviert und kann sich nicht mehr anmelden.`,
             )
           }}
         />

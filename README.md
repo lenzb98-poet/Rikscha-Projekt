@@ -64,8 +64,17 @@ Angemeldete Administratoren sehen auf der Startseite den Bereich „Team verwalt
 mit dem Button **Fahrer hinzufügen**. Dort wird der Name eingegeben und per
 Schalter festgelegt, ob die Person Administratorrechte bekommt.
 
-Die Rechteprüfung liegt in der Datenbank (`admin_create_user`), nicht in der
-Oberfläche – das Ausblenden des Buttons ist nur Komfort, keine Absicherung.
+Darunter steht die Liste aller Einträge mit Rolle und Status. Über **Bearbeiten**
+lassen sich Name und Rolle ändern sowie der Zugang deaktivieren – der Eintrag
+bleibt dabei erhalten, eine Anmeldung ist aber nicht mehr möglich.
+
+Eine Namensänderung ändert den Anmeldenamen, nicht die interne `login_email` –
+ein bereits gesetztes Passwort bleibt also gültig.
+
+Die Rechteprüfung liegt in der Datenbank (`admin_create_user`,
+`admin_update_user`), nicht in der Oberfläche – das Ausblenden des Buttons ist
+nur Komfort, keine Absicherung. Zusätzlich verhindert die Datenbank, dass
+Administratoren sich selbst deaktivieren oder sich die eigenen Rechte entziehen.
 
 ## Nächste Schritte
 

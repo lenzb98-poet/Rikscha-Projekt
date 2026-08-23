@@ -169,4 +169,52 @@ body {
 .check__hint { display: block; color: var(--muted); font-size: 13px; margin-top: 3px; }
 
 .card__text { margin: 0 0 16px; font-size: 14px; line-height: 1.5; }
-.card .btn { width: auto; }
+
+/* --- Teamliste ---------------------------------------------------------- */
+.card__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.card__head h3 { margin: 0; }
+
+.team { list-style: none; margin: 0; padding: 0; }
+
+.team__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid var(--border);
+}
+.team__row:first-child { border-top: 0; padding-top: 0; }
+.team__row--inaktiv .team__name { color: var(--muted); text-decoration: line-through; }
+
+.team__info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.team__name { font-weight: 600; font-size: 15px; overflow-wrap: anywhere; }
+.team__meta { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+
+.badge {
+  background: #fdecea;
+  color: var(--error);
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.field select {
+  flex: 1;
+  padding: 12px 14px;
+  font-size: 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fff;
+  color: inherit;
+  appearance: none;
+}
+.field select:focus { outline: 2px solid var(--green); outline-offset: 1px; border-color: var(--green); }
