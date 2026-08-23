@@ -105,3 +105,14 @@ export async function updateUser(
   const row = Array.isArray(data) ? data[0] : data
   return row as TeamMember
 }
+
+/**
+ * Löscht einen Eintrag endgültig, inklusive des zugehörigen Anmeldekontos.
+ * Zum Sperren ohne Datenverlust stattdessen updateUser(..., isActive: false).
+ */
+export async function deleteUser(id: string): Promise<string> {
+  const { data, error } = await supabase.rpc('admin_delete_user', { p_id: id })
+  if (error) throw error
+  const row = Array.isArray(data) ? data[0] : data
+  return (row as { full_name: string }).full_name
+}

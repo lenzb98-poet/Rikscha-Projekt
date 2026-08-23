@@ -218,3 +218,25 @@ body {
   appearance: none;
 }
 .field select:focus { outline: 2px solid var(--green); outline-offset: 1px; border-color: var(--green); }
+
+/* --- Löschen ------------------------------------------------------------ */
+.btn--danger { background: var(--error); }
+.btn--danger:hover:not(:disabled) { background: #8f1e17; }
+
+.danger {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+
+.btn--linkdanger {
+  background: none;
+  border: 0;
+  color: var(--error);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 6px;
+  cursor: pointer;
+}
+.btn--linkdanger:hover { text-decoration: underline; }

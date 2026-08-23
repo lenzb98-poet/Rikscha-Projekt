@@ -71,10 +71,16 @@ bleibt dabei erhalten, eine Anmeldung ist aber nicht mehr möglich.
 Eine Namensänderung ändert den Anmeldenamen, nicht die interne `login_email` –
 ein bereits gesetztes Passwort bleibt also gültig.
 
+Im Bearbeiten-Dialog gibt es außerdem **Eintrag löschen**. Das entfernt den
+Eintrag endgültig, samt Anmeldekonto in `auth.users` – nur so wird der Name
+wieder frei. Für „soll sich nicht mehr anmelden können" ist Deaktivieren die
+bessere Wahl; darauf weist die Rückfrage vor dem Löschen auch hin.
+
 Die Rechteprüfung liegt in der Datenbank (`admin_create_user`,
 `admin_update_user`), nicht in der Oberfläche – das Ausblenden des Buttons ist
 nur Komfort, keine Absicherung. Zusätzlich verhindert die Datenbank, dass
-Administratoren sich selbst deaktivieren oder sich die eigenen Rechte entziehen.
+Administratoren sich selbst deaktivieren, löschen oder sich die eigenen Rechte
+entziehen.
 
 ## Nächste Schritte
 

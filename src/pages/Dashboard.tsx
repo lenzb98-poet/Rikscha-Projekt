@@ -94,6 +94,10 @@ export function Dashboard({ profile, onSignOut }: Props) {
                 : `${m.full_name} wurde deaktiviert und kann sich nicht mehr anmelden.`,
             )
           }}
+          onDeleted={(name) => {
+            setBearbeitet(null)
+            aktualisiert(`${name} wurde gelöscht.`)
+          }}
         />
       )}
     </div>
