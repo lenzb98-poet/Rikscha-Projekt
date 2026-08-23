@@ -48,3 +48,5 @@ Rollen: `admin`, `koordinator`, `fahrer`.
 - Fahrten anlegen, zuordnen und im Kalender anzeigen
 - Verfügbarkeiten der Fahrer:innen
 - Chat zwischen Koordination und Fahrer:innen
+
+<!-- deploy-trigger -->
