@@ -47,3 +47,24 @@ export async function linkAuthAccount(): Promise<void> {
   const { error } = await supabase.rpc('link_auth_account')
   if (error) throw error
 }
+
+export type CreatedUser = {
+  id: string
+  full_name: string
+  role: 'admin' | 'koordinator' | 'fahrer'
+  login_email: string
+}
+
+/**
+ * Legt eine:n neue:n Fahrer:in an. Die Rechteprüfung erfolgt in der
+ * Datenbank, nicht hier – die Oberfläche blendet den Zugang nur aus.
+ */
+export async function createUser(fullName: string, isAdmin: boolean): Promise<CreatedUser> {
+  const { data, error } = await supabase.rpc('admin_create_user', {
+    p_full_name: fullName.trim(),
+    p_is_admin: isAdmin,
+  })
+  if (error) throw error
+  const row = Array.isArray(data) ? data[0] : data
+  return row as CreatedUser
+}

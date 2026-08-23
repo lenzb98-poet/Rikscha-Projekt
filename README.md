@@ -58,6 +58,15 @@ Rollen: `admin`, `koordinator`, `fahrer`.
 - React 18 + TypeScript + Vite
 - Supabase (Auth + Postgres mit Row Level Security)
 
+## Team verwalten
+
+Angemeldete Administratoren sehen auf der Startseite den Bereich „Team verwalten"
+mit dem Button **Fahrer hinzufügen**. Dort wird der Name eingegeben und per
+Schalter festgelegt, ob die Person Administratorrechte bekommt.
+
+Die Rechteprüfung liegt in der Datenbank (`admin_create_user`), nicht in der
+Oberfläche – das Ausblenden des Buttons ist nur Komfort, keine Absicherung.
+
 ## Nächste Schritte
 
 - Fahrten anlegen, zuordnen und im Kalender anzeigen
