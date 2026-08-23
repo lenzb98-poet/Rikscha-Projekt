@@ -283,3 +283,28 @@ body {
   border-top: 1px solid var(--border);
   text-align: center;
 }
+
+/* --- Unterseite --------------------------------------------------------- */
+.btn--zurueck {
+  background: none;
+  color: var(--blau);
+  font-size: 15px;
+  padding: 6px 0;
+  margin-bottom: 12px;
+}
+.btn--zurueck:hover:not(:disabled) { background: none; text-decoration: underline; }
+
+.seite__kopf {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+.seite__kopf h2 { margin: 0 0 2px; }
+.seite__kopf .muted { margin: 0; font-size: 14px; }
+
+.team__kontakt { font-size: 13px; color: var(--muted); margin-top: 2px; overflow-wrap: anywhere; }
+.field__optional { font-weight: 400; color: var(--muted); font-size: 13px; }
+.field .hint { margin-top: 2px; }

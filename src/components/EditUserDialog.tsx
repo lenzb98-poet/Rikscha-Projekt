@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { deleteUser, updateUser, type Rolle, type TeamMember } from '../lib/supabase'
+import { deleteUser, updateUser, type Stammdaten, type TeamMember } from '../lib/supabase'
 import { toGermanError } from '../lib/errors'
+import { StammdatenFelder } from './StammdatenFelder'
 
 type Props = {
   member: TeamMember
@@ -9,15 +10,13 @@ type Props = {
   onDeleted: (name: string) => void
 }
 
-const ROLLEN: { wert: Rolle; text: string }[] = [
-  { wert: 'fahrer', text: 'Fahrer:in' },
-  { wert: 'koordinator', text: 'Koordination' },
-  { wert: 'admin', text: 'Administration' },
-]
-
 export function EditUserDialog({ member, onClose, onSaved, onDeleted }: Props) {
-  const [name, setName] = useState(member.full_name)
-  const [rolle, setRolle] = useState<Rolle>(member.role)
+  const [werte, setWerte] = useState<Stammdaten>({
+    fullName: member.full_name,
+    role: member.role,
+    phone: member.phone ?? '',
+    contactEmail: member.contact_email ?? '',
+  })
   const [aktiv, setAktiv] = useState(member.is_active)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -29,7 +28,7 @@ export function EditUserDialog({ member, onClose, onSaved, onDeleted }: Props) {
     setError(null)
     setBusy(true)
     try {
-      onSaved(await updateUser(member.id, name, rolle, aktiv))
+      onSaved(await updateUser(member.id, { ...werte, isActive: aktiv }))
     } catch (err) {
       setError(toGermanError(err))
     } finally {
@@ -91,84 +90,54 @@ export function EditUserDialog({ member, onClose, onSaved, onDeleted }: Props) {
           </>
         ) : (
           <>
-        <h3 id="edit-user-title">Eintrag bearbeiten</h3>
-        <p className="muted overlay__intro">
-          Eine Namensänderung ändert den Anmeldenamen. Ein bereits gesetztes Passwort bleibt
-          gültig.
-        </p>
+            <h3 id="edit-user-title">Eintrag bearbeiten</h3>
+            <p className="muted overlay__intro">
+              Eine Namensänderung ändert den Anmeldenamen. Ein bereits gesetztes Passwort
+              bleibt gültig.
+            </p>
 
-        <form onSubmit={handleSubmit} className="auth__form">
-          <label className="field" htmlFor="edit-name">
-            <span className="field__label">Vor- und Nachname</span>
-            <div className="field__wrap">
-              <input
-                id="edit-name"
-                type="text"
-                value={name}
-                autoCapitalize="words"
-                autoFocus
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-            </div>
-          </label>
+            <form onSubmit={handleSubmit} className="auth__form">
+              <StammdatenFelder praefix="edit" werte={werte} onChange={setWerte} autoFocus />
 
-          <label className="field" htmlFor="edit-role">
-            <span className="field__label">Rolle</span>
-            <div className="field__wrap">
-              <select
-                id="edit-role"
-                value={rolle}
-                onChange={(e) => setRolle(e.target.value as Rolle)}
+              <label className="check" htmlFor="edit-active">
+                <input
+                  id="edit-active"
+                  type="checkbox"
+                  checked={aktiv}
+                  onChange={(e) => setAktiv(e.target.checked)}
+                />
+                <span>
+                  <strong>Zugang freigeschaltet</strong>
+                  <span className="check__hint">
+                    Ohne Freischaltung ist keine Anmeldung möglich. Der Eintrag bleibt erhalten.
+                  </span>
+                </span>
+              </label>
+
+              {error && <p className="alert alert--error">{error}</p>}
+
+              <div className="overlay__actions">
+                <button type="button" className="btn btn--ghost" onClick={onClose} disabled={busy}>
+                  Abbrechen
+                </button>
+                <button type="submit" className="btn" disabled={busy}>
+                  {busy ? 'Speichere …' : 'Speichern'}
+                </button>
+              </div>
+            </form>
+
+            <div className="danger">
+              <button
+                type="button"
+                className="btn btn--linkdanger"
+                onClick={() => {
+                  setError(null)
+                  setLoeschenBestaetigen(true)
+                }}
               >
-                {ROLLEN.map((r) => (
-                  <option key={r.wert} value={r.wert}>
-                    {r.text}
-                  </option>
-                ))}
-              </select>
+                Eintrag löschen
+              </button>
             </div>
-          </label>
-
-          <label className="check" htmlFor="edit-active">
-            <input
-              id="edit-active"
-              type="checkbox"
-              checked={aktiv}
-              onChange={(e) => setAktiv(e.target.checked)}
-            />
-            <span>
-              <strong>Zugang freigeschaltet</strong>
-              <span className="check__hint">
-                Ohne Freischaltung ist keine Anmeldung möglich. Der Eintrag bleibt erhalten.
-              </span>
-            </span>
-          </label>
-
-          {error && <p className="alert alert--error">{error}</p>}
-
-          <div className="overlay__actions">
-            <button type="button" className="btn btn--ghost" onClick={onClose} disabled={busy}>
-              Abbrechen
-            </button>
-            <button type="submit" className="btn" disabled={busy}>
-              {busy ? 'Speichere …' : 'Speichern'}
-            </button>
-          </div>
-        </form>
-
-        <div className="danger">
-          <button
-            type="button"
-            className="btn btn--linkdanger"
-            onClick={() => {
-              setError(null)
-              setLoeschenBestaetigen(true)
-            }}
-          >
-            Eintrag löschen
-          </button>
-        </div>
           </>
         )}
       </div>
