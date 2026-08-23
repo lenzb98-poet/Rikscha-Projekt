@@ -62,7 +62,7 @@ Die Oberfläche folgt dem Auftritt des Vereins:
 - Das Logo ist weiß und darf nur auf blauem Grund stehen – deshalb steht es auf
   der Anmeldeseite über der weißen Karte und in der angemeldeten Ansicht in der
   blauen Kopfzeile
-- Die Möwe liegt als dezentes Motiv hinter dem Anmeldeformular
+- Die Möwe steht als kleines Motiv über der Wortmarke, leicht nach rechts versetzt
 
 Farben sind als CSS-Variablen in `src/styles.css` unter `:root` gesammelt.
 

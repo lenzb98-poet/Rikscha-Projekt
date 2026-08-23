@@ -36,26 +36,7 @@ body {
   overflow: hidden;
 }
 
-/* Möwe aus dem Auftritt des Vereins, dezent hinter dem Formular */
-.auth::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: min(1100px, 170%);
-  aspect-ratio: 1100 / 589;
-  transform: translate(-50%, -50%);
-  background: url('./assets/moewe.png') center / contain no-repeat;
-  opacity: 0.13;
-  pointer-events: none;
-}
-
 @media (max-width: 560px) {
-  .auth::before {
-    top: 38%;
-    width: 220%;
-    opacity: 0.16;
-  }
   .topbar__logo { height: 34px; }
   .topbar { padding: 12px 14px; }
 }
@@ -67,7 +48,15 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24px;
+  gap: 22px;
+}
+
+/* Kleines Motiv über der Wortmarke, leicht nach rechts versetzt */
+.marke-moewe {
+  width: 116px;
+  height: auto;
+  display: block;
+  margin: 0 0 -14px 54px;
 }
 
 .marke-logo {
@@ -86,6 +75,7 @@ body {
 }
 
 .auth__header { text-align: center; margin-bottom: 22px; }
+.auth__emoji { font-size: 32px; line-height: 1; margin-bottom: 6px; }
 .auth__header h1 { margin: 0; font-size: 21px; color: var(--blau); }
 .auth__sub { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
 .auth__intro { font-size: 15px; line-height: 1.5; margin: 0 0 4px; }

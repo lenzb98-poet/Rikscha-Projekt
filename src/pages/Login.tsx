@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { checkLoginName, linkAuthAccount, supabase, isSupabaseConfigured } from '../lib/supabase'
 import { toGermanError } from '../lib/errors'
 import { PasswordField, validatePassword } from '../components/PasswordField'
-import { Logo } from '../components/Marke'
+import { Logo, Moewe } from '../components/Marke'
 
 type Step = 'name' | 'password' | 'create-password' | 'confirm-mail'
 
@@ -105,10 +105,12 @@ export function Login() {
   return (
     <div className="auth">
       <div className="auth__inner">
+        <Moewe className="marke-moewe" />
         <Logo className="marke-logo" />
 
         <div className="auth__card">
           <header className="auth__header">
+            <div className="auth__emoji" aria-hidden="true">🚲</div>
             <h1>Rikscha-Fahrten</h1>
             <p className="auth__sub">Anmeldung für Fahrer:innen und Koordination</p>
           </header>
