@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { AppUser } from '../lib/useAuth'
 import { Logo } from '../components/Marke'
 import { TeamVerwaltung } from './TeamVerwaltung'
+import { Chat } from './Chat'
 
 type Props = {
   profile: AppUser | null
@@ -14,7 +15,7 @@ const ROLLEN: Record<AppUser['role'], string> = {
   fahrer: 'Fahrer:in',
 }
 
-type Ansicht = 'start' | 'team'
+type Ansicht = 'start' | 'team' | 'chat'
 
 export function Dashboard({ profile, onSignOut }: Props) {
   const [ansicht, setAnsicht] = useState<Ansicht>('start')
@@ -33,6 +34,8 @@ export function Dashboard({ profile, onSignOut }: Props) {
       <main className="content">
         {ansicht === 'team' && istAdmin ? (
           <TeamVerwaltung onZurueck={() => setAnsicht('start')} />
+        ) : ansicht === 'chat' ? (
+          <Chat onZurueck={() => setAnsicht('start')} istAdmin={istAdmin} />
         ) : (
           <>
             <h2>Hallo {profile?.full_name ?? 'zusammen'}!</h2>
@@ -52,11 +55,20 @@ export function Dashboard({ profile, onSignOut }: Props) {
             )}
 
             <section className="card">
+              <h3>Chat</h3>
+              <p className="muted card__text">
+                Nachrichten an alle Fahrer:innen und die Koordination.
+              </p>
+              <button className="btn" onClick={() => setAnsicht('chat')}>
+                Chat öffnen
+              </button>
+            </section>
+
+            <section className="card">
               <h3>Nächste Schritte</h3>
               <ul className="todo">
                 <li>Fahrten anlegen und Fahrer:innen zuordnen</li>
                 <li>Verfügbarkeiten der Fahrer:innen pflegen</li>
-                <li>Chat zwischen Koordination und Fahrer:innen</li>
               </ul>
             </section>
           </>

@@ -120,3 +120,54 @@ export async function deleteUser(id: string): Promise<string> {
   const row = Array.isArray(data) ? data[0] : data
   return (row as { full_name: string }).full_name
 }
+
+export type ChatNachricht = {
+  id: string
+  body: string
+  created_at: string
+  author_id: string
+  author_name: string
+  ist_eigene: boolean
+}
+
+/** Lädt den Verlauf, neueste zuerst. */
+export async function listMessages(limit = 200): Promise<ChatNachricht[]> {
+  const { data, error } = await supabase.rpc('list_messages', { p_limit: limit })
+  if (error) throw error
+  return (data ?? []) as ChatNachricht[]
+}
+
+/** Sendet eine Nachricht. Der Absender wird serverseitig aus der Anmeldung bestimmt. */
+export async function sendMessage(body: string): Promise<ChatNachricht> {
+  const { data, error } = await supabase.rpc('send_message', { p_body: body })
+  if (error) throw error
+  const row = Array.isArray(data) ? data[0] : data
+  return row as ChatNachricht
+}
+
+/** Löscht eine Nachricht. Erlaubt für eigene, für Administratoren auch fremde. */
+export async function deleteMessage(id: string): Promise<void> {
+  const { error } = await supabase.rpc('delete_message', { p_id: id })
+  if (error) throw error
+}
+
+/**
+ * Ruft `onChange` auf, sobald sich am Verlauf etwas ändert.
+ * Nutzt Supabase Realtime; zusätzlich wird regelmäßig nachgeladen, falls
+ * Realtime im Projekt nicht aktiv ist.
+ */
+export function watchMessages(onChange: () => void): () => void {
+  const kanal = supabase
+    .channel('chat')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, onChange)
+    .subscribe()
+
+  const intervall = window.setInterval(() => {
+    if (document.visibilityState === 'visible') onChange()
+  }, 20000)
+
+  return () => {
+    supabase.removeChannel(kanal)
+    window.clearInterval(intervall)
+  }
+}
