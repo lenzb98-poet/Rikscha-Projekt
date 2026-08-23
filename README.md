@@ -49,4 +49,3 @@ Rollen: `admin`, `koordinator`, `fahrer`.
 - Verfügbarkeiten der Fahrer:innen
 - Chat zwischen Koordination und Fahrer:innen
 
-<!-- deploy-trigger -->

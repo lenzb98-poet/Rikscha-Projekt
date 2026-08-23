@@ -5,9 +5,172 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#1f6f5c" />
     <title>Rikscha – Hospizinitiative Melle</title>
+
+    <!--
+      Start-Diagnose: laeuft vor der eigentlichen App und faengt alles ab,
+      was das Laden verhindert (Netzwerkfehler, Syntaxfehler, haengender Start).
+      Bewusst ohne externe Dateien und ohne modernes JS, damit es selbst dann
+      funktioniert, wenn sonst nichts laedt.
+    -->
+    <script>
+      (function () {
+        var CODES = {
+          'E-BOOT-TIMEOUT': 'Die App wurde geladen, ist aber nicht gestartet.',
+          'E-SCRIPT-LOAD': 'Eine Programmdatei konnte nicht geladen werden.',
+          'E-RUNTIME': 'Beim Start ist ein Programmfehler aufgetreten.',
+          'E-PROMISE': 'Eine Hintergrundanfrage ist fehlgeschlagen.',
+          'E-MOUNT': 'Die Oberflaeche konnte nicht aufgebaut werden.',
+          'E-RENDER': 'Beim Anzeigen ist ein Fehler aufgetreten.'
+        }
+
+        var shown = false
+
+        function esc(value) {
+          return String(value == null ? '' : value).replace(/[&<>"]/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]
+          })
+        }
+
+        window.__rikschaShowError = function (code, message, detail) {
+          if (shown) return
+          shown = true
+
+          var root = document.getElementById('root')
+          if (!root) return
+
+          var info = [
+            'Code: ' + code,
+            'Meldung: ' + (message || '-'),
+            detail ? 'Detail: ' + detail : null,
+            'Adresse: ' + location.href,
+            'Zeit: ' + new Date().toLocaleString('de-DE'),
+            'Browser: ' + navigator.userAgent
+          ].filter(Boolean).join('\n')
+
+          root.innerHTML =
+            '<div style="min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:24px;' +
+            'font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#f4f6f5;color:#1c2321">' +
+              '<div style="max-width:460px;width:100%;background:#fff;border:1px solid #dfe5e3;border-radius:16px;' +
+              'padding:28px 24px;box-shadow:0 12px 32px rgba(0,0,0,.06)">' +
+                '<div style="font-size:32px;line-height:1">⚠️</div>' +
+                '<h1 style="margin:10px 0 6px;font-size:19px">Die App konnte nicht geladen werden</h1>' +
+                '<p style="margin:0 0 16px;font-size:15px;line-height:1.5;color:#667470">' +
+                  esc(CODES[code] || 'Es ist ein unerwarteter Fehler aufgetreten.') +
+                '</p>' +
+                '<div style="background:#fdecea;color:#b3261e;border-radius:10px;padding:12px 14px;margin-bottom:16px">' +
+                  '<div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:700;font-size:14px">' +
+                    esc(code) +
+                  '</div>' +
+                  (message
+                    ? '<div style="font-size:13px;margin-top:6px;word-break:break-word">' + esc(message) + '</div>'
+                    : '') +
+                '</div>' +
+                '<details style="margin-bottom:16px">' +
+                  '<summary style="cursor:pointer;font-size:14px;color:#175647;font-weight:600">Technische Details</summary>' +
+                  '<pre id="rikscha-error-info" style="margin:10px 0 0;padding:12px;background:#f4f6f5;border-radius:8px;' +
+                  'font-size:12px;line-height:1.5;white-space:pre-wrap;word-break:break-word;color:#3d4a46">' +
+                    esc(info) +
+                  '</pre>' +
+                '</details>' +
+                '<div style="display:flex;gap:10px;flex-wrap:wrap">' +
+                  '<button id="rikscha-reload" style="flex:1;min-width:130px;padding:12px 16px;font-size:15px;' +
+                  'font-weight:600;border:0;border-radius:10px;background:#1f6f5c;color:#fff;cursor:pointer">' +
+                    'Neu laden' +
+                  '</button>' +
+                  '<button id="rikscha-copy" style="flex:1;min-width:130px;padding:12px 16px;font-size:15px;' +
+                  'font-weight:600;border:1px solid #dfe5e3;border-radius:10px;background:#fff;color:#175647;cursor:pointer">' +
+                    'Details kopieren' +
+                  '</button>' +
+                '</div>' +
+                '<p style="margin:16px 0 0;font-size:13px;color:#667470;line-height:1.5">' +
+                  'Bleibt der Fehler bestehen, schicke die technischen Details bitte an die Koordination.' +
+                '</p>' +
+              '</div>' +
+            '</div>'
+
+          var reload = document.getElementById('rikscha-reload')
+          if (reload) {
+            reload.onclick = function () {
+              location.reload()
+            }
+          }
+
+          var copy = document.getElementById('rikscha-copy')
+          if (copy) {
+            copy.onclick = function () {
+              var text = document.getElementById('rikscha-error-info').textContent
+              var done = function () {
+                copy.textContent = 'Kopiert ✓'
+              }
+              if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(done, done)
+              } else {
+                var area = document.createElement('textarea')
+                area.value = text
+                document.body.appendChild(area)
+                area.select()
+                try { document.execCommand('copy') } catch (e) {}
+                document.body.removeChild(area)
+                done()
+              }
+            }
+          }
+        }
+
+        // Datei konnte nicht geladen werden (Netzwerk, 404, falscher Pfad).
+        // capture:true, weil solche Fehler nicht nach oben blubbern.
+        window.addEventListener('error', function (event) {
+          var target = event.target
+          if (target && (target.tagName === 'SCRIPT' || target.tagName === 'LINK')) {
+            window.__rikschaShowError(
+              'E-SCRIPT-LOAD',
+              'Nicht erreichbar: ' + (target.src || target.href),
+              'Pruefe, ob die Seite vollstaendig veroeffentlicht wurde.'
+            )
+            return
+          }
+          if (event.message) {
+            window.__rikschaShowError(
+              'E-RUNTIME',
+              event.message,
+              event.filename ? event.filename + ':' + event.lineno + ':' + event.colno : null
+            )
+          }
+        }, true)
+
+        window.addEventListener('unhandledrejection', function (event) {
+          var reason = event.reason
+          window.__rikschaShowError(
+            'E-PROMISE',
+            (reason && (reason.message || reason.error_description)) || String(reason)
+          )
+        })
+
+        // Wachhund: Wenn die App nach 12 Sekunden nicht gestartet ist,
+        // bleibt der Ladehinweis nicht endlos stehen.
+        setTimeout(function () {
+          if (!window.__rikschaAppMounted) {
+            window.__rikschaShowError(
+              'E-BOOT-TIMEOUT',
+              'Die Anwendung hat sich innerhalb von 12 Sekunden nicht gemeldet.',
+              'Meist eine unterbrochene Verbindung oder eine unvollstaendige Veroeffentlichung.'
+            )
+          }
+        }, 12000)
+      })()
+    </script>
   </head>
   <body>
-    <div id="root"><p style="font-family:system-ui;color:#667470;padding:24px">Rikscha-App wird geladen …</p></div>
+    <div id="root">
+      <p style="font-family:system-ui,-apple-system,sans-serif;color:#667470;padding:24px">
+        Rikscha-App wird geladen …
+      </p>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
+    <noscript>
+      <p style="font-family:system-ui,-apple-system,sans-serif;padding:24px">
+        Diese App benötigt JavaScript. Bitte aktiviere JavaScript in deinem Browser.
+      </p>
+    </noscript>
   </body>
 </html>

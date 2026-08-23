@@ -27,6 +27,16 @@ jobs:
 
       - run: npm ci
 
+      # Fehlende Secrets fuehren sonst zu einer App, die zwar laedt,
+      # sich aber nicht bei Supabase anmelden kann.
+      - name: Supabase-Secrets pruefen
+        run: |
+          if [ -z "${{ secrets.VITE_SUPABASE_URL }}" ] || [ -z "${{ secrets.VITE_SUPABASE_ANON_KEY }}" ]; then
+            echo "::error::VITE_SUPABASE_URL oder VITE_SUPABASE_ANON_KEY fehlt in den Repository-Secrets (Settings -> Secrets and variables -> Actions)."
+            exit 1
+          fi
+          echo "Supabase-Secrets sind gesetzt."
+
       - run: npm run build
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
