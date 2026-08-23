@@ -128,7 +128,13 @@ export type ChatNachricht = {
   author_id: string
   author_name: string
   ist_eigene: boolean
+  image_path: string | null
+  image_width: number | null
+  image_height: number | null
+  image_removed: boolean
 }
+
+export const BILDER_BUCKET = 'chat-bilder'
 
 /** Lädt den Verlauf, neueste zuerst. */
 export async function listMessages(limit = 200): Promise<ChatNachricht[]> {
@@ -137,18 +143,92 @@ export async function listMessages(limit = 200): Promise<ChatNachricht[]> {
   return (data ?? []) as ChatNachricht[]
 }
 
+/**
+ * Besorgt für die Bildpfade befristet gültige Adressen. Der Speicher ist nicht
+ * öffentlich, ohne Unterschrift lässt sich also kein Bild abrufen.
+ */
+export async function bildAdressen(pfade: string[]): Promise<Record<string, string>> {
+  if (pfade.length === 0) return {}
+  const { data, error } = await supabase.storage
+    .from(BILDER_BUCKET)
+    .createSignedUrls(pfade, 3600)
+  if (error) throw error
+
+  const map: Record<string, string> = {}
+  for (const eintrag of data ?? []) {
+    if (eintrag.signedUrl && eintrag.path) map[eintrag.path] = eintrag.signedUrl
+  }
+  return map
+}
+
+/** Lädt ein Bild hoch und gibt seinen Pfad im Speicher zurück. */
+export async function ladeBildHoch(datei: Blob, endung = 'jpg'): Promise<string> {
+  const pfad = `${crypto.randomUUID()}.${endung}`
+  const { error } = await supabase.storage
+    .from(BILDER_BUCKET)
+    .upload(pfad, datei, { contentType: datei.type || 'image/jpeg', upsert: false })
+  if (error) throw error
+  return pfad
+}
+
+export type NeueNachricht = {
+  body: string
+  imagePath?: string | null
+  imageSize?: number | null
+  imageWidth?: number | null
+  imageHeight?: number | null
+}
+
 /** Sendet eine Nachricht. Der Absender wird serverseitig aus der Anmeldung bestimmt. */
-export async function sendMessage(body: string): Promise<ChatNachricht> {
-  const { data, error } = await supabase.rpc('send_message', { p_body: body })
+export async function sendMessage(n: NeueNachricht): Promise<ChatNachricht> {
+  const { data, error } = await supabase.rpc('send_message', {
+    p_body: n.body,
+    p_image_path: n.imagePath ?? null,
+    p_image_size: n.imageSize ?? null,
+    p_image_width: n.imageWidth ?? null,
+    p_image_height: n.imageHeight ?? null,
+  })
   if (error) throw error
   const row = Array.isArray(data) ? data[0] : data
   return row as ChatNachricht
 }
 
-/** Löscht eine Nachricht. Erlaubt für eigene, für Administratoren auch fremde. */
+/** Löscht eine Nachricht samt Bild. Erlaubt für eigene, für Admins auch fremde. */
 export async function deleteMessage(id: string): Promise<void> {
-  const { error } = await supabase.rpc('delete_message', { p_id: id })
+  const { data, error } = await supabase.rpc('delete_message', { p_id: id })
   if (error) throw error
+
+  const row = Array.isArray(data) ? data[0] : data
+  const pfad = (row as { image_path: string | null } | null)?.image_path
+  if (pfad) {
+    await supabase.storage.from(BILDER_BUCKET).remove([pfad])
+  }
+}
+
+/**
+ * Räumt den Bildspeicher auf: älteste Bilder verschwinden, bis die Grenze von
+ * 750 MiB wieder eingehalten wird.
+ *
+ * Dreistufig, weil ein Löschen in der Datenbank die Datei im Speicher nicht
+ * mit entfernt. Bricht der Ablauf ab, läuft er beim nächsten Hochladen erneut.
+ * Gibt die Zahl der entfernten Bilder zurück.
+ */
+export async function raeumeBildspeicherAuf(): Promise<number> {
+  const { data, error } = await supabase.rpc('chat_aufraeum_kandidaten')
+  if (error) throw error
+
+  const pfade = ((data ?? []) as { image_path: string }[])
+    .map((r) => r.image_path)
+    .filter(Boolean)
+  if (pfade.length === 0) return 0
+
+  const { error: weg } = await supabase.storage.from(BILDER_BUCKET).remove(pfade)
+  if (weg) throw weg
+
+  const { error: melden } = await supabase.rpc('chat_bilder_geloescht', { p_pfade: pfade })
+  if (melden) throw melden
+
+  return pfade.length
 }
 
 /**

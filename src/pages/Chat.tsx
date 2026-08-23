@@ -1,11 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
+  bildAdressen,
   deleteMessage,
+  ladeBildHoch,
   listMessages,
+  raeumeBildspeicherAuf,
   sendMessage,
   watchMessages,
   type ChatNachricht,
 } from '../lib/supabase'
+import { verkleinereBild, formatiereGroesse } from '../lib/bilder'
 import { toGermanError } from '../lib/errors'
 
 /** "Heute", "Gestern" oder das Datum – als Trenner zwischen den Tagen. */
@@ -22,17 +26,31 @@ function tagesTitel(datum: Date): string {
 
 const uhrzeit = (d: Date) => d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })
 
+type Auswahl = { datei: Blob; vorschau: string; breite: number; hoehe: number }
+
 export function Chat({ onZurueck, istAdmin }: { onZurueck: () => void; istAdmin: boolean }) {
   const [nachrichten, setNachrichten] = useState<ChatNachricht[] | null>(null)
+  const [adressen, setAdressen] = useState<Record<string, string>>({})
   const [text, setText] = useState('')
+  const [auswahl, setAuswahl] = useState<Auswahl | null>(null)
+  const [grossesBild, setGrossesBild] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const dateiRef = useRef<HTMLInputElement>(null)
   const endeRef = useRef<HTMLDivElement>(null)
 
   const laden = useCallback(() => {
     listMessages()
       // Die Datenbank liefert die neuesten zuerst, angezeigt wird chronologisch
-      .then((rows) => setNachrichten([...rows].reverse()))
+      .then(async (rows) => {
+        const chronologisch = [...rows].reverse()
+        setNachrichten(chronologisch)
+
+        const pfade = chronologisch.map((n) => n.image_path).filter((p): p is string => !!p)
+        if (pfade.length > 0) {
+          setAdressen(await bildAdressen(pfade).catch(() => ({})))
+        }
+      })
       .catch((err) => setError(toGermanError(err)))
   }, [])
 
@@ -46,16 +64,67 @@ export function Chat({ onZurueck, istAdmin }: { onZurueck: () => void; istAdmin:
     endeRef.current?.scrollIntoView({ block: 'end' })
   }, [nachrichten?.length])
 
+  // Vorschaubild wieder freigeben
+  useEffect(() => {
+    return () => {
+      if (auswahl) URL.revokeObjectURL(auswahl.vorschau)
+    }
+  }, [auswahl])
+
+  async function handleDatei(e: React.ChangeEvent<HTMLInputElement>) {
+    const datei = e.target.files?.[0]
+    e.target.value = '' // damit dieselbe Datei erneut gewählt werden kann
+    if (!datei) return
+
+    setError(null)
+    try {
+      const { datei: klein, breite, hoehe } = await verkleinereBild(datei)
+      setAuswahl({ datei: klein, vorschau: URL.createObjectURL(klein), breite, hoehe })
+    } catch (err) {
+      setError(toGermanError(err))
+    }
+  }
+
+  function verwerfeAuswahl() {
+    if (auswahl) URL.revokeObjectURL(auswahl.vorschau)
+    setAuswahl(null)
+  }
+
   async function handleSenden(e: React.FormEvent) {
     e.preventDefault()
     const inhalt = text.trim()
-    if (!inhalt) return
+    if (!inhalt && !auswahl) return
+
     setError(null)
     setBusy(true)
     try {
-      await sendMessage(inhalt)
+      let pfad: string | null = null
+      if (auswahl) {
+        pfad = await ladeBildHoch(auswahl.datei)
+      }
+
+      await sendMessage({
+        body: inhalt,
+        imagePath: pfad,
+        imageSize: auswahl?.datei.size ?? null,
+        imageWidth: auswahl?.breite ?? null,
+        imageHeight: auswahl?.hoehe ?? null,
+      })
+
       setText('')
+      verwerfeAuswahl()
       laden()
+
+      // Nach jedem Bild prüfen, ob die Speichergrenze überschritten ist
+      if (pfad) {
+        raeumeBildspeicherAuf()
+          .then((weg) => {
+            if (weg > 0) laden()
+          })
+          .catch(() => {
+            // Beim nächsten Hochladen wird es erneut versucht
+          })
+      }
     } catch (err) {
       setError(toGermanError(err))
     } finally {
@@ -95,9 +164,7 @@ export function Chat({ onZurueck, istAdmin }: { onZurueck: () => void; istAdmin:
           {!nachrichten && <p className="muted">Lade Nachrichten …</p>}
 
           {nachrichten?.length === 0 && (
-            <p className="muted chat__leer">
-              Noch keine Nachrichten. Schreib die erste!
-            </p>
+            <p className="muted chat__leer">Noch keine Nachrichten. Schreib die erste!</p>
           )}
 
           {nachrichten?.map((n) => {
@@ -105,20 +172,57 @@ export function Chat({ onZurueck, istAdmin }: { onZurueck: () => void; istAdmin:
             const tag = tagesTitel(datum)
             const neuerTag = tag !== letzterTag
             letzterTag = tag
+            const adresse = n.image_path ? adressen[n.image_path] : undefined
 
             return (
               <div key={n.id}>
                 {neuerTag && <div className="chat__tag">{tag}</div>}
-                <div className={n.ist_eigene ? 'blase blase--eigen' : 'blase'}>
+                <div
+                  className={[
+                    'blase',
+                    n.ist_eigene ? 'blase--eigen' : '',
+                    n.image_path ? 'blase--bild' : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
+                >
                   {!n.ist_eigene && <div className="blase__autor">{n.author_name}</div>}
-                  <div className="blase__text">{n.body}</div>
+
+                  {n.image_removed && (
+                    <div className="blase__entfernt">
+                      Bild wurde entfernt, um Speicherplatz freizugeben
+                    </div>
+                  )}
+
+                  {n.image_path && (
+                    <button
+                      type="button"
+                      className="blase__bildknopf"
+                      onClick={() => adresse && setGrossesBild(adresse)}
+                      disabled={!adresse}
+                      style={{
+                        aspectRatio:
+                          n.image_width && n.image_height
+                            ? `${n.image_width} / ${n.image_height}`
+                            : undefined,
+                      }}
+                    >
+                      {adresse ? (
+                        <img src={adresse} alt="Bild in der Nachricht" loading="lazy" />
+                      ) : (
+                        <span className="blase__bildladen">Bild wird geladen …</span>
+                      )}
+                    </button>
+                  )}
+
+                  {n.body && <div className="blase__text">{n.body}</div>}
+
                   <div className="blase__fuss">
                     <span>{uhrzeit(datum)}</span>
                     {(n.ist_eigene || istAdmin) && (
                       <button
                         className="blase__loeschen"
                         onClick={() => handleLoeschen(n)}
-                        aria-label="Nachricht löschen"
                         title="Nachricht löschen"
                       >
                         Löschen
@@ -132,7 +236,39 @@ export function Chat({ onZurueck, istAdmin }: { onZurueck: () => void; istAdmin:
           <div ref={endeRef} />
         </div>
 
+        {auswahl && (
+          <div className="chat__vorschau">
+            <img src={auswahl.vorschau} alt="Ausgewähltes Bild" />
+            <div className="chat__vorschau-text">
+              <strong>Bild bereit zum Senden</strong>
+              <span className="muted">
+                {auswahl.breite} × {auswahl.hoehe} Pixel, {formatiereGroesse(auswahl.datei.size)}
+              </span>
+            </div>
+            <button type="button" className="btn btn--ghost" onClick={verwerfeAuswahl}>
+              Entfernen
+            </button>
+          </div>
+        )}
+
         <form className="chat__eingabe" onSubmit={handleSenden}>
+          <input
+            ref={dateiRef}
+            type="file"
+            accept="image/*"
+            hidden
+            onChange={handleDatei}
+          />
+          <button
+            type="button"
+            className="btn btn--ghost chat__bildknopf"
+            onClick={() => dateiRef.current?.click()}
+            title="Bild auswählen"
+            aria-label="Bild auswählen"
+            disabled={busy}
+          >
+            📷
+          </button>
           <textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
@@ -147,11 +283,20 @@ export function Chat({ onZurueck, istAdmin }: { onZurueck: () => void; istAdmin:
               }
             }}
           />
-          <button className="btn" type="submit" disabled={busy || !text.trim()}>
+          <button className="btn" type="submit" disabled={busy || (!text.trim() && !auswahl)}>
             {busy ? '…' : 'Senden'}
           </button>
         </form>
       </div>
+
+      {grossesBild && (
+        <div className="lightbox" onClick={() => setGrossesBild(null)} role="dialog" aria-modal="true">
+          <img src={grossesBild} alt="Bild in voller Größe" />
+          <button className="lightbox__zu" aria-label="Schließen">
+            ✕
+          </button>
+        </div>
+      )}
     </>
   )
 }
