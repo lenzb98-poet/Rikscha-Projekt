@@ -728,3 +728,41 @@ body {
 .abschnitt > h3 { margin: 0 0 8px; font-size: 16px; color: var(--blau-dunkel); }
 .abschnitt .chat { margin-top: 0; }
 .abschnitt .chat__verlauf { height: min(45vh, 340px); }
+
+/* --- App einrichten ----------------------------------------------------- */
+.einrichten { margin-top: 24px; text-align: center; }
+.einrichten .btn { font-size: 15px; }
+
+.einrichten__kopf { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 18px; }
+.einrichten__logo { width: 54px; height: 54px; flex-shrink: 0; }
+.einrichten__kopf h3 { margin: 0 0 4px; }
+.einrichten__unter { margin: 0; font-size: 14px; line-height: 1.5; }
+
+.einrichten__block h4 {
+  margin: 0 0 8px;
+  font-size: 15px;
+  color: var(--blau-dunkel);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.einrichten__marke {
+  background: var(--z-besetzt-bg);
+  color: var(--z-besetzt);
+  border-radius: 999px;
+  padding: 2px 9px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.einrichten__schritte {
+  margin: 0;
+  padding-left: 22px;
+  font-size: 15px;
+  line-height: 1.6;
+}
+.einrichten__schritte li { margin-bottom: 6px; }
+
+.einrichten__trenner { border: 0; border-top: 1px solid var(--border); margin: 18px 0; }
+.einrichten__hinweis { margin: 16px 0 18px; }

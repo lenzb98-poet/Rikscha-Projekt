@@ -3,6 +3,7 @@ import type { AppUser } from '../lib/useAuth'
 import { useFahrten } from '../lib/fahrten'
 import { Logo, RadelnLogo } from '../components/Marke'
 import { MeineFahrten } from '../components/MeineFahrten'
+import { AppEinrichten } from '../components/AppEinrichten'
 import { TeamVerwaltung } from './TeamVerwaltung'
 import { Chat } from './Chat'
 import { Fahrten } from './Fahrten'
@@ -117,6 +118,8 @@ export function Dashboard({ profile, onSignOut }: Props) {
                 </button>
               </section>
             )}
+
+            <AppEinrichten />
           </>
         )
     }
