@@ -1,11 +1,13 @@
 import { useState } from 'react'
-import { rideAddNote, rideSignoff, formatiereTermin, type Fahrt } from '../lib/fahrten'
+import {
+  rideCancel,
+  rideSignoff,
+  formatiereTermin,
+  GRUND_REGEN,
+  type Fahrt,
+} from '../lib/fahrten'
 import { toGermanError } from '../lib/errors'
 
-/**
- * Meldung ganz oben auf der Startseite: zu welchen Fahrten die angemeldete
- * Person eingetragen ist. Dort lässt sich auch etwas mitteilen oder absagen.
- */
 type Props = {
   /** Alle Fahrten; gefiltert wird hier. null heißt: noch nicht geladen. */
   alle: Fahrt[] | null
@@ -13,9 +15,19 @@ type Props = {
   onAktualisiert: () => void
 }
 
+/** Schritte beim Absagen – die ganze Fahrt braucht bewusst zwei Bestätigungen. */
+type Schritt = 'wahl' | 'grund' | 'sicher'
+
+/**
+ * Meldung ganz oben auf der Startseite: zu welchen Fahrten die angemeldete
+ * Person eingetragen ist. Von dort lässt sich absagen – entweder nur für sich
+ * selbst oder, mit doppelter Rückfrage, die ganze Fahrt.
+ */
 export function MeineFahrten({ alle, onAktualisiert }: Props) {
-  const [offenesFeld, setOffenesFeld] = useState<string | null>(null)
-  const [text, setText] = useState('')
+  const [offen, setOffen] = useState<string | null>(null)
+  const [schritt, setSchritt] = useState<Schritt>('wahl')
+  const [andererGrund, setAndererGrund] = useState(false)
+  const [grundText, setGrundText] = useState('')
   const [hinweis, setHinweis] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -24,23 +36,40 @@ export function MeineFahrten({ alle, onAktualisiert }: Props) {
     (f) => f.bin_dabei && f.zustand !== 'abgeschlossen' && f.zustand !== 'abgesagt',
   )
 
-  if (fahrten.length === 0) return null
+  // War es die letzte Fahrt, bleibt die Meldung noch für die Bestätigung
+  // stehen. Sonst verschwände sie beim Absagen kommentarlos.
+  if (fahrten.length === 0 && !hinweis) return null
 
-  function feldOeffnen(id: string) {
-    setOffenesFeld((offen) => (offen === id ? null : id))
-    setText('')
+  function schliessen() {
+    setOffen(null)
+    setSchritt('wahl')
+    setAndererGrund(false)
+    setGrundText('')
     setError(null)
   }
 
-  async function mitteilen(f: Fahrt) {
-    if (!text.trim()) return
+  function oeffnen(id: string) {
+    if (offen === id) return schliessen()
+    setOffen(id)
+    setSchritt('wahl')
+    setAndererGrund(false)
+    setGrundText('')
+    setError(null)
+    setHinweis(null)
+  }
+
+  const grund = andererGrund ? grundText.trim() : GRUND_REGEN
+
+  async function nurIch(f: Fahrt) {
     setError(null)
     setBusy(true)
     try {
-      await rideAddNote(f.id, text)
-      setText('')
-      setOffenesFeld(null)
-      setHinweis('Deine Mitteilung ist bei der Koordination angekommen.')
+      await rideSignoff(f.id)
+      schliessen()
+      setHinweis(
+        `Du bist für die Fahrt am ${formatiereTermin(f.starts_at)} abgemeldet. ` +
+          'Die Fahrt selbst findet weiter statt.',
+      )
       onAktualisiert()
     } catch (err) {
       setError(toGermanError(err))
@@ -49,17 +78,17 @@ export function MeineFahrten({ alle, onAktualisiert }: Props) {
     }
   }
 
-  async function absagen(f: Fahrt) {
+  async function ganzeFahrt(f: Fahrt) {
     setError(null)
     setBusy(true)
     try {
-      await rideSignoff(f.id, text)
-      setText('')
-      setOffenesFeld(null)
-      setHinweis(`Du bist für die Fahrt am ${formatiereTermin(f.starts_at)} abgemeldet.`)
+      await rideCancel(f.id, grund)
+      schliessen()
+      setHinweis(`Die Fahrt am ${formatiereTermin(f.starts_at)} wurde für alle abgesagt.`)
       onAktualisiert()
     } catch (err) {
       setError(toGermanError(err))
+      setSchritt('grund')
     } finally {
       setBusy(false)
     }
@@ -68,9 +97,11 @@ export function MeineFahrten({ alle, onAktualisiert }: Props) {
   return (
     <section className="meine">
       <h3>
-        {fahrten.length === 1
-          ? 'Du bist zu einer Fahrt angemeldet'
-          : `Du bist zu ${fahrten.length} Fahrten angemeldet`}
+        {fahrten.length === 0
+          ? 'Absage übernommen'
+          : fahrten.length === 1
+            ? 'Du bist zu einer Fahrt angemeldet'
+            : `Du bist zu ${fahrten.length} Fahrten angemeldet`}
       </h3>
 
       {hinweis && <p className="alert alert--ok">{hinweis}</p>}
@@ -92,37 +123,120 @@ export function MeineFahrten({ alle, onAktualisiert }: Props) {
             </span>
           </div>
 
-          {offenesFeld === f.id ? (
-            <div className="meine__feld">
-              <textarea
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                rows={2}
-                maxLength={1000}
-                autoFocus
-                placeholder="Was möchtest du der Koordination mitteilen? Zum Beispiel, dass du doch nicht kannst."
-              />
+          {offen !== f.id && (
+            <button className="btn btn--ghost" onClick={() => oeffnen(f.id)}>
+              Absagen
+            </button>
+          )}
+
+          {offen === f.id && schritt === 'wahl' && (
+            <div className="absage">
+              <p className="absage__frage">Was möchtest du absagen?</p>
+
+              <button className="absage__option" onClick={() => nurIch(f)} disabled={busy}>
+                <strong>Für mich absagen</strong>
+                <span>
+                  Du wirst als Pilot:in ausgetragen. Die Fahrt findet weiter statt und wird
+                  wieder als offen angezeigt.
+                </span>
+              </button>
+
+              <button
+                className="absage__option absage__option--warnung"
+                onClick={() => setSchritt('grund')}
+                disabled={busy}
+              >
+                <strong>Die Fahrt absagen</strong>
+                <span>
+                  Die gesamte Fahrt entfällt – auch für alle anderen Eingetragenen.
+                </span>
+              </button>
+
               {error && <p className="alert alert--error">{error}</p>}
+
+              <button className="btn btn--link" onClick={schliessen} disabled={busy}>
+                Abbrechen
+              </button>
+            </div>
+          )}
+
+          {offen === f.id && schritt === 'grund' && (
+            <div className="absage">
+              <p className="absage__frage">Warum entfällt die Fahrt?</p>
+
+              <label className="absage__grund">
+                <input
+                  type="radio"
+                  name={`grund-${f.id}`}
+                  checked={!andererGrund}
+                  onChange={() => setAndererGrund(false)}
+                />
+                <span>{GRUND_REGEN}</span>
+              </label>
+
+              <label className="absage__grund">
+                <input
+                  type="radio"
+                  name={`grund-${f.id}`}
+                  checked={andererGrund}
+                  onChange={() => setAndererGrund(true)}
+                />
+                <span>Anderer Grund</span>
+              </label>
+
+              {andererGrund && (
+                <textarea
+                  value={grundText}
+                  onChange={(e) => setGrundText(e.target.value)}
+                  rows={2}
+                  maxLength={500}
+                  autoFocus
+                  placeholder="Zum Beispiel: Die Rikscha ist defekt."
+                />
+              )}
+
+              {error && <p className="alert alert--error">{error}</p>}
+
               <div className="meine__knoepfe">
-                <button className="btn btn--ghost" onClick={() => feldOeffnen(f.id)} disabled={busy}>
+                <button className="btn btn--ghost" onClick={schliessen} disabled={busy}>
                   Abbrechen
                 </button>
-                <button className="btn" onClick={() => mitteilen(f)} disabled={busy || !text.trim()}>
-                  Mitteilen
-                </button>
-                <button className="btn btn--danger" onClick={() => absagen(f)} disabled={busy}>
-                  Absagen
+                <button
+                  className="btn btn--danger"
+                  onClick={() => setSchritt('sicher')}
+                  disabled={busy || !grund}
+                >
+                  Weiter
                 </button>
               </div>
-              <span className="hint">
-                „Absagen“ trägt dich aus der Fahrt aus. Steht etwas im Feld, wird es als
-                Mitteilung mitgeschickt.
-              </span>
             </div>
-          ) : (
-            <button className="btn btn--ghost" onClick={() => feldOeffnen(f.id)}>
-              Mitteilen oder absagen
-            </button>
+          )}
+
+          {offen === f.id && schritt === 'sicher' && (
+            <div className="absage">
+              <p className="alert alert--warn absage__warnung">
+                <strong>Die Fahrt wird für alle abgesagt.</strong> Alle Eingetragenen verlieren
+                diesen Termin. Rückgängig machen kann das nur die Koordination.
+              </p>
+              <p className="absage__grundtext">
+                Grund: <strong>{grund}</strong>
+              </p>
+
+              {error && <p className="alert alert--error">{error}</p>}
+
+              <div className="meine__knoepfe">
+                <button
+                  className="btn btn--ghost"
+                  onClick={() => setSchritt('grund')}
+                  disabled={busy}
+                >
+                  Zurück
+                </button>
+                <button className="btn btn--danger" onClick={() => ganzeFahrt(f)} disabled={busy}>
+                  {busy ? 'Sage ab …' : 'Fahrt endgültig absagen'}
+                </button>
+              </div>
+            </div>
           )}
         </div>
       ))}

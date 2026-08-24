@@ -615,8 +615,47 @@ body {
   margin-bottom: 10px;
 }
 .meine__mit { font-size: 13px; margin-top: 2px; }
-.meine__feld { display: flex; flex-direction: column; gap: 8px; }
-.meine__feld textarea {
+.meine__knoepfe { display: flex; gap: 8px; flex-wrap: wrap; }
+.meine__knoepfe .btn { flex: 1 1 130px; font-size: 15px; padding: 10px 12px; }
+
+/* --- Absage-Auswahl ----------------------------------------------------- */
+.absage { display: flex; flex-direction: column; gap: 10px; }
+.absage__frage { margin: 0; font-size: 15px; font-weight: 600; }
+
+.absage__option {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  text-align: left;
+  width: 100%;
+  padding: 13px 15px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+  color: var(--text);
+  font: inherit;
+}
+.absage__option:hover:not(:disabled) { border-color: var(--blau); background: #f5f8fc; }
+.absage__option strong { font-size: 15px; color: var(--blau-dunkel); }
+.absage__option span { font-size: 13px; line-height: 1.45; color: var(--muted); }
+.absage__option--warnung strong { color: var(--error); }
+.absage__option--warnung:hover:not(:disabled) { border-color: var(--error); background: #fdf6f5; }
+
+.absage__grund {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 15px;
+}
+.absage__grund input { width: 18px; height: 18px; accent-color: var(--blau); flex-shrink: 0; }
+
+.absage textarea {
   width: 100%;
   resize: vertical;
   padding: 10px 12px;
@@ -626,9 +665,10 @@ body {
   border-radius: 10px;
   background: #fff;
 }
-.meine__feld textarea:focus { outline: 2px solid var(--blau); outline-offset: 1px; }
-.meine__knoepfe { display: flex; gap: 8px; flex-wrap: wrap; }
-.meine__knoepfe .btn { flex: 1 1 110px; font-size: 15px; padding: 10px 12px; }
+.absage textarea:focus { outline: 2px solid var(--blau); outline-offset: 1px; }
+
+.absage__warnung { margin: 0; }
+.absage__grundtext { margin: 0; font-size: 14px; }
 
 /* --- Filter und Pilotenauswahl ------------------------------------------ */
 .filterleiste { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }

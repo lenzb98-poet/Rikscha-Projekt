@@ -188,3 +188,19 @@ export function useFahrten() {
 
   return { fahrten, laden }
 }
+
+/** Standardgrund, den die Absage-Auswahl vorschlägt. */
+export const GRUND_REGEN = 'Wegen Regen abgesagt'
+
+/**
+ * Sagt die ganze Fahrt ab – für alle Eingetragenen. Erlaubt für eingetragene
+ * Pilot:innen und die Koordination; der Grund ist Pflicht und wird als
+ * Mitteilung an der Fahrt festgehalten.
+ */
+export async function rideCancel(rideId: string, grund: string): Promise<void> {
+  const { error } = await supabase.rpc('ride_cancel', {
+    p_ride_id: rideId,
+    p_grund: grund.trim(),
+  })
+  if (error) throw error
+}
