@@ -11,10 +11,76 @@ if (!isSupabaseConfigured) {
   )
 }
 
+/* --- Angemeldet bleiben --------------------------------------------------
+ *
+ * Die Anmeldung liegt entweder dauerhaft im Browser (localStorage) oder nur
+ * für die laufende Sitzung (sessionStorage). Beim Schließen des Browsers ist
+ * sie im zweiten Fall weg – sinnvoll auf einem geteilten Gerät.
+ *
+ * Welcher Speicher gilt, entscheidet sich erst beim Anmelden, deshalb liest
+ * der Adapter die Einstellung bei jedem Zugriff neu.
+ */
+const MERKEN = 'rikscha.angemeldet-bleiben'
+
+export function angemeldetBleiben(): boolean {
+  try {
+    // Vorgabe: angemeldet bleiben
+    return localStorage.getItem(MERKEN) !== '0'
+  } catch {
+    return true
+  }
+}
+
+export function setzeAngemeldetBleiben(wert: boolean): void {
+  try {
+    localStorage.setItem(MERKEN, wert ? '1' : '0')
+  } catch {
+    // Privater Modus ohne Speicher: dann gilt die Vorgabe
+  }
+}
+
+const authSpeicher = {
+  getItem(key: string): string | null {
+    try {
+      // Beide durchsuchen, damit ein Wechsel der Einstellung nicht abmeldet
+      return sessionStorage.getItem(key) ?? localStorage.getItem(key)
+    } catch {
+      return null
+    }
+  },
+  setItem(key: string, value: string): void {
+    try {
+      if (angemeldetBleiben()) {
+        localStorage.setItem(key, value)
+        sessionStorage.removeItem(key)
+      } else {
+        sessionStorage.setItem(key, value)
+        localStorage.removeItem(key)
+      }
+    } catch {
+      // Kein Speicher verfügbar: die Anmeldung gilt nur für diese Seite
+    }
+  },
+  removeItem(key: string): void {
+    try {
+      localStorage.removeItem(key)
+      sessionStorage.removeItem(key)
+    } catch {
+      // nichts zu tun
+    }
+  },
+}
+
 export const supabase = createClient(
   url ?? 'http://localhost',
   anonKey ?? 'public-anon-key',
-  { auth: { persistSession: true, autoRefreshToken: true } },
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      storage: authSpeicher,
+    },
+  },
 )
 
 export type LoginCheck = {

@@ -931,3 +931,7 @@ body {
 
 /* Erklärung über dem Auswahlfeld statt darunter */
 .field .hint:first-of-type + .field__wrap { margin-top: 2px; }
+
+/* Schlankere Auswahl für die Anmeldekarte */
+.check--schlank { padding: 11px 13px; font-size: 14px; }
+.check--schlank strong { font-size: 14px; }

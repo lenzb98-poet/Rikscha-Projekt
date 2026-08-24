@@ -1,5 +1,12 @@
 import { useState } from 'react'
-import { checkLoginName, linkAuthAccount, supabase, isSupabaseConfigured } from '../lib/supabase'
+import {
+  angemeldetBleiben,
+  checkLoginName,
+  isSupabaseConfigured,
+  linkAuthAccount,
+  setzeAngemeldetBleiben,
+  supabase,
+} from '../lib/supabase'
 import { toGermanError } from '../lib/errors'
 import { PasswordField, validatePassword } from '../components/PasswordField'
 import { Logo, Moewe, RadelnLogo } from '../components/Marke'
@@ -16,6 +23,8 @@ export function Login() {
   const [repeat, setRepeat] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  // Die letzte Wahl ist beim nächsten Mal vorausgewählt
+  const [bleiben, setBleiben] = useState(angemeldetBleiben)
 
   function reset() {
     setStep('name')
@@ -58,6 +67,9 @@ export function Login() {
     setError(null)
     setBusy(true)
     try {
+      // Muss vor dem Anmelden feststehen: danach wird die Sitzung gespeichert
+      setzeAngemeldetBleiben(bleiben)
+
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: loginEmail,
         password,
@@ -83,6 +95,8 @@ export function Login() {
     }
     setBusy(true)
     try {
+      setzeAngemeldetBleiben(bleiben)
+
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: loginEmail,
         password,
@@ -164,6 +178,21 @@ export function Login() {
               autoComplete="current-password"
               autoFocus
             />
+            <label className="check check--schlank" htmlFor="bleiben-anmelden">
+              <input
+                id="bleiben-anmelden"
+                type="checkbox"
+                checked={bleiben}
+                onChange={(e) => setBleiben(e.target.checked)}
+              />
+              <span>
+                <strong>Angemeldet bleiben</strong>
+                <span className="check__hint">
+                  Sonst endet die Anmeldung, sobald du den Browser schließt.
+                </span>
+              </span>
+            </label>
+
             <button className="btn" type="submit" disabled={busy}>
               {busy ? 'Melde an …' : 'Anmelden'}
             </button>
@@ -195,6 +224,21 @@ export function Login() {
               autoComplete="new-password"
             />
             <p className="hint">Mindestens 8 Zeichen, mit mindestens einem Buchstaben und einer Zahl.</p>
+            <label className="check check--schlank" htmlFor="bleiben-neu">
+              <input
+                id="bleiben-neu"
+                type="checkbox"
+                checked={bleiben}
+                onChange={(e) => setBleiben(e.target.checked)}
+              />
+              <span>
+                <strong>Angemeldet bleiben</strong>
+                <span className="check__hint">
+                  Sonst endet die Anmeldung, sobald du den Browser schließt.
+                </span>
+              </span>
+            </label>
+
             <button className="btn" type="submit" disabled={busy}>
               {busy ? 'Speichere …' : 'Passwort festlegen und anmelden'}
             </button>
