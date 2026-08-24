@@ -489,3 +489,227 @@ body {
   font-size: 18px;
   cursor: pointer;
 }
+
+/* --- Fahrten ------------------------------------------------------------ */
+:root {
+  --z-offen: #245892;
+  --z-besetzt: #1e7a4d;
+  --z-abgeschlossen: #b8860b;
+  --z-abgesagt: #b3261e;
+  --z-offen-bg: #e8eff7;
+  --z-besetzt-bg: #e4f3ea;
+  --z-abgeschlossen-bg: #fbf3dd;
+  --z-abgesagt-bg: #fdecea;
+}
+
+.knopfreihe { display: flex; flex-wrap: wrap; gap: 10px; }
+.knopfreihe .btn { flex: 1 1 180px; }
+
+.fahrten { display: flex; flex-direction: column; gap: 14px; margin-top: 16px; }
+
+.fahrt {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 5px solid var(--z-offen);
+  border-radius: 12px;
+  padding: 16px 18px;
+}
+.fahrt--besetzt { border-left-color: var(--z-besetzt); }
+.fahrt--abgeschlossen { border-left-color: var(--z-abgeschlossen); }
+.fahrt--abgesagt { border-left-color: var(--z-abgesagt); }
+
+.fahrt__kopf {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.fahrt__termin { font-weight: 700; font-size: 15px; color: var(--blau-dunkel); }
+.fahrt__ort { font-size: 15px; margin-top: 2px; overflow-wrap: anywhere; }
+.fahrt__info {
+  margin: 10px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--muted);
+  white-space: pre-wrap;
+}
+
+.fahrt__piloten {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 14px;
+}
+.fahrt__namen { overflow-wrap: anywhere; }
+
+.fahrt__notizen {
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: #f5f8fc;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.fahrt__notizen p { margin: 4px 0 0; }
+.fahrt__notizname { font-weight: 600; }
+
+.fahrt__aktionen {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.fahrt__dabei { font-size: 14px; font-weight: 600; color: var(--z-besetzt); }
+
+.chip {
+  border-radius: 999px;
+  padding: 3px 11px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  background: var(--z-offen-bg);
+  color: var(--z-offen);
+}
+.chip--besetzt { background: var(--z-besetzt-bg); color: var(--z-besetzt); }
+.chip--abgeschlossen { background: var(--z-abgeschlossen-bg); color: var(--z-abgeschlossen); }
+.chip--abgesagt { background: var(--z-abgesagt-bg); color: var(--z-abgesagt); }
+
+/* --- Meldung auf der Startseite ----------------------------------------- */
+.meine {
+  margin-top: 20px;
+  background: var(--z-besetzt-bg);
+  border: 1px solid #bfe0cd;
+  border-radius: 14px;
+  padding: 18px;
+}
+.meine h3 { margin: 0 0 12px; font-size: 16px; color: var(--z-besetzt); }
+.meine__fahrt { padding-top: 12px; border-top: 1px solid #cfe6d9; }
+.meine__fahrt:first-of-type { padding-top: 0; border-top: 0; }
+.meine__kopf {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.meine__mit { font-size: 13px; margin-top: 2px; }
+.meine__feld { display: flex; flex-direction: column; gap: 8px; }
+.meine__feld textarea {
+  width: 100%;
+  resize: vertical;
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 15px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fff;
+}
+.meine__feld textarea:focus { outline: 2px solid var(--blau); outline-offset: 1px; }
+.meine__knoepfe { display: flex; gap: 8px; flex-wrap: wrap; }
+.meine__knoepfe .btn { flex: 1 1 110px; font-size: 15px; padding: 10px 12px; }
+
+/* --- Filter und Pilotenauswahl ------------------------------------------ */
+.filterleiste { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.filter {
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--text);
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.filter--an { background: var(--blau); color: #fff; border-color: var(--blau); }
+.filter__zahl { opacity: 0.7; margin-left: 6px; }
+
+.pilotwahl { display: flex; flex-wrap: wrap; gap: 8px; }
+.pilotchip {
+  border: 1px solid var(--border);
+  background: #fff;
+  border-radius: 999px;
+  padding: 7px 13px;
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--text);
+}
+.pilotchip--an { background: var(--z-besetzt-bg); border-color: var(--z-besetzt); color: var(--z-besetzt); font-weight: 600; }
+
+.field textarea {
+  flex: 1;
+  resize: vertical;
+  padding: 12px 14px;
+  font: inherit;
+  font-size: 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fff;
+  color: inherit;
+}
+.field textarea:focus { outline: 2px solid var(--blau); outline-offset: 1px; border-color: var(--blau); }
+
+/* --- Kalender ----------------------------------------------------------- */
+.kal__legende { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 16px; font-size: 14px; }
+.kal__legendeneintrag { display: flex; align-items: center; gap: 6px; }
+.punkt { width: 12px; height: 12px; border-radius: 3px; background: var(--z-offen); display: inline-block; }
+.punkt--besetzt { background: var(--z-besetzt); }
+.punkt--abgeschlossen { background: var(--z-abgeschlossen); }
+.punkt--abgesagt { background: var(--z-abgesagt); }
+
+.kal__kopf {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.kal__kopf strong { font-size: 16px; color: var(--blau-dunkel); }
+
+.kal__raster { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.kal__wochentag {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  padding-bottom: 4px;
+}
+.kal__tag {
+  min-height: 76px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  overflow: hidden;
+}
+.kal__tag--fremd { opacity: 0.45; }
+.kal__tag--heute { border-color: var(--blau); border-width: 2px; }
+.kal__zahl { font-size: 12px; color: var(--muted); font-weight: 600; }
+
+.kal__eintrag {
+  border: 0;
+  border-radius: 5px;
+  padding: 3px 5px;
+  font-size: 11px;
+  line-height: 1.3;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: var(--z-offen);
+  color: #fff;
+}
+.kal__eintrag--besetzt { background: var(--z-besetzt); }
+.kal__eintrag--abgeschlossen { background: var(--z-abgeschlossen); }
+.kal__eintrag--abgesagt { background: var(--z-abgesagt); }
+
+@media (max-width: 560px) {
+  .kal__tag { min-height: 58px; padding: 3px; }
+  .kal__eintrag { font-size: 10px; padding: 2px 4px; }
+  .knopfreihe .btn { flex: 1 1 100%; }
+}
