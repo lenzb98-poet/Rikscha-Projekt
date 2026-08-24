@@ -133,28 +133,52 @@
           }
         }
 
+        // Gehoert der Fehler ueberhaupt zu dieser App?
+        //
+        // Browser melden Fehler aus fremdem Code - Erweiterungen, eingespritzte
+        // Skripte, in Safari auch das Teilen-Menue - als blosses
+        // "Script error." ohne Datei und Zeile. Solche Meldungen sagen nichts
+        // ueber den Zustand der App aus und duerfen sie nicht ersetzen.
+        function istEigenerFehler(event) {
+          if (!event.filename) return false
+          return event.filename.indexOf(location.origin) === 0
+        }
+
         // Datei konnte nicht geladen werden (Netzwerk, 404, falscher Pfad).
         // capture:true, weil solche Fehler nicht nach oben blubbern.
         window.addEventListener('error', function (event) {
           var target = event.target
           if (target && (target.tagName === 'SCRIPT' || target.tagName === 'LINK')) {
+            // Nur eigene Programmdateien, nicht was eine Erweiterung nachlaedt
+            var quelle = target.src || target.href || ''
+            if (quelle.indexOf(location.origin) !== 0) return
+
             window.__rikschaShowError(
               'E-SCRIPT-LOAD',
-              'Nicht erreichbar: ' + (target.src || target.href),
+              'Nicht erreichbar: ' + quelle,
               'Pruefe, ob die Seite vollstaendig veroeffentlicht wurde.'
             )
             return
           }
-          if (event.message) {
+
+          // Laeuft die App bereits, ersetzt ein Laufzeitfehler sie nicht mehr.
+          // Echte Anzeigefehler faengt weiterhin die ErrorBoundary in React ab.
+          if (window.__rikschaAppMounted) return
+
+          if (event.message && istEigenerFehler(event)) {
             window.__rikschaShowError(
               'E-RUNTIME',
               event.message,
-              event.filename ? event.filename + ':' + event.lineno + ':' + event.colno : null
+              event.filename + ':' + event.lineno + ':' + event.colno
             )
           }
         }, true)
 
         window.addEventListener('unhandledrejection', function (event) {
+          // Nach dem Start nicht mehr uebernehmen: eine abgebrochene Anfrage
+          // beim Seitenwechsel ist kein Grund, die Oberflaeche wegzunehmen.
+          if (window.__rikschaAppMounted) return
+
           var reason = event.reason
           window.__rikschaShowError(
             'E-PROMISE',
