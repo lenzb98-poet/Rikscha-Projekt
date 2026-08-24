@@ -28,7 +28,13 @@ const uhrzeit = (d: Date) => d.toLocaleTimeString('de-DE', { hour: '2-digit', mi
 
 type Auswahl = { datei: Blob; vorschau: string; breite: number; hoehe: number }
 
-export function Chat({ onZurueck, istAdmin }: { onZurueck: () => void; istAdmin: boolean }) {
+type Props = {
+  istAdmin: boolean
+  /** Fehlt, wenn der Chat direkt auf der Startseite steht. */
+  onZurueck?: () => void
+}
+
+export function Chat({ onZurueck, istAdmin }: Props) {
   const [nachrichten, setNachrichten] = useState<ChatNachricht[] | null>(null)
   const [adressen, setAdressen] = useState<Record<string, string>>({})
   const [text, setText] = useState('')
@@ -37,7 +43,7 @@ export function Chat({ onZurueck, istAdmin }: { onZurueck: () => void; istAdmin:
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const dateiRef = useRef<HTMLInputElement>(null)
-  const endeRef = useRef<HTMLDivElement>(null)
+  const verlaufRef = useRef<HTMLDivElement>(null)
 
   const laden = useCallback(() => {
     listMessages()
@@ -59,9 +65,12 @@ export function Chat({ onZurueck, istAdmin }: { onZurueck: () => void; istAdmin:
     return watchMessages(laden)
   }, [laden])
 
-  // Beim Öffnen und bei neuen Nachrichten ans Ende springen
+  // Beim Öffnen und bei neuen Nachrichten ans Ende des Verlaufs springen.
+  // Bewusst nur den Verlauf scrollen: steht der Chat auf der Startseite,
+  // würde scrollIntoView die ganze Seite nach unten ziehen.
   useEffect(() => {
-    endeRef.current?.scrollIntoView({ block: 'end' })
+    const el = verlaufRef.current
+    if (el) el.scrollTop = el.scrollHeight
   }, [nachrichten?.length])
 
   // Vorschaubild wieder freigeben
@@ -146,21 +155,25 @@ export function Chat({ onZurueck, istAdmin }: { onZurueck: () => void; istAdmin:
 
   return (
     <>
-      <button className="btn btn--zurueck" onClick={onZurueck}>
-        ← Zurück zur Übersicht
-      </button>
+      {onZurueck && (
+        <>
+          <button className="btn btn--zurueck" onClick={onZurueck}>
+            ← Zurück zur Übersicht
+          </button>
 
-      <div className="seite__kopf">
-        <div>
-          <h2>Chat</h2>
-          <p className="muted">Für alle freigeschalteten Fahrer:innen und die Koordination</p>
-        </div>
-      </div>
+          <div className="seite__kopf">
+            <div>
+              <h2>Chat</h2>
+              <p className="muted">Für alle freigeschalteten Fahrer:innen und die Koordination</p>
+            </div>
+          </div>
+        </>
+      )}
 
       {error && <p className="alert alert--error">{error}</p>}
 
       <div className="chat">
-        <div className="chat__verlauf">
+        <div className="chat__verlauf" ref={verlaufRef}>
           {!nachrichten && <p className="muted">Lade Nachrichten …</p>}
 
           {nachrichten?.length === 0 && (
@@ -233,7 +246,6 @@ export function Chat({ onZurueck, istAdmin }: { onZurueck: () => void; istAdmin:
               </div>
             )
           })}
-          <div ref={endeRef} />
         </div>
 
         {auswahl && (

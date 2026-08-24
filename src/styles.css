@@ -715,3 +715,9 @@ body {
   .kal__eintrag { font-size: 10px; padding: 2px 4px; }
   .knopfblock { flex: 1 1 100%; }
 }
+
+/* Abschnitt ohne eigenen Rahmen – der Inhalt bringt seinen eigenen mit */
+.abschnitt { margin-top: 24px; }
+.abschnitt > h3 { margin: 0 0 8px; font-size: 16px; color: var(--blau-dunkel); }
+.abschnitt .chat { margin-top: 0; }
+.abschnitt .chat__verlauf { height: min(45vh, 340px); }

@@ -20,14 +20,7 @@ const ROLLEN: Record<AppUser['role'], string> = {
   fahrer: 'Fahrer:in',
 }
 
-type Ansicht =
-  | 'start'
-  | 'offene'
-  | 'kommende'
-  | 'kalender'
-  | 'fahrten-verwalten'
-  | 'team'
-  | 'chat'
+type Ansicht = 'start' | 'offene' | 'kommende' | 'kalender' | 'fahrten-verwalten' | 'team'
 
 /** "3 offene Fahrten", "1 kommende Fahrt", "Zurzeit keine" */
 function anzahlText(anzahl: number | null, einzahl: string, mehrzahl: string): string {
@@ -57,8 +50,6 @@ export function Dashboard({ profile, onSignOut }: Props) {
         return istAdmin ? <FahrtenVerwaltung onZurueck={zurueck} /> : null
       case 'team':
         return istAdmin ? <TeamVerwaltung onZurueck={zurueck} /> : null
-      case 'chat':
-        return <Chat onZurueck={zurueck} istAdmin={istAdmin} />
       default:
         return (
           <>
@@ -107,14 +98,12 @@ export function Dashboard({ profile, onSignOut }: Props) {
               </div>
             </section>
 
-            <section className="card">
+            <section className="abschnitt">
               <h3>Chat</h3>
               <p className="muted card__text">
                 Nachrichten an alle Fahrer:innen und die Koordination.
               </p>
-              <button className="btn" onClick={() => setAnsicht('chat')}>
-                Chat öffnen
-              </button>
+              <Chat istAdmin={istAdmin} />
             </section>
 
             {istAdmin && (
