@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { checkLoginName, linkAuthAccount, supabase, isSupabaseConfigured } from '../lib/supabase'
 import { toGermanError } from '../lib/errors'
 import { PasswordField, validatePassword } from '../components/PasswordField'
-import { Logo, Moewe } from '../components/Marke'
+import { Logo, Moewe, RadelnLogo } from '../components/Marke'
 
 type Step = 'name' | 'password' | 'create-password' | 'confirm-mail'
 
@@ -110,7 +110,7 @@ export function Login() {
 
         <div className="auth__card">
           <header className="auth__header">
-            <div className="auth__emoji" aria-hidden="true">🚲</div>
+            <RadelnLogo className="auth__radeln" />
             <h1>Rikscha-Fahrten</h1>
             <p className="auth__sub">Anmeldung für Fahrer:innen und Koordination</p>
           </header>

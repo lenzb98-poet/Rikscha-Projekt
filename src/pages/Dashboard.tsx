@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { AppUser } from '../lib/useAuth'
 import { useFahrten } from '../lib/fahrten'
-import { Logo } from '../components/Marke'
+import { Logo, RadelnLogo } from '../components/Marke'
 import { MeineFahrten } from '../components/MeineFahrten'
 import { TeamVerwaltung } from './TeamVerwaltung'
 import { Chat } from './Chat'
@@ -125,7 +125,10 @@ export function Dashboard({ profile, onSignOut }: Props) {
   return (
     <div className="app">
       <header className="topbar">
-        <Logo className="topbar__logo" />
+        <div className="topbar__marken">
+          <Logo className="topbar__logo" />
+          <RadelnLogo className="topbar__radeln" />
+        </div>
         <button className="btn btn--ghost" onClick={onSignOut}>
           Abmelden
         </button>
