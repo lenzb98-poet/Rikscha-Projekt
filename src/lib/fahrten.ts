@@ -220,25 +220,52 @@ export type Bericht = { km: string; minuten: string; personen: string }
  * Koordination.
  */
 export async function rideReport(rideId: string, b: Bericht): Promise<void> {
+  // Leere Felder bleiben leer statt zu 0 zu werden – die Datenbank lässt
+  // sie dann unangetastet, sodass sich Angaben ergänzen lassen.
+  const zahl = (wert: string) => {
+    const t = wert.trim().replace(',', '.')
+    return t === '' ? null : Number(t)
+  }
+
   const { error } = await supabase.rpc('ride_report', {
     p_ride_id: rideId,
-    p_km: Number(b.km.replace(',', '.')),
-    p_minutes: Number(b.minuten),
-    p_passengers: Number(b.personen),
+    p_km: zahl(b.km),
+    p_minutes: zahl(b.minuten),
+    p_passengers: zahl(b.personen),
   })
   if (error) throw error
 }
 
-/** "8,5 km · 1 Std. 15 Min. · 2 Fahrgäste" */
+/** Sind alle drei Angaben vorhanden? Erst dann gilt die Fahrt als abgeschlossen. */
+export function berichtVollstaendig(f: Fahrt): boolean {
+  return f.report_km !== null && f.report_minutes !== null && f.report_passengers !== null
+}
+
+/** "8,5 km · 1 Std. 15 Min. · 2 Fahrgäste" – nur die vorhandenen Angaben. */
 export function formatiereBericht(f: Fahrt): string | null {
-  if (f.report_at === null) return null
+  const teile: string[] = []
 
-  const km = `${String(f.report_km ?? 0).replace('.', ',')} km`
-  const m = f.report_minutes ?? 0
-  const dauer =
-    m >= 60 ? `${Math.floor(m / 60)} Std.${m % 60 ? ` ${m % 60} Min.` : ''}` : `${m} Min.`
-  const p = f.report_passengers ?? 0
-  const personen = p === 1 ? '1 Fahrgast' : `${p} Fahrgäste`
+  if (f.report_km !== null) teile.push(`${String(f.report_km).replace('.', ',')} km`)
 
-  return `${km} · ${dauer} · ${personen}`
+  if (f.report_minutes !== null) {
+    const m = f.report_minutes
+    teile.push(
+      m >= 60 ? `${Math.floor(m / 60)} Std.${m % 60 ? ` ${m % 60} Min.` : ''}` : `${m} Min.`,
+    )
+  }
+
+  if (f.report_passengers !== null) {
+    teile.push(f.report_passengers === 1 ? '1 Fahrgast' : `${f.report_passengers} Fahrgäste`)
+  }
+
+  return teile.length ? teile.join(' · ') : null
+}
+
+/** Welche Angaben fehlen noch? Für den Hinweis im Dialog. */
+export function fehlendeAngaben(f: Fahrt): string[] {
+  const fehlt: string[] = []
+  if (f.report_km === null) fehlt.push('Kilometer')
+  if (f.report_minutes === null) fehlt.push('Dauer')
+  if (f.report_passengers === null) fehlt.push('Fahrgäste')
+  return fehlt
 }

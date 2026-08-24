@@ -1,5 +1,12 @@
 import { useState } from 'react'
-import { rideReport, formatiereTermin, type Bericht, type Fahrt } from '../lib/fahrten'
+import {
+  berichtVollstaendig,
+  fehlendeAngaben,
+  rideReport,
+  formatiereTermin,
+  type Bericht,
+  type Fahrt,
+} from '../lib/fahrten'
 import { toGermanError } from '../lib/errors'
 
 type Props = {
@@ -10,7 +17,13 @@ type Props = {
 
 /** Kilometer, Dauer und Fahrgäste nach einer Fahrt nachtragen. */
 export function BerichtDialog({ fahrt, onClose, onGespeichert }: Props) {
-  const [werte, setWerte] = useState<Bericht>({ km: '', minuten: '', personen: '' })
+  // Bereits eingetragene Angaben vorbelegen, damit sich ergänzen und
+  // korrigieren lässt, ohne sie neu eintippen zu müssen
+  const [werte, setWerte] = useState<Bericht>({
+    km: fahrt.report_km !== null ? String(fahrt.report_km).replace('.', ',') : '',
+    minuten: fahrt.report_minutes !== null ? String(fahrt.report_minutes) : '',
+    personen: fahrt.report_passengers !== null ? String(fahrt.report_passengers) : '',
+  })
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
@@ -18,8 +31,15 @@ export function BerichtDialog({ fahrt, onClose, onGespeichert }: Props) {
     setWerte((w) => ({ ...w, [feld]: wert }))
   }
 
-  const vollstaendig =
-    werte.km.trim() !== '' && werte.minuten.trim() !== '' && werte.personen.trim() !== ''
+  const gefuellt = [werte.km, werte.minuten, werte.personen].filter((w) => w.trim() !== '')
+  const mindestensEine = gefuellt.length > 0
+  const alleDrei = gefuellt.length === 3
+  const fehlt = fehlendeAngaben(fahrt)
+
+  // Komma und Punkt sind beide erlaubt
+  const alsZahl = (w: string) => Number(w.trim().replace(',', '.'))
+  const kmUngueltig =
+    werte.km.trim() !== '' && (isNaN(alsZahl(werte.km)) || alsZahl(werte.km) < 0 || alsZahl(werte.km) > 500)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -27,7 +47,12 @@ export function BerichtDialog({ fahrt, onClose, onGespeichert }: Props) {
     setBusy(true)
     try {
       await rideReport(fahrt.id, werte)
-      onGespeichert(`Danke! Die Fahrt am ${formatiereTermin(fahrt.starts_at)} ist abgeschlossen.`)
+      onGespeichert(
+        alleDrei
+          ? `Danke! Die Fahrt am ${formatiereTermin(fahrt.starts_at)} ist abgeschlossen.`
+          : 'Angaben gespeichert. Sobald Kilometer, Dauer und Fahrgäste eingetragen sind, ' +
+            'gilt die Fahrt als abgeschlossen.',
+      )
     } catch (err) {
       setError(toGermanError(err))
     } finally {
@@ -50,32 +75,41 @@ export function BerichtDialog({ fahrt, onClose, onGespeichert }: Props) {
         <p className="muted overlay__intro">
           {formatiereTermin(fahrt.starts_at)} · {fahrt.location}
           <br />
-          Mit diesen Angaben gilt die Fahrt als abgeschlossen.
+          Es genügt, einzelne Angaben zu machen – die übrigen können später folgen.
+          Abgeschlossen ist die Fahrt, sobald alle drei eingetragen sind.
         </p>
+
+        {fahrt.report_at && !berichtVollstaendig(fahrt) && (
+          <p className="alert alert--warn">
+            Es {fehlt.length === 1 ? 'fehlt noch' : 'fehlen noch'}: {fehlt.join(', ')}.
+          </p>
+        )}
 
         <form onSubmit={handleSubmit} className="auth__form">
           <label className="field" htmlFor="bericht-km">
-            <span className="field__label">Gefahrene Kilometer</span>
+            <span className="field__label">
+              Gefahrene Kilometer <span className="field__optional">optional</span>
+            </span>
             <div className="field__wrap">
+              {/* Bewusst kein type="number": dort verwirft der Browser das
+                  Komma, das hierzulande für Nachkommastellen getippt wird. */}
               <input
                 id="bericht-km"
-                type="number"
+                type="text"
                 inputMode="decimal"
-                step="0.1"
-                min={0}
-                max={500}
                 value={werte.km}
                 placeholder="z. B. 8,5"
                 autoFocus
-                onChange={(e) => setze('km', e.target.value)}
-                required
+                onChange={(e) => setze('km', e.target.value.replace(/[^0-9.,]/g, ''))}
               />
               <span className="field__einheit">km</span>
             </div>
           </label>
 
           <label className="field" htmlFor="bericht-dauer">
-            <span className="field__label">Dauer</span>
+            <span className="field__label">
+              Dauer <span className="field__optional">optional</span>
+            </span>
             <div className="field__wrap">
               <input
                 id="bericht-dauer"
@@ -86,14 +120,15 @@ export function BerichtDialog({ fahrt, onClose, onGespeichert }: Props) {
                 value={werte.minuten}
                 placeholder="z. B. 75"
                 onChange={(e) => setze('minuten', e.target.value)}
-                required
               />
               <span className="field__einheit">Minuten</span>
             </div>
           </label>
 
           <label className="field" htmlFor="bericht-personen">
-            <span className="field__label">Mitgenommene Fahrgäste</span>
+            <span className="field__label">
+              Mitgenommene Fahrgäste <span className="field__optional">optional</span>
+            </span>
             <div className="field__wrap">
               <input
                 id="bericht-personen"
@@ -104,10 +139,15 @@ export function BerichtDialog({ fahrt, onClose, onGespeichert }: Props) {
                 value={werte.personen}
                 placeholder="z. B. 2"
                 onChange={(e) => setze('personen', e.target.value)}
-                required
               />
             </div>
           </label>
+
+          {kmUngueltig && (
+            <p className="alert alert--error">
+              Bitte die Kilometer als Zahl zwischen 0 und 500 angeben, zum Beispiel 8,5.
+            </p>
+          )}
 
           {error && <p className="alert alert--error">{error}</p>}
 
@@ -115,8 +155,8 @@ export function BerichtDialog({ fahrt, onClose, onGespeichert }: Props) {
             <button type="button" className="btn btn--ghost" onClick={onClose} disabled={busy}>
               Später
             </button>
-            <button type="submit" className="btn" disabled={busy || !vollstaendig}>
-              {busy ? 'Speichere …' : 'Fahrt abschließen'}
+            <button type="submit" className="btn" disabled={busy || !mindestensEine || kmUngueltig}>
+              {busy ? 'Speichere …' : alleDrei ? 'Fahrt abschließen' : 'Angaben speichern'}
             </button>
           </div>
         </form>
