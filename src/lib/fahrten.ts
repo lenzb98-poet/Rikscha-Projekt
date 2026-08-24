@@ -25,6 +25,8 @@ export type Fahrt = {
   report_passengers: number | null
   report_name: string | null
   report_at: string | null
+  /** Bis wann nachgetragen werden kann – von der Datenbank berechnet. */
+  report_deadline: string
 }
 
 export const ZUSTAND_TEXT: Record<Zustand, string> = {
@@ -314,4 +316,41 @@ export function alsStunden(minuten: number): string {
   const rest = minuten % 60
   if (std === 0) return ''
   return rest ? `${ZAHL.format(std)} Std. ${rest} Min.` : `${ZAHL.format(std)} Std.`
+}
+
+/**
+ * Wie lange bleibt noch Zeit für den Nachtrag? Leerer Text heißt: Frist vorbei.
+ * Gerundet auf ganze Tage und Stunden – auf die Minute genau hilft hier niemandem.
+ */
+export function verbleibendeFrist(bis: string): string {
+  const ms = new Date(bis).getTime() - Date.now()
+  if (ms <= 0) return ''
+
+  const minuten = Math.floor(ms / 60000)
+  const stunden = Math.floor(minuten / 60)
+  const tage = Math.floor(stunden / 24)
+
+  if (tage >= 1) {
+    const restStunden = stunden % 24
+    const tagText = tage === 1 ? 'ein Tag' : `${tage} Tage`
+    if (restStunden === 0) return tagText
+    return `${tagText} und ${restStunden} ${restStunden === 1 ? 'Stunde' : 'Stunden'}`
+  }
+
+  if (stunden >= 1) {
+    return `${stunden} ${stunden === 1 ? 'Stunde' : 'Stunden'}`
+  }
+
+  return `${Math.max(1, minuten)} Minuten`
+}
+
+/** "Mo., 26. August, 14:00 Uhr" – der Zeitpunkt, zu dem die Frist abläuft. */
+export function formatiereFrist(bis: string): string {
+  return new Date(bis).toLocaleString('de-DE', {
+    weekday: 'short',
+    day: '2-digit',
+    month: 'long',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 }

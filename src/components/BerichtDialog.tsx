@@ -2,8 +2,10 @@ import { useState } from 'react'
 import {
   berichtVollstaendig,
   fehlendeAngaben,
+  formatiereFrist,
   rideReport,
   formatiereTermin,
+  verbleibendeFrist,
   type Bericht,
   type Fahrt,
 } from '../lib/fahrten'
@@ -35,6 +37,7 @@ export function BerichtDialog({ fahrt, onClose, onGespeichert }: Props) {
   const mindestensEine = gefuellt.length > 0
   const alleDrei = gefuellt.length === 3
   const fehlt = fehlendeAngaben(fahrt)
+  const restzeit = verbleibendeFrist(fahrt.report_deadline)
 
   // Komma und Punkt sind beide erlaubt
   const alsZahl = (w: string) => Number(w.trim().replace(',', '.'))
@@ -77,6 +80,21 @@ export function BerichtDialog({ fahrt, onClose, onGespeichert }: Props) {
           <br />
           Es genügt, einzelne Angaben zu machen – die übrigen können später folgen.
           Abgeschlossen ist die Fahrt, sobald alle drei eingetragen sind.
+        </p>
+
+        <p className={restzeit ? 'frist' : 'frist frist--abgelaufen'}>
+          {restzeit ? (
+            <>
+              Dafür bleiben noch <strong>{restzeit}</strong> Zeit – bis{' '}
+              {formatiereFrist(fahrt.report_deadline)}. Danach gilt die Fahrt auch ohne
+              Angaben als abgeschlossen.
+            </>
+          ) : (
+            <>
+              Die Frist bis {formatiereFrist(fahrt.report_deadline)} ist vorbei, die Fahrt
+              gilt als abgeschlossen. Nachtragen kannst du die Angaben trotzdem noch.
+            </>
+          )}
         </p>
 
         {fahrt.report_at && !berichtVollstaendig(fahrt) && (

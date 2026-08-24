@@ -916,3 +916,15 @@ body {
   .kennzahl { flex: 1 1 100%; }
   .kennzahl__wert { font-size: 26px; }
 }
+
+/* Hinweis auf die Frist im Nachtrag-Dialog */
+.frist {
+  margin: 0 0 16px;
+  padding: 11px 13px;
+  border-radius: 10px;
+  background: var(--z-offen-bg);
+  color: var(--blau-dunkel);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.frist--abgelaufen { background: #f2f4f7; color: var(--muted); }
