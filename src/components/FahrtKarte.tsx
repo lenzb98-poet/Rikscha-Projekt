@@ -1,5 +1,5 @@
 import type { Fahrt } from '../lib/fahrten'
-import { ZUSTAND_TEXT, formatiereTermin } from '../lib/fahrten'
+import { ZUSTAND_TEXT, formatiereBericht, formatiereTermin } from '../lib/fahrten'
 
 type Props = {
   fahrt: Fahrt
@@ -38,6 +38,18 @@ export function FahrtKarte({ fahrt, children, zeigeNotizen = true }: Props) {
           </span>
         )}
       </div>
+
+      {fahrt.report_at && (
+        <div className="fahrt__bericht">
+          <strong>Nach der Fahrt eingetragen</strong>
+          <span>{formatiereBericht(fahrt)}</span>
+          {fahrt.report_name && <span className="muted">von {fahrt.report_name}</span>}
+        </div>
+      )}
+
+      {fahrt.zustand === 'nachtragen' && (
+        <p className="fahrt__nachtrag">Angaben zur Fahrt fehlen noch.</p>
+      )}
 
       {zeigeNotizen && fahrt.notizen.length > 0 && (
         <div className="fahrt__notizen">

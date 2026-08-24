@@ -815,3 +815,64 @@ body {
 
 .einrichten__trenner { border: 0; border-top: 1px solid var(--border); margin: 18px 0; }
 .einrichten__hinweis { margin: 16px 0 18px; }
+
+/* --- Nachtrag nach der Fahrt -------------------------------------------- */
+:root {
+  --z-nachtragen: #b35c00;
+  --z-nachtragen-bg: #fdf0e2;
+}
+
+.fahrt--nachtragen { border-left-color: var(--z-nachtragen); }
+.chip--nachtragen { background: var(--z-nachtragen-bg); color: var(--z-nachtragen); }
+.punkt--nachtragen { background: var(--z-nachtragen); }
+.kal__eintrag--nachtragen { background: var(--z-nachtragen); }
+
+.fahrt__bericht {
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: #f3f7f4;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 14px;
+}
+.fahrt__bericht .muted { font-size: 13px; }
+
+.fahrt__nachtrag {
+  margin: 10px 0 0;
+  font-size: 14px;
+  color: var(--z-nachtragen);
+  font-weight: 600;
+}
+
+/* Aufforderung auf der Startseite */
+.nachtrag {
+  margin-top: 20px;
+  background: var(--z-nachtragen-bg);
+  border: 1px solid #f0d5b4;
+  border-radius: 14px;
+  padding: 18px;
+}
+.nachtrag h3 { margin: 0 0 6px; font-size: 16px; color: var(--z-nachtragen); }
+.nachtrag__text { margin: 0 0 14px; font-size: 14px; line-height: 1.5; color: var(--muted); }
+.nachtrag__fahrt {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-top: 12px;
+  border-top: 1px solid #f0d5b4;
+}
+.nachtrag__fahrt:first-of-type { padding-top: 0; border-top: 0; }
+
+.field__einheit {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  color: var(--muted);
+  pointer-events: none;
+}

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from './supabase'
 
-export type Zustand = 'offen' | 'besetzt' | 'abgeschlossen' | 'abgesagt'
+export type Zustand = 'offen' | 'besetzt' | 'nachtragen' | 'abgeschlossen' | 'abgesagt'
 export type RideStatus = 'geplant' | 'abgesagt' | 'abgeschlossen'
 
 export type Pilot = { id: string; name: string }
@@ -19,11 +19,18 @@ export type Fahrt = {
   bin_dabei: boolean
   piloten: Pilot[]
   notizen: Notiz[]
+  /** Nachtrag nach der Fahrt; null, solange niemand ihn eingetragen hat. */
+  report_km: number | null
+  report_minutes: number | null
+  report_passengers: number | null
+  report_name: string | null
+  report_at: string | null
 }
 
 export const ZUSTAND_TEXT: Record<Zustand, string> = {
   offen: 'Offen',
   besetzt: 'Zugesagt',
+  nachtragen: 'Angaben fehlen',
   abgeschlossen: 'Abgeschlossen',
   abgesagt: 'Abgesagt',
 }
@@ -203,4 +210,35 @@ export async function rideCancel(rideId: string, grund: string): Promise<void> {
     p_grund: grund.trim(),
   })
   if (error) throw error
+}
+
+export type Bericht = { km: string; minuten: string; personen: string }
+
+/**
+ * Trägt nach der Fahrt Kilometer, Dauer und Fahrgäste nach. Erst damit gilt
+ * die Fahrt als abgeschlossen. Erlaubt für eingetragene Pilot:innen und die
+ * Koordination.
+ */
+export async function rideReport(rideId: string, b: Bericht): Promise<void> {
+  const { error } = await supabase.rpc('ride_report', {
+    p_ride_id: rideId,
+    p_km: Number(b.km.replace(',', '.')),
+    p_minutes: Number(b.minuten),
+    p_passengers: Number(b.personen),
+  })
+  if (error) throw error
+}
+
+/** "8,5 km · 1 Std. 15 Min. · 2 Fahrgäste" */
+export function formatiereBericht(f: Fahrt): string | null {
+  if (f.report_at === null) return null
+
+  const km = `${String(f.report_km ?? 0).replace('.', ',')} km`
+  const m = f.report_minutes ?? 0
+  const dauer =
+    m >= 60 ? `${Math.floor(m / 60)} Std.${m % 60 ? ` ${m % 60} Min.` : ''}` : `${m} Min.`
+  const p = f.report_passengers ?? 0
+  const personen = p === 1 ? '1 Fahrgast' : `${p} Fahrgäste`
+
+  return `${km} · ${dauer} · ${personen}`
 }

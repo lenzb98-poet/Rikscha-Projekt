@@ -7,6 +7,7 @@ import {
   type Fahrt,
 } from '../lib/fahrten'
 import { toGermanError } from '../lib/errors'
+import { BerichtDialog } from './BerichtDialog'
 
 type Props = {
   /** Alle Fahrten; gefiltert wird hier. null heißt: noch nicht geladen. */
@@ -31,14 +32,16 @@ export function MeineFahrten({ alle, onAktualisiert }: Props) {
   const [hinweis, setHinweis] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [bericht, setBericht] = useState<Fahrt | null>(null)
 
-  const fahrten = (alle ?? []).filter(
-    (f) => f.bin_dabei && f.zustand !== 'abgeschlossen' && f.zustand !== 'abgesagt',
-  )
+  const meine = (alle ?? []).filter((f) => f.bin_dabei)
+  // Fahrten, die stattgefunden haben und auf die Angaben warten
+  const nachzutragen = meine.filter((f) => f.zustand === 'nachtragen')
+  const fahrten = meine.filter((f) => f.zustand === 'offen' || f.zustand === 'besetzt')
 
   // War es die letzte Fahrt, bleibt die Meldung noch für die Bestätigung
   // stehen. Sonst verschwände sie beim Absagen kommentarlos.
-  if (fahrten.length === 0 && !hinweis) return null
+  if (fahrten.length === 0 && nachzutragen.length === 0 && !hinweis) return null
 
   function schliessen() {
     setOffen(null)
@@ -95,6 +98,46 @@ export function MeineFahrten({ alle, onAktualisiert }: Props) {
   }
 
   return (
+    <>
+      {nachzutragen.length > 0 && (
+        <section className="nachtrag">
+          <h3>
+            {nachzutragen.length === 1
+              ? 'Eine Fahrt wartet auf deine Angaben'
+              : `${nachzutragen.length} Fahrten warten auf deine Angaben`}
+          </h3>
+          <p className="nachtrag__text">
+            Bitte trage nach, wie weit ihr gefahren seid, wie lange es gedauert hat und wie
+            viele Fahrgäste dabei waren. Erst dann gilt die Fahrt als abgeschlossen.
+          </p>
+
+          {nachzutragen.map((f) => (
+            <div key={f.id} className="nachtrag__fahrt">
+              <div>
+                <div className="fahrt__termin">{formatiereTermin(f.starts_at)}</div>
+                <div className="fahrt__ort">{f.location}</div>
+              </div>
+              <button className="btn" onClick={() => setBericht(f)}>
+                Angaben eintragen
+              </button>
+            </div>
+          ))}
+        </section>
+      )}
+
+      {bericht && (
+        <BerichtDialog
+          fahrt={bericht}
+          onClose={() => setBericht(null)}
+          onGespeichert={(text) => {
+            setBericht(null)
+            setHinweis(text)
+            onAktualisiert()
+          }}
+        />
+      )}
+
+      {(fahrten.length > 0 || hinweis) && (
     <section className="meine">
       <h3>
         {fahrten.length === 0
@@ -241,5 +284,7 @@ export function MeineFahrten({ alle, onAktualisiert }: Props) {
         </div>
       ))}
     </section>
+      )}
+    </>
   )
 }

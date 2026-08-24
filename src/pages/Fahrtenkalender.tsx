@@ -4,7 +4,7 @@ import { toGermanError } from '../lib/errors'
 import { FahrtKarte } from '../components/FahrtKarte'
 
 const WOCHENTAGE = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So']
-const ZUSTAENDE: Zustand[] = ['offen', 'besetzt', 'abgeschlossen', 'abgesagt']
+const ZUSTAENDE: Zustand[] = ['offen', 'besetzt', 'nachtragen', 'abgeschlossen', 'abgesagt']
 
 /** Tagesschlüssel in Ortszeit, damit die Zuordnung nicht über die Zeitzone kippt. */
 function tagesSchluessel(d: Date): string {

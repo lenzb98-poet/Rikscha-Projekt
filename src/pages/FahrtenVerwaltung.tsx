@@ -8,6 +8,7 @@ const FILTER: { wert: 'alle' | Zustand; text: string }[] = [
   { wert: 'alle', text: 'Alle' },
   { wert: 'offen', text: 'Offen' },
   { wert: 'besetzt', text: 'Zugesagt' },
+  { wert: 'nachtragen', text: 'Angaben fehlen' },
   { wert: 'abgeschlossen', text: 'Abgeschlossen' },
   { wert: 'abgesagt', text: 'Abgesagt' },
 ]
