@@ -109,10 +109,18 @@ export async function listPilots(): Promise<Pilot[]> {
   }))
 }
 
-/** Ruft `onChange` auf, sobald sich an den Fahrten etwas ändert. */
+/**
+ * Ruft `onChange` auf, sobald sich an den Fahrten etwas ändert.
+ *
+ * Jeder Aufruf bekommt einen eigenen Kanalnamen. Supabase gibt bei gleichem
+ * Namen den bereits laufenden Kanal zurück und lehnt weitere Callbacks ab
+ * ("cannot add postgres_changes callbacks ... after subscribe()"). Da die
+ * Startseite und die Fahrtenansichten gleichzeitig zuhören, muss jede
+ * Anmeldung für sich stehen.
+ */
 export function watchRides(onChange: () => void): () => void {
   const kanal = supabase
-    .channel('fahrten')
+    .channel(`fahrten-${crypto.randomUUID()}`)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'rides' }, onChange)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'ride_pilots' }, onChange)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'ride_notes' }, onChange)

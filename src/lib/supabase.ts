@@ -237,8 +237,9 @@ export async function raeumeBildspeicherAuf(): Promise<number> {
  * Realtime im Projekt nicht aktiv ist.
  */
 export function watchMessages(onChange: () => void): () => void {
+  // Eigener Kanalname je Aufruf, siehe watchRides in fahrten.ts
   const kanal = supabase
-    .channel('chat')
+    .channel(`chat-${crypto.randomUUID()}`)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, onChange)
     .subscribe()
 
