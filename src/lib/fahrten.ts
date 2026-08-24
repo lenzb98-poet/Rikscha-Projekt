@@ -269,3 +269,49 @@ export function fehlendeAngaben(f: Fahrt): string[] {
   if (f.report_passengers === null) fehlt.push('Fahrgäste')
   return fehlt
 }
+
+export type Auswertung = {
+  km: number
+  minuten: number
+  personen: number
+  /** Fahrten, zu denen mindestens eine Angabe vorliegt. */
+  fahrten: number
+}
+
+/**
+ * Summiert die nachgetragenen Angaben aller Fahrten.
+ *
+ * Gezählt wird, was eingetragen ist – auch aus Fahrten, bei denen erst ein Teil
+ * der Angaben vorliegt. Fehlende Werte zählen als nichts, nicht als null.
+ */
+export function werteAus(fahrten: Fahrt[]): Auswertung {
+  const summe: Auswertung = { km: 0, minuten: 0, personen: 0, fahrten: 0 }
+
+  for (const f of fahrten) {
+    if (f.report_km === null && f.report_minutes === null && f.report_passengers === null) {
+      continue
+    }
+    summe.km += f.report_km ?? 0
+    summe.minuten += f.report_minutes ?? 0
+    summe.personen += f.report_passengers ?? 0
+    summe.fahrten += 1
+  }
+
+  // Kommastellen sauber halten: 8,5 + 3,2 ergibt sonst 11,700000000000001
+  summe.km = Math.round(summe.km * 10) / 10
+  return summe
+}
+
+const ZAHL = new Intl.NumberFormat('de-DE')
+const ZAHL_KOMMA = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 1 })
+
+export const formatiereZahl = (n: number) => ZAHL.format(n)
+export const formatiereKomma = (n: number) => ZAHL_KOMMA.format(n)
+
+/** "20 Std. 40 Min." – als Lesehilfe unter der Minutenzahl. */
+export function alsStunden(minuten: number): string {
+  const std = Math.floor(minuten / 60)
+  const rest = minuten % 60
+  if (std === 0) return ''
+  return rest ? `${ZAHL.format(std)} Std. ${rest} Min.` : `${ZAHL.format(std)} Std.`
+}

@@ -876,3 +876,43 @@ body {
   color: var(--muted);
   pointer-events: none;
 }
+
+/* --- Auswertung --------------------------------------------------------- */
+.auswertung {
+  margin-top: 24px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+}
+.auswertung > h3 { margin: 0 0 16px; font-size: 16px; color: var(--blau-dunkel); }
+
+.kennzahlen { display: flex; flex-wrap: wrap; gap: 12px; }
+
+.kennzahl {
+  flex: 1 1 140px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 16px 14px;
+  border-radius: 12px;
+  background: var(--z-offen-bg);
+  text-align: center;
+}
+
+/* Proportionale Ziffern: tabellarische wirken bei großen Zahlen zu locker */
+.kennzahl__wert {
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--blau-dunkel);
+}
+.kennzahl__einheit { font-size: 14px; color: var(--text); }
+.kennzahl__zusatz { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+.auswertung__fuss { margin: 14px 0 0; font-size: 13px; }
+
+@media (max-width: 480px) {
+  .kennzahl { flex: 1 1 100%; }
+  .kennzahl__wert { font-size: 26px; }
+}

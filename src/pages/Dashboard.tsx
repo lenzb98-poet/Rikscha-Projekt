@@ -4,6 +4,7 @@ import { useAnsicht } from '../lib/useAnsicht'
 import { Logo, RadelnLogo } from '../components/Marke'
 import { MeineFahrten } from '../components/MeineFahrten'
 import { AppEinrichten } from '../components/AppEinrichten'
+import { Auswertung } from '../components/Auswertung'
 import { TeamVerwaltung } from './TeamVerwaltung'
 import { Chat } from './Chat'
 import { Fahrten } from './Fahrten'
@@ -118,6 +119,8 @@ export function Dashboard({ profile, onSignOut }: Props) {
                 </button>
               </section>
             )}
+
+            <Auswertung alle={fahrten} />
 
             <AppEinrichten />
           </>
