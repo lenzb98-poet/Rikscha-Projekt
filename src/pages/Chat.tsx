@@ -295,7 +295,11 @@ export function Chat({ onZurueck, istAdmin }: Props) {
               }
             }}
           />
-          <button className="btn" type="submit" disabled={busy || (!text.trim() && !auswahl)}>
+          <button
+            className="btn chat__senden"
+            type="submit"
+            disabled={busy || (!text.trim() && !auswahl)}
+          >
             {busy ? '…' : 'Senden'}
           </button>
         </form>
