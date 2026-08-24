@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { AppUser } from '../lib/useAuth'
+import { useFahrten } from '../lib/fahrten'
 import { Logo } from '../components/Marke'
 import { MeineFahrten } from '../components/MeineFahrten'
 import { TeamVerwaltung } from './TeamVerwaltung'
@@ -28,10 +29,21 @@ type Ansicht =
   | 'team'
   | 'chat'
 
+/** "3 offene Fahrten", "1 kommende Fahrt", "Zurzeit keine" */
+function anzahlText(anzahl: number | null, einzahl: string, mehrzahl: string): string {
+  if (anzahl === null) return '\u00a0'
+  if (anzahl === 0) return 'Zurzeit keine'
+  return `${anzahl} ${anzahl === 1 ? einzahl : mehrzahl}`
+}
+
 export function Dashboard({ profile, onSignOut }: Props) {
   const [ansicht, setAnsicht] = useState<Ansicht>('start')
   const istAdmin = profile?.role === 'admin'
   const zurueck = () => setAnsicht('start')
+
+  const { fahrten, laden } = useFahrten()
+  const offene = fahrten?.filter((f) => f.zustand === 'offen').length ?? null
+  const kommende = fahrten?.filter((f) => f.zustand === 'besetzt').length ?? null
 
   function inhalt() {
     switch (ansicht) {
@@ -53,24 +65,44 @@ export function Dashboard({ profile, onSignOut }: Props) {
             <h2>Hallo {profile?.full_name ?? 'zusammen'}!</h2>
             {profile && <p className="muted">Angemeldet als {ROLLEN[profile.role]}</p>}
 
-            <MeineFahrten />
+            <MeineFahrten alle={fahrten} onAktualisiert={laden} />
 
             <section className="card">
               <h3>Fahrten</h3>
               <div className="knopfreihe">
-                <button className="btn" onClick={() => setAnsicht('offene')}>
-                  Offene Fahrten
-                </button>
-                <button className="btn" onClick={() => setAnsicht('kommende')}>
-                  Kommende Fahrten
-                </button>
-                <button className="btn" onClick={() => setAnsicht('kalender')}>
-                  Fahrtenkalender
-                </button>
-                {istAdmin && (
-                  <button className="btn btn--ghost" onClick={() => setAnsicht('fahrten-verwalten')}>
-                    Fahrten verwalten
+                <div className="knopfblock">
+                  <button className="btn" onClick={() => setAnsicht('offene')}>
+                    Offene Fahrten
                   </button>
+                  <span className="knopfblock__zahl">
+                    {anzahlText(offene, 'offene Fahrt', 'offene Fahrten')}
+                  </span>
+                </div>
+
+                <div className="knopfblock">
+                  <button className="btn" onClick={() => setAnsicht('kommende')}>
+                    Kommende Fahrten
+                  </button>
+                  <span className="knopfblock__zahl">
+                    {anzahlText(kommende, 'kommende Fahrt', 'kommende Fahrten')}
+                  </span>
+                </div>
+
+                <div className="knopfblock">
+                  <button className="btn" onClick={() => setAnsicht('kalender')}>
+                    Fahrtenkalender
+                  </button>
+                </div>
+
+                {istAdmin && (
+                  <div className="knopfblock">
+                    <button
+                      className="btn btn--ghost"
+                      onClick={() => setAnsicht('fahrten-verwalten')}
+                    >
+                      Fahrten verwalten
+                    </button>
+                  </div>
                 )}
               </div>
             </section>

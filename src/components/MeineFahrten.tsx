@@ -1,44 +1,28 @@
-import { useCallback, useEffect, useState } from 'react'
-import {
-  listRides,
-  rideAddNote,
-  rideSignoff,
-  watchRides,
-  formatiereTermin,
-  type Fahrt,
-} from '../lib/fahrten'
+import { useState } from 'react'
+import { rideAddNote, rideSignoff, formatiereTermin, type Fahrt } from '../lib/fahrten'
 import { toGermanError } from '../lib/errors'
 
 /**
  * Meldung ganz oben auf der Startseite: zu welchen Fahrten die angemeldete
  * Person eingetragen ist. Dort lässt sich auch etwas mitteilen oder absagen.
  */
-export function MeineFahrten() {
-  const [fahrten, setFahrten] = useState<Fahrt[]>([])
+type Props = {
+  /** Alle Fahrten; gefiltert wird hier. null heißt: noch nicht geladen. */
+  alle: Fahrt[] | null
+  /** Nach einer Änderung neu laden. */
+  onAktualisiert: () => void
+}
+
+export function MeineFahrten({ alle, onAktualisiert }: Props) {
   const [offenesFeld, setOffenesFeld] = useState<string | null>(null)
   const [text, setText] = useState('')
   const [hinweis, setHinweis] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
-  const laden = useCallback(() => {
-    listRides('alle')
-      .then((alle) =>
-        setFahrten(
-          alle.filter(
-            (f) => f.bin_dabei && f.zustand !== 'abgeschlossen' && f.zustand !== 'abgesagt',
-          ),
-        ),
-      )
-      .catch(() => {
-        // Auf der Startseite lieber still bleiben als eine Fehlermeldung zeigen
-      })
-  }, [])
-
-  useEffect(() => {
-    laden()
-    return watchRides(laden)
-  }, [laden])
+  const fahrten = (alle ?? []).filter(
+    (f) => f.bin_dabei && f.zustand !== 'abgeschlossen' && f.zustand !== 'abgesagt',
+  )
 
   if (fahrten.length === 0) return null
 
@@ -57,7 +41,7 @@ export function MeineFahrten() {
       setText('')
       setOffenesFeld(null)
       setHinweis('Deine Mitteilung ist bei der Koordination angekommen.')
-      laden()
+      onAktualisiert()
     } catch (err) {
       setError(toGermanError(err))
     } finally {
@@ -73,7 +57,7 @@ export function MeineFahrten() {
       setText('')
       setOffenesFeld(null)
       setHinweis(`Du bist für die Fahrt am ${formatiereTermin(f.starts_at)} abgemeldet.`)
-      laden()
+      onAktualisiert()
     } catch (err) {
       setError(toGermanError(err))
     } finally {

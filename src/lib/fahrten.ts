@@ -1,3 +1,4 @@
+import { useCallback, useEffect, useState } from 'react'
 import { supabase } from './supabase'
 
 export type Zustand = 'offen' | 'besetzt' | 'abgeschlossen' | 'abgesagt'
@@ -154,4 +155,28 @@ export function fuerEingabefeld(iso: string): string {
   const d = new Date(iso)
   const p = (n: number) => String(n).padStart(2, '0')
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`
+}
+
+/**
+ * Lädt alle Fahrten und hält sie aktuell. Auf der Startseite werden sie an
+ * mehreren Stellen gebraucht (Meldung und Zähler unter den Knöpfen), deshalb
+ * an einer Stelle laden statt mehrfach abfragen.
+ */
+export function useFahrten() {
+  const [fahrten, setFahrten] = useState<Fahrt[] | null>(null)
+
+  const laden = useCallback(() => {
+    listRides('alle')
+      .then(setFahrten)
+      .catch(() => {
+        // Auf der Startseite lieber still bleiben als eine Fehlermeldung zeigen
+      })
+  }, [])
+
+  useEffect(() => {
+    laden()
+    return watchRides(laden)
+  }, [laden])
+
+  return { fahrten, laden }
 }

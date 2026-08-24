@@ -502,8 +502,10 @@ body {
   --z-abgesagt-bg: #fdecea;
 }
 
-.knopfreihe { display: flex; flex-wrap: wrap; gap: 10px; }
-.knopfreihe .btn { flex: 1 1 180px; }
+.knopfreihe { display: flex; flex-wrap: wrap; gap: 10px; align-items: start; }
+.knopfblock { flex: 1 1 180px; display: flex; flex-direction: column; gap: 5px; }
+.knopfblock .btn { width: 100%; }
+.knopfblock__zahl { font-size: 13px; color: var(--muted); text-align: center; }
 
 .fahrten { display: flex; flex-direction: column; gap: 14px; margin-top: 16px; }
 
@@ -711,5 +713,5 @@ body {
 @media (max-width: 560px) {
   .kal__tag { min-height: 58px; padding: 3px; }
   .kal__eintrag { font-size: 10px; padding: 2px 4px; }
-  .knopfreihe .btn { flex: 1 1 100%; }
+  .knopfblock { flex: 1 1 100%; }
 }
