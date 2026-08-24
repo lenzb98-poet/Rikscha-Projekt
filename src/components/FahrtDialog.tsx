@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import {
+  ZUSTAND_TEXT,
   createRide,
   deleteRide,
   fuerEingabefeld,
@@ -20,9 +21,15 @@ type Props = {
   onGespeichert: (text: string) => void
 }
 
+/**
+ * Gespeichert wird nur, was sich nicht ableiten lässt. "Automatisch" heißt:
+ * Der Zustand ergibt sich aus Termin, Anmeldungen und nachgetragenen Angaben.
+ * Früher stand hier "Geplant" – das verwirrte, weil im Feld weiter "Geplant"
+ * stand, während die Fahrt längst als abgeschlossen angezeigt wurde.
+ */
 const STATUS: { wert: RideStatus; text: string }[] = [
-  { wert: 'geplant', text: 'Geplant' },
-  { wert: 'abgeschlossen', text: 'Abgeschlossen' },
+  { wert: 'geplant', text: 'Automatisch (aus Termin und Angaben)' },
+  { wert: 'abgeschlossen', text: 'Fest auf abgeschlossen' },
   { wert: 'abgesagt', text: 'Abgesagt' },
 ]
 
@@ -222,6 +229,9 @@ export function FahrtDialog({ fahrt, onClose, onGespeichert }: Props) {
                 <>
                   <label className="field" htmlFor="fahrt-status">
                     <span className="field__label">Status</span>
+                    <span className="hint">
+                      Zustand derzeit: <strong>{ZUSTAND_TEXT[fahrt.zustand]}</strong>
+                    </span>
                     <div className="field__wrap">
                       <select
                         id="fahrt-status"

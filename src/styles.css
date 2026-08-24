@@ -928,3 +928,6 @@ body {
   line-height: 1.5;
 }
 .frist--abgelaufen { background: #f2f4f7; color: var(--muted); }
+
+/* Erklärung über dem Auswahlfeld statt darunter */
+.field .hint:first-of-type + .field__wrap { margin-top: 2px; }
