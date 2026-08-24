@@ -1,6 +1,6 @@
-import { useState } from 'react'
 import type { AppUser } from '../lib/useAuth'
 import { useFahrten } from '../lib/fahrten'
+import { useAnsicht } from '../lib/useAnsicht'
 import { Logo, RadelnLogo } from '../components/Marke'
 import { MeineFahrten } from '../components/MeineFahrten'
 import { AppEinrichten } from '../components/AppEinrichten'
@@ -31,7 +31,7 @@ function anzahlText(anzahl: number | null, einzahl: string, mehrzahl: string): s
 }
 
 export function Dashboard({ profile, onSignOut }: Props) {
-  const [ansicht, setAnsicht] = useState<Ansicht>('start')
+  const [ansicht, setAnsicht] = useAnsicht<Ansicht>('start')
   const istAdmin = profile?.role === 'admin'
   const zurueck = () => setAnsicht('start')
 
