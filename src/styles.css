@@ -40,7 +40,7 @@ body {
   .topbar__logo { height: 32px; }
   .topbar__radeln { height: 38px; }
   .topbar__marken { gap: 9px; }
-  .topbar { padding: 10px 12px; }
+  .topbar { padding: calc(10px + env(safe-area-inset-top, 0px)) 12px 10px; }
 }
 
 .auth__inner {
@@ -176,7 +176,9 @@ body {
   justify-content: space-between;
   align-items: center;
   gap: 16px;
-  padding: 14px 20px;
+  /* Als Web-App auf dem iPhone laeuft der Inhalt unter die Statusleiste,
+     deshalb deren Hoehe oben zusaetzlich freihalten. Ausserhalb ist env() = 0. */
+  padding: calc(14px + env(safe-area-inset-top, 0px)) 20px 14px;
   background: var(--blau);
 }
 .topbar__marken { display: flex; align-items: center; gap: 14px; min-width: 0; }

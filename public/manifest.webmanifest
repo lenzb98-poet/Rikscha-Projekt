@@ -1,0 +1,19 @@
+{
+  "name": "Rikscha-Fahrten – Hospiz-Initiative Melle",
+  "short_name": "Rikscha Melle",
+  "description": "Fahrten und Pilot:innen der Aktion Radeln ohne Alter in Melle verwalten.",
+  "lang": "de",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#245892",
+  "theme_color": "#245892",
+  "icons": [
+    { "src": "icons/favicon-48.png", "sizes": "48x48", "type": "image/png" },
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

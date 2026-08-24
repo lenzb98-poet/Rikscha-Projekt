@@ -7,6 +7,22 @@
     <title>Rikscha – Hospizinitiative Melle</title>
 
     <!--
+      Symbole und Manifest. Alle Pfade sind relativ, weil die App unter einem
+      Unterordner liegt (…/Rikscha-Projekt/).
+    -->
+    <link rel="icon" href="favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png" />
+    <link rel="manifest" href="manifest.webmanifest" />
+
+    <!-- Auf dem iPhone ohne Browserleiste starten -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Rikscha Melle" />
+    <meta name="description" content="Fahrten und Pilot:innen der Aktion Radeln ohne Alter in Melle verwalten." />
+
+    <!--
       Start-Diagnose: laeuft vor der eigentlichen App und faengt alles ab,
       was das Laden verhindert (Netzwerkfehler, Syntaxfehler, haengender Start).
       Bewusst ohne externe Dateien und ohne modernes JS, damit es selbst dann
