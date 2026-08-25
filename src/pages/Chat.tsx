@@ -163,8 +163,8 @@ export function Chat({ onZurueck, istAdmin }: Props) {
 
           <div className="seite__kopf">
             <div>
-              <h2>Chat</h2>
-              <p className="muted">Für alle freigeschalteten Fahrer:innen und die Koordination</p>
+              <h2>Piloten Chat</h2>
+              <p className="muted">Für alle freigeschalteten Pilot:innen und die Koordination</p>
             </div>
           </div>
         </>

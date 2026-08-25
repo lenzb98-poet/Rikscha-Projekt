@@ -935,3 +935,15 @@ body {
 /* Schlankere Auswahl für die Anmeldekarte */
 .check--schlank { padding: 11px 13px; font-size: 14px; }
 .check--schlank strong { font-size: 14px; }
+
+/* --- Knopf zum Piloten Chat ---------------------------------------------
+ *
+ * Das Grün von WhatsApp. Die Schrift ist dunkel statt weiß: Weiß darauf
+ * käme nur auf ein Kontrastverhältnis von 1,98:1 und wäre kaum zu lesen,
+ * dunkel erreicht 7,46:1.
+ */
+.btn--chat {
+  background: #25d366;
+  color: #0a2e1a;
+}
+.btn--chat:hover:not(:disabled) { background: #1eb959; }
