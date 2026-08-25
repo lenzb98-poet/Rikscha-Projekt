@@ -942,6 +942,9 @@ body {
  * käme nur auf ein Kontrastverhältnis von 1,98:1 und wäre kaum zu lesen,
  * dunkel erreicht 7,46:1.
  */
+/* Eigene Zeile, damit er sich von den Fahrten-Knöpfen absetzt */
+.knopfblock--breit { flex: 1 1 100%; }
+
 .btn--chat {
   background: #25d366;
   color: #0a2e1a;

@@ -99,17 +99,13 @@ export function Dashboard({ profile, onSignOut }: Props) {
                     </button>
                   </div>
                 )}
-              </div>
-            </section>
 
-            <section className="card">
-              <h3>Piloten Chat</h3>
-              <p className="muted card__text">
-                Nachrichten an alle Pilot:innen und die Koordination.
-              </p>
-              <button className="btn btn--chat" onClick={() => setAnsicht('chat')}>
-                Piloten Chat
-              </button>
+                <div className="knopfblock knopfblock--breit">
+                  <button className="btn btn--chat" onClick={() => setAnsicht('chat')}>
+                    Piloten Chat
+                  </button>
+                </div>
+              </div>
             </section>
 
             {istAdmin && (
