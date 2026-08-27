@@ -25,7 +25,7 @@ export function FahrtKarte({ fahrt, children, zeigeNotizen = true }: Props) {
 
       <div className="fahrt__piloten">
         <strong>
-          Pilot:innen {fahrt.angemeldet} von {fahrt.pilots_needed}
+          {fahrt.angemeldet} von {fahrt.pilots_needed} Rikschas besetzt
         </strong>
         {fahrt.piloten.length > 0 ? (
           <span className="fahrt__namen">{fahrt.piloten.map((p) => p.name).join(', ')}</span>
@@ -34,7 +34,7 @@ export function FahrtKarte({ fahrt, children, zeigeNotizen = true }: Props) {
         )}
         {frei > 0 && fahrt.zustand === 'offen' && (
           <span className="muted">
-            {frei === 1 ? 'Noch ein Platz frei' : `Noch ${frei} Plätze frei`}
+            {frei === 1 ? 'Noch eine Rikscha frei' : `Noch ${frei} Rikschas frei`}
           </span>
         )}
       </div>

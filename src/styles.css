@@ -1042,3 +1042,42 @@ body {
 .tab__knopf--weg { color: var(--error); }
 
 .tab__hinweis { margin-top: 8px; }
+
+/* --- Rikscha-Plätze ----------------------------------------------------- */
+.kal__eintrag--meiner {
+  outline: 2px solid var(--blau-dunkel);
+  outline-offset: -2px;
+  font-weight: 700;
+}
+
+.platz__info {
+  margin: 0 0 14px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--muted);
+  white-space: pre-wrap;
+}
+
+.platz__stand {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--z-offen-bg);
+  margin-bottom: 14px;
+  font-size: 14px;
+}
+.platz__stand strong { color: var(--blau-dunkel); }
+
+.platz__liste { list-style: none; margin: 0 0 14px; padding: 0; }
+.platz__zeile {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+.platz__zeile:last-child { border-bottom: 0; }
+.platz__zeile--aktiv { background: var(--z-offen-bg); border-radius: 8px; font-weight: 600; }

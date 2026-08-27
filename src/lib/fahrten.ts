@@ -5,6 +5,15 @@ export type Zustand = 'offen' | 'besetzt' | 'nachtragen' | 'abgeschlossen' | 'ab
 export type RideStatus = 'geplant' | 'abgesagt' | 'abgeschlossen'
 
 export type Pilot = { id: string; name: string }
+
+/** Ein einzeln buchbarer Rikscha-Platz einer Fahrt. */
+export type Platz = {
+  id: string
+  position: number
+  pilot_id: string | null
+  pilot_name: string | null
+  ist_meiner: boolean
+}
 export type Notiz = { id: string; name: string; body: string; created_at: string }
 
 export type Fahrt = {
@@ -18,6 +27,8 @@ export type Fahrt = {
   angemeldet: number
   bin_dabei: boolean
   piloten: Pilot[]
+  /** Alle Plätze der Fahrt, auch die freien. */
+  plaetze: Platz[]
   notizen: Notiz[]
   /** Nachtrag nach der Fahrt; null, solange niemand ihn eingetragen hat. */
   report_km: number | null
@@ -44,6 +55,19 @@ export async function listRides(bereich: 'offen' | 'alle'): Promise<Fahrt[]> {
   return (data ?? []) as Fahrt[]
 }
 
+/** Bucht genau diesen Platz. */
+export async function bookSlot(slotId: string): Promise<void> {
+  const { error } = await supabase.rpc('ride_slot_book', { p_slot_id: slotId })
+  if (error) throw error
+}
+
+/** Gibt genau diesen Platz wieder frei. */
+export async function releaseSlot(slotId: string): Promise<void> {
+  const { error } = await supabase.rpc('ride_slot_release', { p_slot_id: slotId })
+  if (error) throw error
+}
+
+/** Nimmt den ersten freien Platz der Fahrt. */
 export async function rideSignup(rideId: string): Promise<void> {
   const { error } = await supabase.rpc('ride_signup', { p_ride_id: rideId })
   if (error) throw error
@@ -127,11 +151,16 @@ export async function listPilots(): Promise<Pilot[]> {
  * Startseite und die Fahrtenansichten gleichzeitig zuhören, muss jede
  * Anmeldung für sich stehen.
  */
+/** Freie Plätze einer Fahrt. */
+export function freiePlaetze(f: Fahrt): Platz[] {
+  return f.plaetze.filter((p) => p.pilot_id === null)
+}
+
 export function watchRides(onChange: () => void): () => void {
   const kanal = supabase
     .channel(`fahrten-${crypto.randomUUID()}`)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'rides' }, onChange)
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'ride_pilots' }, onChange)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'ride_slots' }, onChange)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'ride_notes' }, onChange)
     .subscribe()
 

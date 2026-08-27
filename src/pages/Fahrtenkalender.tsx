@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { listRides, watchRides, ZUSTAND_TEXT, type Fahrt, type Zustand } from '../lib/fahrten'
+import { listRides, watchRides, ZUSTAND_TEXT, type Fahrt, type Platz } from '../lib/fahrten'
 import { toGermanError } from '../lib/errors'
-import { FahrtKarte } from '../components/FahrtKarte'
+import { PlatzDialog } from '../components/PlatzDialog'
 
 const WOCHENTAGE = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So']
-const ZUSTAENDE: Zustand[] = ['offen', 'besetzt', 'nachtragen', 'abgeschlossen', 'abgesagt']
 
 /** Tagesschlüssel in Ortszeit, damit die Zuordnung nicht über die Zeitzone kippt. */
 function tagesSchluessel(d: Date): string {
@@ -19,7 +18,9 @@ export function Fahrtenkalender({ onZurueck }: { onZurueck: () => void }) {
     const d = new Date()
     return new Date(d.getFullYear(), d.getMonth(), 1)
   })
-  const [gewaehlt, setGewaehlt] = useState<Fahrt | null>(null)
+  // Im Kalender steht jeder Rikscha-Platz für sich
+  const [gewaehlt, setGewaehlt] = useState<{ fahrt: Fahrt; platz: Platz } | null>(null)
+  const [hinweis, setHinweis] = useState<string | null>(null)
 
   const laden = useCallback(() => {
     listRides('alle')
@@ -32,12 +33,13 @@ export function Fahrtenkalender({ onZurueck }: { onZurueck: () => void }) {
     return watchRides(laden)
   }, [laden])
 
-  // Fahrten nach Tag gruppieren
+  // Nach Tag gruppieren – ein Eintrag je Rikscha-Platz, nicht je Fahrt
   const proTag = useMemo(() => {
-    const map = new Map<string, Fahrt[]>()
+    const map = new Map<string, { fahrt: Fahrt; platz: Platz }[]>()
     for (const f of fahrten ?? []) {
       const key = tagesSchluessel(new Date(f.starts_at))
-      map.set(key, [...(map.get(key) ?? []), f])
+      const eintraege = f.plaetze.map((platz) => ({ fahrt: f, platz }))
+      map.set(key, [...(map.get(key) ?? []), ...eintraege])
     }
     return map
   }, [fahrten])
@@ -73,18 +75,28 @@ export function Fahrtenkalender({ onZurueck }: { onZurueck: () => void }) {
       <div className="seite__kopf">
         <div>
           <h2>Fahrtenkalender</h2>
-          <p className="muted">Alle Fahrten im Überblick</p>
+          <p className="muted">
+            Jede Rikscha steht einzeln. Auf einen freien Platz tippen, um ihn zu übernehmen.
+          </p>
         </div>
       </div>
 
+      {hinweis && <p className="alert alert--ok">{hinweis}</p>}
       {error && <p className="alert alert--error">{error}</p>}
 
       <div className="kal__legende">
-        {ZUSTAENDE.map((z) => (
-          <span key={z} className="kal__legendeneintrag">
-            <span className={`punkt punkt--${z}`} /> {ZUSTAND_TEXT[z]}
-          </span>
-        ))}
+        <span className="kal__legendeneintrag">
+          <span className="punkt punkt--offen" /> Freier Platz
+        </span>
+        <span className="kal__legendeneintrag">
+          <span className="punkt punkt--besetzt" /> Vergeben
+        </span>
+        <span className="kal__legendeneintrag">
+          <span className="punkt punkt--abgeschlossen" /> Abgeschlossen
+        </span>
+        <span className="kal__legendeneintrag">
+          <span className="punkt punkt--abgesagt" /> Abgesagt
+        </span>
       </div>
 
       <div className="card">
@@ -124,20 +136,36 @@ export function Fahrtenkalender({ onZurueck }: { onZurueck: () => void }) {
                   .join(' ')}
               >
                 <span className="kal__zahl">{d.getDate()}</span>
-                {eintraege.map((f) => (
-                  <button
-                    key={f.id}
-                    className={`kal__eintrag kal__eintrag--${f.zustand}`}
-                    onClick={() => setGewaehlt(f)}
-                    title={`${f.location} – ${ZUSTAND_TEXT[f.zustand]}`}
-                  >
-                    {new Date(f.starts_at).toLocaleTimeString('de-DE', {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}{' '}
-                    {f.location}
-                  </button>
-                ))}
+                {eintraege.map(({ fahrt, platz }) => {
+                  // Ein freier Platz einer geplanten Fahrt lädt zum Buchen ein
+                  const frei = platz.pilot_id === null && fahrt.zustand !== 'abgesagt'
+                  const art = frei ? 'offen' : fahrt.zustand === 'offen' ? 'besetzt' : fahrt.zustand
+
+                  return (
+                    <button
+                      key={platz.id}
+                      className={[
+                        'kal__eintrag',
+                        `kal__eintrag--${art}`,
+                        platz.ist_meiner ? 'kal__eintrag--meiner' : '',
+                      ]
+                        .filter(Boolean)
+                        .join(' ')}
+                      onClick={() => setGewaehlt({ fahrt, platz })}
+                      title={
+                        `${fahrt.location} · Rikscha ${platz.position} von ${fahrt.plaetze.length} · ` +
+                        (platz.pilot_name ?? 'frei') +
+                        ` · ${ZUSTAND_TEXT[fahrt.zustand]}`
+                      }
+                    >
+                      {new Date(fahrt.starts_at).toLocaleTimeString('de-DE', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}{' '}
+                      R{platz.position} {platz.pilot_name ?? 'frei'}
+                    </button>
+                  )
+                })}
               </div>
             )
           })}
@@ -145,24 +173,16 @@ export function Fahrtenkalender({ onZurueck }: { onZurueck: () => void }) {
       </div>
 
       {gewaehlt && (
-        <div
-          className="overlay"
-          role="dialog"
-          aria-modal="true"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setGewaehlt(null)
+        <PlatzDialog
+          fahrt={gewaehlt.fahrt}
+          platz={gewaehlt.platz}
+          onClose={() => setGewaehlt(null)}
+          onGebucht={(text) => {
+            setGewaehlt(null)
+            setHinweis(text)
+            laden()
           }}
-        >
-          <div className="overlay__card">
-            <h3>Fahrt</h3>
-            <FahrtKarte fahrt={gewaehlt} />
-            <div className="overlay__actions" style={{ marginTop: 16 }}>
-              <button className="btn btn--ghost" onClick={() => setGewaehlt(null)}>
-                Schließen
-              </button>
-            </div>
-          </div>
-        </div>
+        />
       )}
     </>
   )
