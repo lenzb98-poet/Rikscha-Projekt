@@ -139,13 +139,15 @@ export type TeamMember = {
   is_active: boolean
   phone: string | null
   contact_email: string | null
+  /** Gesetzt, sobald die Person ein Passwort vergeben hat. */
+  auth_user_id: string | null
 }
 
 /** Lädt alle Einträge. Nicht-Admins erhalten durch RLS nur den eigenen. */
 export async function listUsers(): Promise<TeamMember[]> {
   const { data, error } = await supabase
     .from('app_users')
-    .select('id, full_name, role, is_active, phone, contact_email')
+    .select('id, full_name, role, is_active, phone, contact_email, auth_user_id')
     .order('full_name')
   if (error) throw error
   return (data ?? []) as TeamMember[]
@@ -174,6 +176,22 @@ export async function updateUser(
   if (error) throw error
   const row = Array.isArray(data) ? data[0] : data
   return row as TeamMember
+}
+
+/** Hat die Person schon ein Passwort vergeben? */
+export function hatPasswort(m: TeamMember): boolean {
+  return m.auth_user_id !== null
+}
+
+/**
+ * Setzt das Passwort zurück: Das Anmeldekonto wird entfernt, der Eintrag
+ * bleibt. Beim nächsten Anmelden vergibt die Person selbst ein neues.
+ */
+export async function resetPassword(id: string): Promise<string> {
+  const { data, error } = await supabase.rpc('admin_reset_password', { p_id: id })
+  if (error) throw error
+  const row = Array.isArray(data) ? data[0] : data
+  return (row as { full_name: string }).full_name
 }
 
 /**

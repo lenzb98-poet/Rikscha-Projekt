@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { listUsers, type Rolle, type TeamMember } from '../lib/supabase'
+import { hatPasswort, listUsers, type Rolle, type TeamMember } from '../lib/supabase'
 import { toGermanError } from '../lib/errors'
 import { AddUserDialog } from '../components/AddUserDialog'
 import { EditUserDialog } from '../components/EditUserDialog'
@@ -84,6 +84,7 @@ export function TeamVerwaltung({ onZurueck }: { onZurueck: () => void }) {
                   <span className="team__meta">
                     {ROLLEN_TEXT[m.role]}
                     {!m.is_active && <span className="badge">Deaktiviert</span>}
+                    {!hatPasswort(m) && <span className="badge badge--neutral">Kein Passwort</span>}
                   </span>
                   {(m.phone || m.contact_email) && (
                     <span className="team__kontakt">
@@ -125,6 +126,13 @@ export function TeamVerwaltung({ onZurueck }: { onZurueck: () => void }) {
           onDeleted={(name) => {
             setBearbeitet(null)
             aktualisiert(`${name} wurde gelöscht.`)
+          }}
+          onZurueckgesetzt={(name) => {
+            setBearbeitet(null)
+            aktualisiert(
+              `Das Passwort von ${name} wurde zurückgesetzt. ` +
+                'Beim nächsten Anmelden wird ein neues festgelegt.',
+            )
           }}
         />
       )}

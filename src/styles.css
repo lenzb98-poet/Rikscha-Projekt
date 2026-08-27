@@ -950,3 +950,8 @@ body {
   color: #0a2e1a;
 }
 .btn--chat:hover:not(:disabled) { background: #1eb959; }
+
+.badge--neutral { background: var(--z-offen-bg); color: var(--blau-dunkel); }
+
+.danger__stand { margin: 0 0 10px; font-size: 13px; }
+.danger .btn--ghost { display: block; margin: 0 auto 10px; }

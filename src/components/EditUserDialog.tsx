@@ -1,5 +1,12 @@
 import { useState } from 'react'
-import { deleteUser, updateUser, type Stammdaten, type TeamMember } from '../lib/supabase'
+import {
+  deleteUser,
+  hatPasswort,
+  resetPassword,
+  updateUser,
+  type Stammdaten,
+  type TeamMember,
+} from '../lib/supabase'
 import { toGermanError } from '../lib/errors'
 import { StammdatenFelder } from './StammdatenFelder'
 
@@ -8,9 +15,10 @@ type Props = {
   onClose: () => void
   onSaved: (member: TeamMember) => void
   onDeleted: (name: string) => void
+  onZurueckgesetzt: (name: string) => void
 }
 
-export function EditUserDialog({ member, onClose, onSaved, onDeleted }: Props) {
+export function EditUserDialog({ member, onClose, onSaved, onDeleted, onZurueckgesetzt }: Props) {
   const [werte, setWerte] = useState<Stammdaten>({
     fullName: member.full_name,
     role: member.role,
@@ -22,6 +30,7 @@ export function EditUserDialog({ member, onClose, onSaved, onDeleted }: Props) {
   const [busy, setBusy] = useState(false)
   // Löschen ist endgültig, deshalb erst nach einer Rückfrage
   const [loeschenBestaetigen, setLoeschenBestaetigen] = useState(false)
+  const [resetBestaetigen, setResetBestaetigen] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -31,6 +40,19 @@ export function EditUserDialog({ member, onClose, onSaved, onDeleted }: Props) {
       onSaved(await updateUser(member.id, { ...werte, isActive: aktiv }))
     } catch (err) {
       setError(toGermanError(err))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function handleReset() {
+    setError(null)
+    setBusy(true)
+    try {
+      onZurueckgesetzt(await resetPassword(member.id))
+    } catch (err) {
+      setError(toGermanError(err))
+      setResetBestaetigen(false)
     } finally {
       setBusy(false)
     }
@@ -60,7 +82,35 @@ export function EditUserDialog({ member, onClose, onSaved, onDeleted }: Props) {
       }}
     >
       <div className="overlay__card">
-        {loeschenBestaetigen ? (
+        {resetBestaetigen ? (
+          <>
+            <h3 id="edit-user-title">Passwort zurücksetzen?</h3>
+            <p className="overlay__intro">
+              Das bisherige Passwort von <strong>{member.full_name}</strong> wird ungültig.
+              Beim nächsten Anmelden gibt die Person nur ihren Namen ein und legt dabei
+              selbst ein neues fest – so wie beim ersten Mal.
+            </p>
+            <p className="alert alert--warn">
+              Der Eintrag bleibt vollständig erhalten, ebenso alle Anmeldungen zu Fahrten.
+            </p>
+
+            {error && <p className="alert alert--error">{error}</p>}
+
+            <div className="overlay__actions">
+              <button
+                type="button"
+                className="btn btn--ghost"
+                onClick={() => setResetBestaetigen(false)}
+                disabled={busy}
+              >
+                Abbrechen
+              </button>
+              <button type="button" className="btn" onClick={handleReset} disabled={busy}>
+                {busy ? 'Setze zurück …' : 'Passwort zurücksetzen'}
+              </button>
+            </div>
+          </>
+        ) : loeschenBestaetigen ? (
           <>
             <h3 id="edit-user-title">Wirklich löschen?</h3>
             <p className="overlay__intro">
@@ -127,6 +177,25 @@ export function EditUserDialog({ member, onClose, onSaved, onDeleted }: Props) {
             </form>
 
             <div className="danger">
+              <p className="danger__stand muted">
+                {hatPasswort(member)
+                  ? 'Passwort ist vergeben.'
+                  : 'Noch kein Passwort vergeben – die Person legt es bei der ersten Anmeldung fest.'}
+              </p>
+
+              {hatPasswort(member) && (
+                <button
+                  type="button"
+                  className="btn btn--ghost"
+                  onClick={() => {
+                    setError(null)
+                    setResetBestaetigen(true)
+                  }}
+                >
+                  Passwort zurücksetzen
+                </button>
+              )}
+
               <button
                 type="button"
                 className="btn btn--linkdanger"
