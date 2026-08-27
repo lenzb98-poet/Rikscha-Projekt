@@ -5,6 +5,8 @@ import {
   formatiereTermin,
   GRUND_REGEN,
   type Fahrt,
+  offenePlaetze,
+  type Platz,
 } from '../lib/fahrten'
 import { toGermanError } from '../lib/errors'
 import { BerichtDialog } from './BerichtDialog'
@@ -32,16 +34,22 @@ export function MeineFahrten({ alle, onAktualisiert }: Props) {
   const [hinweis, setHinweis] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
-  const [bericht, setBericht] = useState<Fahrt | null>(null)
+  // Nachgetragen wird je Platz, nicht je Fahrt
+  const [bericht, setBericht] = useState<{ fahrt: Fahrt; platz: Platz } | null>(null)
 
   const meine = (alle ?? []).filter((f) => f.bin_dabei)
-  // Fahrten, die stattgefunden haben und auf die Angaben warten
-  const nachzutragen = meine.filter((f) => f.zustand === 'nachtragen')
+
+  // Eigene Plätze, zu denen noch Angaben fehlen – auch wenn die Fahrt durch
+  // andere Plätze bereits vollständig wäre
+  const offeneEintraege = meine
+    .filter((f) => f.bericht_offen)
+    .flatMap((f) => offenePlaetze(f).map((platz) => ({ fahrt: f, platz })))
+  const nachzutragen = offeneEintraege
   const fahrten = meine.filter((f) => f.zustand === 'offen' || f.zustand === 'besetzt')
 
   // War es die letzte Fahrt, bleibt die Meldung noch für die Bestätigung
   // stehen. Sonst verschwände sie beim Absagen kommentarlos.
-  if (fahrten.length === 0 && nachzutragen.length === 0 && !hinweis) return null
+  if (fahrten.length === 0 && offeneEintraege.length === 0 && !hinweis) return null
 
   function schliessen() {
     setOffen(null)
@@ -102,22 +110,25 @@ export function MeineFahrten({ alle, onAktualisiert }: Props) {
       {nachzutragen.length > 0 && (
         <section className="nachtrag">
           <h3>
-            {nachzutragen.length === 1
+            {offeneEintraege.length === 1
               ? 'Eine Fahrt wartet auf deine Angaben'
-              : `${nachzutragen.length} Fahrten warten auf deine Angaben`}
+              : `${offeneEintraege.length} Fahrten warten auf deine Angaben`}
           </h3>
           <p className="nachtrag__text">
-            Bitte trage nach, wie weit ihr gefahren seid, wie lange es gedauert hat und wie
-            viele Fahrgäste dabei waren. Erst dann gilt die Fahrt als abgeschlossen.
+            Bitte trage für deine Rikscha nach, wie weit du gefahren bist, wie lange es
+            gedauert hat, wie viele Fahrgäste dabei waren und welche Rikscha du hattest.
           </p>
 
-          {nachzutragen.map((f) => (
-            <div key={f.id} className="nachtrag__fahrt">
+          {offeneEintraege.map(({ fahrt, platz }) => (
+            <div key={platz.id} className="nachtrag__fahrt">
               <div>
-                <div className="fahrt__termin">{formatiereTermin(f.starts_at)}</div>
-                <div className="fahrt__ort">{f.location}</div>
+                <div className="fahrt__termin">{formatiereTermin(fahrt.starts_at)}</div>
+                <div className="fahrt__ort">
+                  {fahrt.location}
+                  {fahrt.plaetze.length > 1 && ` · Rikscha-Platz ${platz.position}`}
+                </div>
               </div>
-              <button className="btn" onClick={() => setBericht(f)}>
+              <button className="btn" onClick={() => setBericht({ fahrt, platz })}>
                 Angaben eintragen
               </button>
             </div>
@@ -127,7 +138,8 @@ export function MeineFahrten({ alle, onAktualisiert }: Props) {
 
       {bericht && (
         <BerichtDialog
-          fahrt={bericht}
+          fahrt={bericht.fahrt}
+          platz={bericht.platz}
           onClose={() => setBericht(null)}
           onGespeichert={(text) => {
             setBericht(null)

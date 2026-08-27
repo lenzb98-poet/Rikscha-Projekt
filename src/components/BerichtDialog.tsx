@@ -1,60 +1,67 @@
 import { useState } from 'react'
 import {
-  berichtVollstaendig,
   fehlendeAngaben,
   formatiereFrist,
-  rideReport,
   formatiereTermin,
+  platzVollstaendig,
+  slotReport,
   verbleibendeFrist,
+  RIKSCHAS,
   type Bericht,
   type Fahrt,
+  type Platz,
+  type RikschaName,
 } from '../lib/fahrten'
 import { toGermanError } from '../lib/errors'
 
 type Props = {
   fahrt: Fahrt
+  /** Der eigene Rikscha-Platz, für den nachgetragen wird. */
+  platz: Platz
   onClose: () => void
   onGespeichert: (text: string) => void
 }
 
-/** Kilometer, Dauer und Fahrgäste nach einer Fahrt nachtragen. */
-export function BerichtDialog({ fahrt, onClose, onGespeichert }: Props) {
-  // Bereits eingetragene Angaben vorbelegen, damit sich ergänzen und
-  // korrigieren lässt, ohne sie neu eintippen zu müssen
+/** Kilometer, Dauer, Fahrgäste und Rikscha für den eigenen Platz nachtragen. */
+export function BerichtDialog({ fahrt, platz, onClose, onGespeichert }: Props) {
+  // Bereits Eingetragenes vorbelegen, damit sich ergänzen und korrigieren lässt
   const [werte, setWerte] = useState<Bericht>({
-    km: fahrt.report_km !== null ? String(fahrt.report_km).replace('.', ',') : '',
-    minuten: fahrt.report_minutes !== null ? String(fahrt.report_minutes) : '',
-    personen: fahrt.report_passengers !== null ? String(fahrt.report_passengers) : '',
+    km: platz.report_km !== null ? String(platz.report_km).replace('.', ',') : '',
+    minuten: platz.report_minutes !== null ? String(platz.report_minutes) : '',
+    personen: platz.report_passengers !== null ? String(platz.report_passengers) : '',
+    rikscha: platz.rikscha ?? '',
   })
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
-  function setze<K extends keyof Bericht>(feld: K, wert: string) {
+  function setze<K extends keyof Bericht>(feld: K, wert: Bericht[K]) {
     setWerte((w) => ({ ...w, [feld]: wert }))
   }
 
-  const gefuellt = [werte.km, werte.minuten, werte.personen].filter((w) => w.trim() !== '')
+  const gefuellt = [werte.km, werte.minuten, werte.personen, werte.rikscha].filter(
+    (w) => w.trim() !== '',
+  )
   const mindestensEine = gefuellt.length > 0
-  const alleDrei = gefuellt.length === 3
-  const fehlt = fehlendeAngaben(fahrt)
+  const alleVier = gefuellt.length === 4
+  const fehlt = fehlendeAngaben(platz)
   const restzeit = verbleibendeFrist(fahrt.report_deadline)
 
-  // Komma und Punkt sind beide erlaubt
   const alsZahl = (w: string) => Number(w.trim().replace(',', '.'))
   const kmUngueltig =
-    werte.km.trim() !== '' && (isNaN(alsZahl(werte.km)) || alsZahl(werte.km) < 0 || alsZahl(werte.km) > 500)
+    werte.km.trim() !== '' &&
+    (isNaN(alsZahl(werte.km)) || alsZahl(werte.km) < 0 || alsZahl(werte.km) > 500)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
     setBusy(true)
     try {
-      await rideReport(fahrt.id, werte)
+      await slotReport(platz.id, werte)
       onGespeichert(
-        alleDrei
-          ? `Danke! Die Fahrt am ${formatiereTermin(fahrt.starts_at)} ist abgeschlossen.`
-          : 'Angaben gespeichert. Sobald Kilometer, Dauer und Fahrgäste eingetragen sind, ' +
-            'gilt die Fahrt als abgeschlossen.',
+        alleVier
+          ? `Danke! Deine Angaben zu Rikscha ${platz.position} sind vollständig.`
+          : 'Angaben gespeichert. Vollständig ist es mit Kilometern, Dauer, Fahrgästen ' +
+            'und der Rikscha.',
       )
     } catch (err) {
       setError(toGermanError(err))
@@ -74,12 +81,12 @@ export function BerichtDialog({ fahrt, onClose, onGespeichert }: Props) {
       }}
     >
       <div className="overlay__card">
-        <h3 id="bericht-titel">Angaben zur Fahrt</h3>
+        <h3 id="bericht-titel">Deine Angaben zur Fahrt</h3>
         <p className="muted overlay__intro">
           {formatiereTermin(fahrt.starts_at)} · {fahrt.location}
           <br />
-          Es genügt, einzelne Angaben zu machen – die übrigen können später folgen.
-          Abgeschlossen ist die Fahrt, sobald alle drei eingetragen sind.
+          Rikscha-Platz {platz.position} von {fahrt.plaetze.length} – du trägst nur für
+          deinen eigenen Platz ein.
         </p>
 
         <p className={restzeit ? 'frist' : 'frist frist--abgelaufen'}>
@@ -97,13 +104,31 @@ export function BerichtDialog({ fahrt, onClose, onGespeichert }: Props) {
           )}
         </p>
 
-        {fahrt.report_at && !berichtVollstaendig(fahrt) && (
+        {platz.report_at && !platzVollstaendig(platz) && (
           <p className="alert alert--warn">
             Es {fehlt.length === 1 ? 'fehlt noch' : 'fehlen noch'}: {fehlt.join(', ')}.
           </p>
         )}
 
         <form onSubmit={handleSubmit} className="auth__form">
+          <label className="field" htmlFor="bericht-rikscha">
+            <span className="field__label">Gefahrene Rikscha</span>
+            <div className="field__wrap">
+              <select
+                id="bericht-rikscha"
+                value={werte.rikscha}
+                onChange={(e) => setze('rikscha', e.target.value as RikschaName | '')}
+              >
+                <option value="">Bitte auswählen</option>
+                {RIKSCHAS.map((r) => (
+                  <option key={r} value={r}>
+                    {r}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </label>
+
           <label className="field" htmlFor="bericht-km">
             <span className="field__label">
               Gefahrene Kilometer <span className="field__optional">optional</span>
@@ -173,8 +198,12 @@ export function BerichtDialog({ fahrt, onClose, onGespeichert }: Props) {
             <button type="button" className="btn btn--ghost" onClick={onClose} disabled={busy}>
               Später
             </button>
-            <button type="submit" className="btn" disabled={busy || !mindestensEine || kmUngueltig}>
-              {busy ? 'Speichere …' : alleDrei ? 'Fahrt abschließen' : 'Angaben speichern'}
+            <button
+              type="submit"
+              className="btn"
+              disabled={busy || !mindestensEine || kmUngueltig}
+            >
+              {busy ? 'Speichere …' : alleVier ? 'Fahrt abschließen' : 'Angaben speichern'}
             </button>
           </div>
         </form>

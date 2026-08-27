@@ -1,9 +1,12 @@
+import { useEffect, useState } from 'react'
 import {
   alsStunden,
   formatiereKomma,
   formatiereZahl,
+  rikschaStatistik,
   werteAusGesamt,
   type Fahrt,
+  type RikschaStatistik,
   type Uebernahme,
 } from '../lib/fahrten'
 
@@ -20,6 +23,14 @@ type Props = {
 }
 
 export function Auswertung({ alle, uebernahmen }: Props) {
+  const [proRikscha, setProRikscha] = useState<RikschaStatistik[]>([])
+
+  useEffect(() => {
+    rikschaStatistik()
+      .then(setProRikscha)
+      .catch(() => setProRikscha([]))
+  }, [alle])
+
   if (!alle) return null
 
   const summe = werteAusGesamt(alle, uebernahmen)
@@ -49,6 +60,23 @@ export function Auswertung({ alle, uebernahmen }: Props) {
           </span>
         </div>
       </div>
+
+      {proRikscha.length > 0 && (
+        <div className="rikschas">
+          <h4>Nach Rikscha</h4>
+          <ul className="rikschas__liste">
+            {proRikscha.map((r) => (
+              <li key={r.rikscha} className="rikschas__zeile">
+                <span className="rikschas__name">{r.rikscha}</span>
+                <span className="rikschas__werte">
+                  {formatiereKomma(Number(r.km))} km · {formatiereZahl(r.minuten)} Min. ·{' '}
+                  {formatiereZahl(r.personen)} {r.personen === 1 ? 'Fahrgast' : 'Fahrgäste'}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <p className="auswertung__fuss muted">
         {summe.fahrten === 0 && uebernahmen.length === 0

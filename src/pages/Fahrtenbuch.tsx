@@ -91,6 +91,7 @@ export function Fahrtenbuch({ onZurueck }: { onZurueck: () => void }) {
                   <th className="tab__zahl">km</th>
                   <th className="tab__zahl">Minuten</th>
                   <th className="tab__zahl">Fahrgäste</th>
+                  <th>Rikschas</th>
                   <th>Infotext</th>
                   <th>Mitteilungen</th>
                   <th>Nachgetragen von</th>
@@ -109,6 +110,7 @@ export function Fahrtenbuch({ onZurueck }: { onZurueck: () => void }) {
                     <td className="tab__zahl">{formatiereKomma(Number(u.km))}</td>
                     <td className="tab__zahl">{formatiereZahl(u.minuten)}</td>
                     <td className="tab__zahl">{formatiereZahl(u.personen)}</td>
+                    <td>–</td>
                     <td>Aus der bisherigen Statistik</td>
                     <td>
                       <button
@@ -137,6 +139,16 @@ export function Fahrtenbuch({ onZurueck }: { onZurueck: () => void }) {
                     <td className="tab__zahl">{wert(f.report_km, formatiereKomma)}</td>
                     <td className="tab__zahl">{wert(f.report_minutes)}</td>
                     <td className="tab__zahl">{wert(f.report_passengers)}</td>
+                    <td>
+                      {f.plaetze.filter((p) => p.rikscha).length === 0 ? (
+                        <span className="tab__leer">–</span>
+                      ) : (
+                        f.plaetze
+                          .filter((p) => p.rikscha)
+                          .map((p) => p.rikscha)
+                          .join(', ')
+                      )}
+                    </td>
                     <td className="tab__lang">{f.info || <span className="tab__leer">–</span>}</td>
                     <td className="tab__lang">
                       {f.notizen.length === 0 ? (
@@ -151,7 +163,7 @@ export function Fahrtenbuch({ onZurueck }: { onZurueck: () => void }) {
 
                 {fahrten.length === 0 && uebernahmen.length === 0 && (
                   <tr>
-                    <td colSpan={11} className="tab__leerzeile">
+                    <td colSpan={12} className="tab__leerzeile">
                       Noch keine Fahrten und keine übernommenen Zahlen.
                     </td>
                   </tr>
@@ -171,7 +183,7 @@ export function Fahrtenbuch({ onZurueck }: { onZurueck: () => void }) {
                   <td className="tab__zahl">{formatiereKomma(summe.km)}</td>
                   <td className="tab__zahl">{formatiereZahl(summe.minuten)}</td>
                   <td className="tab__zahl">{formatiereZahl(summe.personen)}</td>
-                  <td colSpan={3} />
+                  <td colSpan={4} />
                 </tr>
               </tfoot>
             </table>

@@ -6,13 +6,22 @@ export type RideStatus = 'geplant' | 'abgesagt' | 'abgeschlossen'
 
 export type Pilot = { id: string; name: string }
 
-/** Ein einzeln buchbarer Rikscha-Platz einer Fahrt. */
+/** Die vier Rikschas des Vereins. */
+export const RIKSCHAS = ['Fritz', 'Fred', 'Liese', 'Lotte'] as const
+export type RikschaName = (typeof RIKSCHAS)[number]
+
+/** Ein einzeln buchbarer Rikscha-Platz einer Fahrt, mit eigener Nacherfassung. */
 export type Platz = {
   id: string
   position: number
   pilot_id: string | null
   pilot_name: string | null
   ist_meiner: boolean
+  report_km: number | null
+  report_minutes: number | null
+  report_passengers: number | null
+  rikscha: RikschaName | null
+  report_at: string | null
 }
 export type Notiz = { id: string; name: string; body: string; created_at: string }
 
@@ -38,6 +47,8 @@ export type Fahrt = {
   report_at: string | null
   /** Bis wann nachgetragen werden kann – von der Datenbank berechnet. */
   report_deadline: string
+  /** Mir fehlt zu dieser Fahrt noch etwas an meinem eigenen Platz. */
+  bericht_offen: boolean
 }
 
 export const ZUSTAND_TEXT: Record<Zustand, string> = {
@@ -248,14 +259,20 @@ export async function rideCancel(rideId: string, grund: string): Promise<void> {
   if (error) throw error
 }
 
-export type Bericht = { km: string; minuten: string; personen: string }
+export type Bericht = {
+  km: string
+  minuten: string
+  personen: string
+  rikscha: RikschaName | ''
+}
 
 /**
  * Trägt nach der Fahrt Kilometer, Dauer und Fahrgäste nach. Erst damit gilt
  * die Fahrt als abgeschlossen. Erlaubt für eingetragene Pilot:innen und die
  * Koordination.
  */
-export async function rideReport(rideId: string, b: Bericht): Promise<void> {
+/** Trägt die Angaben für einen einzelnen Rikscha-Platz nach. */
+export async function slotReport(slotId: string, b: Bericht): Promise<void> {
   // Leere Felder bleiben leer statt zu 0 zu werden – die Datenbank lässt
   // sie dann unangetastet, sodass sich Angaben ergänzen lassen.
   const zahl = (wert: string) => {
@@ -263,18 +280,44 @@ export async function rideReport(rideId: string, b: Bericht): Promise<void> {
     return t === '' ? null : Number(t)
   }
 
-  const { error } = await supabase.rpc('ride_report', {
-    p_ride_id: rideId,
+  const { error } = await supabase.rpc('ride_slot_report', {
+    p_slot_id: slotId,
     p_km: zahl(b.km),
     p_minutes: zahl(b.minuten),
     p_passengers: zahl(b.personen),
+    p_rikscha: b.rikscha || null,
   })
   if (error) throw error
 }
 
-/** Sind alle drei Angaben vorhanden? Erst dann gilt die Fahrt als abgeschlossen. */
-export function berichtVollstaendig(f: Fahrt): boolean {
-  return f.report_km !== null && f.report_minutes !== null && f.report_passengers !== null
+export type RikschaStatistik = {
+  rikscha: string
+  km: number
+  minuten: number
+  personen: number
+  fahrten: number
+}
+
+/** Summen je Rikscha über alle nachgetragenen Plätze. */
+export async function rikschaStatistik(): Promise<RikschaStatistik[]> {
+  const { data, error } = await supabase.rpc('rikscha_statistik')
+  if (error) throw error
+  return (data ?? []) as RikschaStatistik[]
+}
+
+/** Sind alle Angaben zu diesem Platz vorhanden? */
+export function platzVollstaendig(p: Platz): boolean {
+  return (
+    p.report_km !== null &&
+    p.report_minutes !== null &&
+    p.report_passengers !== null &&
+    p.rikscha !== null
+  )
+}
+
+/** Meine eigenen Plätze, zu denen noch Angaben fehlen. */
+export function offenePlaetze(f: Fahrt): Platz[] {
+  return f.plaetze.filter((p) => p.ist_meiner && !platzVollstaendig(p))
 }
 
 /** "8,5 km · 1 Std. 15 Min. · 2 Fahrgäste" – nur die vorhandenen Angaben. */
@@ -297,12 +340,13 @@ export function formatiereBericht(f: Fahrt): string | null {
   return teile.length ? teile.join(' · ') : null
 }
 
-/** Welche Angaben fehlen noch? Für den Hinweis im Dialog. */
-export function fehlendeAngaben(f: Fahrt): string[] {
+/** Welche Angaben fehlen an diesem Platz noch? Für den Hinweis im Dialog. */
+export function fehlendeAngaben(p: Platz): string[] {
   const fehlt: string[] = []
-  if (f.report_km === null) fehlt.push('Kilometer')
-  if (f.report_minutes === null) fehlt.push('Dauer')
-  if (f.report_passengers === null) fehlt.push('Fahrgäste')
+  if (p.report_km === null) fehlt.push('Kilometer')
+  if (p.report_minutes === null) fehlt.push('Dauer')
+  if (p.report_passengers === null) fehlt.push('Fahrgäste')
+  if (p.rikscha === null) fehlt.push('Rikscha')
   return fehlt
 }
 
