@@ -37,8 +37,8 @@ export const ZUSTAND_TEXT: Record<Zustand, string> = {
   abgesagt: 'Abgesagt',
 }
 
-/** 'offen' = noch Plätze frei, 'kommend' = besetzt, 'alle' = Kalender/Verwaltung */
-export async function listRides(bereich: 'offen' | 'kommend' | 'alle'): Promise<Fahrt[]> {
+/** 'offen' = noch Plätze frei, 'alle' = Kalender, Verwaltung und Auswertung */
+export async function listRides(bereich: 'offen' | 'alle'): Promise<Fahrt[]> {
   const { data, error } = await supabase.rpc('list_rides', { p_bereich: bereich })
   if (error) throw error
   return (data ?? []) as Fahrt[]

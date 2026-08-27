@@ -4,33 +4,19 @@ import { toGermanError } from '../lib/errors'
 import { FahrtKarte } from '../components/FahrtKarte'
 
 type Props = {
-  bereich: 'offen' | 'kommend'
   onZurueck: () => void
 }
 
-const TEXTE = {
-  offen: {
-    titel: 'Offene Fahrten',
-    unter: 'Fahrten, für die noch Pilot:innen gesucht werden',
-    leer: 'Zurzeit sind keine Fahrten offen. Sobald die Koordination eine neue anlegt, erscheint sie hier.',
-  },
-  kommend: {
-    titel: 'Kommende Fahrten',
-    unter: 'Fahrten, die vollständig besetzt sind',
-    leer: 'Noch keine Fahrt ist vollständig besetzt.',
-  },
-}
-
-export function Fahrten({ bereich, onZurueck }: Props) {
+export function Fahrten({ onZurueck }: Props) {
   const [fahrten, setFahrten] = useState<Fahrt[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState<string | null>(null)
 
   const laden = useCallback(() => {
-    listRides(bereich)
+    listRides('offen')
       .then(setFahrten)
       .catch((err) => setError(toGermanError(err)))
-  }, [bereich])
+  }, [])
 
   useEffect(() => {
     laden()
@@ -63,8 +49,6 @@ export function Fahrten({ bereich, onZurueck }: Props) {
     }
   }
 
-  const texte = TEXTE[bereich]
-
   return (
     <>
       <button className="btn btn--zurueck" onClick={onZurueck}>
@@ -73,8 +57,8 @@ export function Fahrten({ bereich, onZurueck }: Props) {
 
       <div className="seite__kopf">
         <div>
-          <h2>{texte.titel}</h2>
-          <p className="muted">{texte.unter}</p>
+          <h2>Offene Fahrten</h2>
+          <p className="muted">Fahrten, für die noch Pilot:innen gesucht werden</p>
         </div>
       </div>
 
@@ -84,7 +68,8 @@ export function Fahrten({ bereich, onZurueck }: Props) {
       {fahrten?.length === 0 && (
         <div className="card">
           <p className="muted" style={{ margin: 0 }}>
-            {texte.leer}
+            Zurzeit sind keine Fahrten offen. Sobald die Koordination eine neue anlegt,
+            erscheint sie hier.
           </p>
         </div>
       )}

@@ -221,7 +221,8 @@ export function FahrtDialog({ fahrt, onClose, onGespeichert }: Props) {
                   />
                 </div>
                 <span className="hint">
-                  Sobald so viele eingetragen sind, wandert die Fahrt zu „Kommende Fahrten“.
+                  Sobald so viele eingetragen sind, gilt die Fahrt als zugesagt und
+                  verschwindet aus den offenen Fahrten.
                 </span>
               </label>
 

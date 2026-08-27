@@ -23,9 +23,9 @@ const ROLLEN: Record<AppUser['role'], string> = {
   fahrer: 'Fahrer:in',
 }
 
-type Ansicht = 'start' | 'offene' | 'kommende' | 'kalender' | 'fahrten-verwalten' | 'fahrtenbuch' | 'team' | 'chat'
+type Ansicht = 'start' | 'offene' | 'kalender' | 'fahrten-verwalten' | 'fahrtenbuch' | 'team' | 'chat'
 
-/** "3 offene Fahrten", "1 kommende Fahrt", "Zurzeit keine" */
+/** "3 offene Fahrten", "1 offene Fahrt", "Zurzeit keine" */
 function anzahlText(anzahl: number | null, einzahl: string, mehrzahl: string): string {
   if (anzahl === null) return '\u00a0'
   if (anzahl === 0) return 'Zurzeit keine'
@@ -39,14 +39,11 @@ export function Dashboard({ profile, onSignOut }: Props) {
 
   const { fahrten, uebernahmen, laden } = useFahrten()
   const offene = fahrten?.filter((f) => f.zustand === 'offen').length ?? null
-  const kommende = fahrten?.filter((f) => f.zustand === 'besetzt').length ?? null
 
   function inhalt() {
     switch (ansicht) {
       case 'offene':
-        return <Fahrten bereich="offen" onZurueck={zurueck} />
-      case 'kommende':
-        return <Fahrten bereich="kommend" onZurueck={zurueck} />
+        return <Fahrten onZurueck={zurueck} />
       case 'kalender':
         return <Fahrtenkalender onZurueck={zurueck} />
       case 'fahrten-verwalten':
@@ -74,15 +71,6 @@ export function Dashboard({ profile, onSignOut }: Props) {
                   </button>
                   <span className="knopfblock__zahl">
                     {anzahlText(offene, 'offene Fahrt', 'offene Fahrten')}
-                  </span>
-                </div>
-
-                <div className="knopfblock">
-                  <button className="btn" onClick={() => setAnsicht('kommende')}>
-                    Kommende Fahrten
-                  </button>
-                  <span className="knopfblock__zahl">
-                    {anzahlText(kommende, 'kommende Fahrt', 'kommende Fahrten')}
                   </span>
                 </div>
 
