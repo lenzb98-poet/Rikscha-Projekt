@@ -2,8 +2,9 @@ import {
   alsStunden,
   formatiereKomma,
   formatiereZahl,
-  werteAus,
+  werteAusGesamt,
   type Fahrt,
+  type Uebernahme,
 } from '../lib/fahrten'
 
 /**
@@ -12,10 +13,16 @@ import {
  * Bewusst kein Diagramm: Es sind drei Gesamtwerte ohne Verlauf, dafür sind
  * Kennzahlen die passende Form.
  */
-export function Auswertung({ alle }: { alle: Fahrt[] | null }) {
+type Props = {
+  alle: Fahrt[] | null
+  /** Zahlen aus der Zeit vor dieser App; zählen mit. */
+  uebernahmen: Uebernahme[]
+}
+
+export function Auswertung({ alle, uebernahmen }: Props) {
   if (!alle) return null
 
-  const summe = werteAus(alle)
+  const summe = werteAusGesamt(alle, uebernahmen)
 
   return (
     <section className="auswertung">
@@ -44,11 +51,20 @@ export function Auswertung({ alle }: { alle: Fahrt[] | null }) {
       </div>
 
       <p className="auswertung__fuss muted">
-        {summe.fahrten === 0
+        {summe.fahrten === 0 && uebernahmen.length === 0
           ? 'Sobald nach einer Fahrt Angaben eingetragen sind, erscheinen sie hier.'
-          : `Aus ${formatiereZahl(summe.fahrten)} ${
-              summe.fahrten === 1 ? 'Fahrt' : 'Fahrten'
-            } mit eingetragenen Angaben.`}
+          : [
+              summe.fahrten > 0 &&
+                `${formatiereZahl(summe.fahrten)} ${
+                  summe.fahrten === 1 ? 'Fahrt' : 'Fahrten'
+                } mit eingetragenen Angaben`,
+              uebernahmen.length > 0 &&
+                `${formatiereZahl(uebernahmen.length)} ${
+                  uebernahmen.length === 1 ? 'Übernahme' : 'Übernahmen'
+                } aus der bisherigen Statistik`,
+            ]
+              .filter(Boolean)
+              .join(' und ') + '.'}
       </p>
     </section>
   )

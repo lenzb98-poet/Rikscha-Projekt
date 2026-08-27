@@ -10,6 +10,7 @@ import { Chat } from './Chat'
 import { Fahrten } from './Fahrten'
 import { Fahrtenkalender } from './Fahrtenkalender'
 import { FahrtenVerwaltung } from './FahrtenVerwaltung'
+import { Fahrtenbuch } from './Fahrtenbuch'
 
 type Props = {
   profile: AppUser | null
@@ -22,7 +23,7 @@ const ROLLEN: Record<AppUser['role'], string> = {
   fahrer: 'Fahrer:in',
 }
 
-type Ansicht = 'start' | 'offene' | 'kommende' | 'kalender' | 'fahrten-verwalten' | 'team' | 'chat'
+type Ansicht = 'start' | 'offene' | 'kommende' | 'kalender' | 'fahrten-verwalten' | 'fahrtenbuch' | 'team' | 'chat'
 
 /** "3 offene Fahrten", "1 kommende Fahrt", "Zurzeit keine" */
 function anzahlText(anzahl: number | null, einzahl: string, mehrzahl: string): string {
@@ -36,7 +37,7 @@ export function Dashboard({ profile, onSignOut }: Props) {
   const istAdmin = profile?.role === 'admin'
   const zurueck = () => setAnsicht('start')
 
-  const { fahrten, laden } = useFahrten()
+  const { fahrten, uebernahmen, laden } = useFahrten()
   const offene = fahrten?.filter((f) => f.zustand === 'offen').length ?? null
   const kommende = fahrten?.filter((f) => f.zustand === 'besetzt').length ?? null
 
@@ -50,6 +51,8 @@ export function Dashboard({ profile, onSignOut }: Props) {
         return <Fahrtenkalender onZurueck={zurueck} />
       case 'fahrten-verwalten':
         return istAdmin ? <FahrtenVerwaltung onZurueck={zurueck} /> : null
+      case 'fahrtenbuch':
+        return istAdmin ? <Fahrtenbuch onZurueck={zurueck} /> : null
       case 'team':
         return istAdmin ? <TeamVerwaltung onZurueck={zurueck} /> : null
       case 'chat':
@@ -100,6 +103,14 @@ export function Dashboard({ profile, onSignOut }: Props) {
                   </div>
                 )}
 
+                {istAdmin && (
+                  <div className="knopfblock">
+                    <button className="btn btn--ghost" onClick={() => setAnsicht('fahrtenbuch')}>
+                      Fahrtenbuch / Statistik
+                    </button>
+                  </div>
+                )}
+
                 <div className="knopfblock knopfblock--breit">
                   <button className="btn btn--chat" onClick={() => setAnsicht('chat')}>
                     Piloten Chat
@@ -120,7 +131,7 @@ export function Dashboard({ profile, onSignOut }: Props) {
               </section>
             )}
 
-            <Auswertung alle={fahrten} />
+            <Auswertung alle={fahrten} uebernahmen={uebernahmen} />
 
             <AppEinrichten />
           </>

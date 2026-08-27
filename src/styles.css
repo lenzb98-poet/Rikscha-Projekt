@@ -955,3 +955,90 @@ body {
 
 .danger__stand { margin: 0 0 10px; font-size: 13px; }
 .danger .btn--ghost { display: block; margin: 0 auto 10px; }
+
+/* --- Fahrtenbuch: Tabelle mit waagerechtem Schieben ---------------------- */
+.tab__rahmen {
+  margin-top: 16px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tab {
+  border-collapse: collapse;
+  width: max-content;
+  min-width: 100%;
+  font-size: 14px;
+}
+
+.tab th,
+.tab td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+  white-space: nowrap;
+}
+.tab th:last-child,
+.tab td:last-child { border-right: 0; }
+
+.tab thead th {
+  position: sticky;
+  top: 0;
+  background: var(--z-offen-bg);
+  color: var(--blau-dunkel);
+  font-size: 13px;
+  font-weight: 700;
+  z-index: 1;
+}
+
+/* Erste Spalte beim Schieben stehen lassen. Der Schatten macht sichtbar,
+   dass sie die übrigen Spalten überlagert. */
+.tab__fix {
+  position: sticky;
+  left: 0;
+  background: var(--card);
+  font-weight: 600;
+  z-index: 2;
+  box-shadow: 3px 0 5px -2px rgba(11, 33, 60, 0.16);
+}
+.tab thead .tab__fix { background: var(--z-offen-bg); z-index: 3; }
+
+.tab tbody tr:nth-child(even) td { background: #f7f9fc; }
+.tab tbody tr:nth-child(even) .tab__fix { background: #f7f9fc; }
+.tab tbody tr:hover td { background: #eef3f9; }
+.tab tbody tr:hover .tab__fix { background: #eef3f9; }
+
+.tab__zahl { text-align: right; font-variant-numeric: tabular-nums; }
+.tab__leer { color: var(--muted); }
+.tab__lang { max-width: 320px; white-space: normal; }
+.tab__leerzeile { text-align: center; color: var(--muted); padding: 24px 12px; }
+
+.tab__uebernahme td { background: #fbf3dd !important; font-style: italic; }
+.tab__uebernahme .tab__fix { background: #fbf3dd !important; font-style: normal; }
+
+.tab tfoot td {
+  background: var(--z-offen-bg);
+  font-weight: 700;
+  color: var(--blau-dunkel);
+  border-bottom: 0;
+  position: sticky;
+  bottom: 0;
+}
+
+.tab__knopf {
+  background: none;
+  border: 0;
+  padding: 0 8px 0 0;
+  font-size: 13px;
+  color: var(--blau);
+  cursor: pointer;
+  text-decoration: underline;
+  font-style: normal;
+}
+.tab__knopf--weg { color: var(--error); }
+
+.tab__hinweis { margin-top: 8px; }

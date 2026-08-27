@@ -181,6 +181,7 @@ export function fuerEingabefeld(iso: string): string {
  */
 export function useFahrten() {
   const [fahrten, setFahrten] = useState<Fahrt[] | null>(null)
+  const [uebernahmen, setUebernahmen] = useState<Uebernahme[]>([])
 
   const laden = useCallback(() => {
     listRides('alle')
@@ -188,6 +189,10 @@ export function useFahrten() {
       .catch(() => {
         // Auf der Startseite lieber still bleiben als eine Fehlermeldung zeigen
       })
+    // Für die Auswertung: die Zahlen aus der Zeit vor dieser App
+    listUebernahmen()
+      .then(setUebernahmen)
+      .catch(() => setUebernahmen([]))
   }, [])
 
   useEffect(() => {
@@ -195,7 +200,7 @@ export function useFahrten() {
     return watchRides(laden)
   }, [laden])
 
-  return { fahrten, laden }
+  return { fahrten, uebernahmen, laden }
 }
 
 /** Standardgrund, den die Absage-Auswahl vorschlägt. */
@@ -353,4 +358,63 @@ export function formatiereFrist(bis: string): string {
     hour: '2-digit',
     minute: '2-digit',
   })
+}
+
+/* --- Übernahme der bisherigen Statistik ---------------------------------- */
+
+export type Uebernahme = {
+  id: string
+  bezeichnung: string
+  km: number
+  minuten: number
+  personen: number
+  erfasst_von: string | null
+  erfasst_am: string
+}
+
+export async function listUebernahmen(): Promise<Uebernahme[]> {
+  const { data, error } = await supabase.rpc('list_uebernahmen')
+  if (error) throw error
+  return (data ?? []) as Uebernahme[]
+}
+
+export type UebernahmeEingabe = {
+  bezeichnung: string
+  km: string
+  minuten: string
+  personen: string
+}
+
+export async function saveUebernahme(id: string | null, e: UebernahmeEingabe): Promise<void> {
+  const zahl = (w: string) => {
+    const t = w.trim().replace(',', '.')
+    return t === '' ? 0 : Number(t)
+  }
+  const { error } = await supabase.rpc('admin_save_uebernahme', {
+    p_id: id,
+    p_bezeichnung: e.bezeichnung.trim(),
+    p_km: zahl(e.km),
+    p_minuten: zahl(e.minuten),
+    p_personen: zahl(e.personen),
+  })
+  if (error) throw error
+}
+
+export async function deleteUebernahme(id: string): Promise<void> {
+  const { error } = await supabase.rpc('admin_delete_uebernahme', { p_id: id })
+  if (error) throw error
+}
+
+/** Summe aus Fahrten und übernommener Statistik. */
+export function werteAusGesamt(fahrten: Fahrt[], uebernahmen: Uebernahme[]): Auswertung {
+  const summe = werteAus(fahrten)
+
+  for (const u of uebernahmen) {
+    summe.km += Number(u.km) || 0
+    summe.minuten += u.minuten || 0
+    summe.personen += u.personen || 0
+  }
+
+  summe.km = Math.round(summe.km * 10) / 10
+  return summe
 }
