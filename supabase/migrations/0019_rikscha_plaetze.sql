@@ -8,7 +8,7 @@
 -- Plaetze verteilt, danach faellt die alte Tabelle weg - zwei Quellen fuer
 -- dieselbe Aussage waeren eine Fehlerquelle.
 
-create table public.ride_slots (
+create table if not exists public.ride_slots (
   id        uuid primary key default gen_random_uuid(),
   ride_id   uuid not null references public.rides (id) on delete cascade,
   position  integer not null,
@@ -18,11 +18,12 @@ create table public.ride_slots (
   unique (ride_id, position)
 );
 
-create index ride_slots_ride_idx  on public.ride_slots (ride_id, position);
-create index ride_slots_pilot_idx on public.ride_slots (pilot_id) where pilot_id is not null;
+create index if not exists ride_slots_ride_idx  on public.ride_slots (ride_id, position);
+create index if not exists ride_slots_pilot_idx on public.ride_slots (pilot_id) where pilot_id is not null;
 
 alter table public.ride_slots enable row level security;
 
+drop policy if exists "ride_slots_select" on public.ride_slots;
 create policy "ride_slots_select" on public.ride_slots for select
   to authenticated using (public.current_app_user_id() is not null);
 
@@ -34,24 +35,35 @@ grant select on public.ride_slots to authenticated;
 insert into public.ride_slots (ride_id, position)
 select r.id, g.position
   from public.rides r
-  cross join lateral generate_series(1, r.pilots_needed) as g(position);
+  cross join lateral generate_series(1, r.pilots_needed) as g(position)
+on conflict (ride_id, position) do nothing;
 
 -- Bisherige Anmeldungen auf die Plätze verteilen, in der Reihenfolge der
 -- Anmeldung. Mehr Anmeldungen als Plaetze kann es nicht geben, das hat
 -- ride_signup verhindert.
-with nummeriert as (
-  select p.ride_id, p.pilot_id, p.signed_up_at,
-         row_number() over (partition by p.ride_id order by p.signed_up_at) as nr
-    from public.ride_pilots p
-)
-update public.ride_slots s
-   set pilot_id  = n.pilot_id,
-       booked_at = n.signed_up_at
-  from nummeriert n
- where s.ride_id = n.ride_id
-   and s.position = n.nr;
+do $$
+begin
+  -- Nur beim ersten Durchlauf: danach gibt es ride_pilots nicht mehr
+  if exists (
+    select 1 from information_schema.tables
+     where table_schema = 'public' and table_name = 'ride_pilots'
+  ) then
+    with nummeriert as (
+      select p.ride_id, p.pilot_id, p.signed_up_at,
+             row_number() over (partition by p.ride_id order by p.signed_up_at) as nr
+        from public.ride_pilots p
+    )
+    update public.ride_slots s
+       set pilot_id  = n.pilot_id,
+           booked_at = n.signed_up_at
+      from nummeriert n
+     where s.ride_id = n.ride_id
+       and s.position = n.nr;
 
-drop table public.ride_pilots;
+    drop table public.ride_pilots;
+  end if;
+end;
+$$;
 
 -- ---------------------------------------------------------------------------
 -- Plätze an die benötigte Anzahl angleichen
@@ -119,6 +131,7 @@ begin
 end;
 $$;
 
+drop trigger if exists rides_slots_trg on public.rides;
 create trigger rides_slots_trg
   after insert or update of pilots_needed on public.rides
   for each row execute function public.rides_slots_trigger();
@@ -126,7 +139,11 @@ create trigger rides_slots_trg
 do $$
 begin
   if exists (select 1 from pg_publication where pubname = 'supabase_realtime') then
-    alter publication supabase_realtime add table public.ride_slots;
+    if not exists (select 1 from pg_publication_tables
+                    where pubname = 'supabase_realtime'
+                      and schemaname = 'public' and tablename = 'ride_slots') then
+      alter publication supabase_realtime add table public.ride_slots;
+    end if;
   end if;
 end;
 $$;

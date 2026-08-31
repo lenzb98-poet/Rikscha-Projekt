@@ -7,7 +7,15 @@
 -- Die vier Rikschas des Vereins stehen fest; ein Anlegen weiterer ist nicht
 -- vorgesehen, deshalb ein Aufzaehlungstyp statt einer eigenen Tabelle.
 
-create type public.rikscha_name as enum ('Fritz', 'Fred', 'Liese', 'Lotte');
+-- Wiederholbar: jeder Schritt prueft, ob er noch noetig ist. Bricht die
+-- Migration ab, laesst sie sich einfach erneut ausfuehren.
+do $$
+begin
+  if not exists (select 1 from pg_type where typname = 'rikscha_name') then
+    create type public.rikscha_name as enum ('Fritz', 'Fred', 'Liese', 'Lotte');
+  end if;
+end;
+$$;
 
 alter table public.ride_slots
   add column if not exists report_km         numeric(6,1),
@@ -32,29 +40,39 @@ alter table public.ride_slots
 -- ersatzweise den ersten ueberhaupt. Die Rikscha bleibt offen, sie wurde
 -- damals nicht erfasst.
 -- ---------------------------------------------------------------------------
-with ziel as (
-  select distinct on (r.id)
-         r.id as ride_id, s.id as slot_id,
-         r.report_km, r.report_minutes, r.report_passengers, r.report_at, r.report_by
-    from public.rides r
-    join public.ride_slots s on s.ride_id = r.id
-   where r.report_at is not null
-   order by r.id, (s.pilot_id is null), s.position
-)
-update public.ride_slots s
-   set report_km         = ziel.report_km,
-       report_minutes    = ziel.report_minutes,
-       report_passengers = ziel.report_passengers,
-       report_at         = ziel.report_at,
-       -- Ist der Platz frei, wird die Person eingetragen, die nachgetragen hat
-       pilot_id          = coalesce(s.pilot_id, ziel.report_by)
-  from ziel
- where s.id = ziel.slot_id;
+do $$
+begin
+  -- Nur beim ersten Durchlauf: danach gibt es die Spalten nicht mehr
+  if exists (
+    select 1 from information_schema.columns
+     where table_schema = 'public' and table_name = 'rides' and column_name = 'report_km'
+  ) then
+    with ziel as (
+      select distinct on (r.id)
+             r.id as ride_id, s.id as slot_id,
+             r.report_km, r.report_minutes, r.report_passengers, r.report_at, r.report_by
+        from public.rides r
+        join public.ride_slots s on s.ride_id = r.id
+       where r.report_at is not null
+       order by r.id, (s.pilot_id is null), s.position
+    )
+    update public.ride_slots s
+       set report_km         = ziel.report_km,
+           report_minutes    = ziel.report_minutes,
+           report_passengers = ziel.report_passengers,
+           report_at         = ziel.report_at,
+           -- Ist der Platz frei, wird die Person eingetragen, die nachgetragen hat
+           pilot_id          = coalesce(s.pilot_id, ziel.report_by)
+      from ziel
+     where s.id = ziel.slot_id;
 
-alter table public.rides
-  drop column if exists report_km,
-  drop column if exists report_minutes,
-  drop column if exists report_passengers;
+    alter table public.rides
+      drop column report_km,
+      drop column report_minutes,
+      drop column report_passengers;
+  end if;
+end;
+$$;
 
 -- report_by und report_at bleiben an der Fahrt als Spur, wer zuletzt etwas
 -- nachgetragen hat; für die Zahlen sind ab jetzt die Plätze zuständig.

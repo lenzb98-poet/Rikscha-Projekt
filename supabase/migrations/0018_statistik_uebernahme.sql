@@ -8,7 +8,7 @@
 -- Mehrere Zeilen sind erlaubt, etwa je Jahr. Sie zaehlen in der Auswertung
 -- genauso mit wie erfasste Fahrten.
 
-create table public.statistik_uebernahme (
+create table if not exists public.statistik_uebernahme (
   id          uuid primary key default gen_random_uuid(),
   bezeichnung text not null,
   km          numeric(9,1) not null default 0,
@@ -26,6 +26,7 @@ create table public.statistik_uebernahme (
 
 alter table public.statistik_uebernahme enable row level security;
 
+drop policy if exists "uebernahme_select" on public.statistik_uebernahme;
 create policy "uebernahme_select" on public.statistik_uebernahme for select
   to authenticated using (public.current_app_user_id() is not null);
 
@@ -150,7 +151,11 @@ grant execute on function public.admin_delete_uebernahme(uuid) to authenticated;
 do $$
 begin
   if exists (select 1 from pg_publication where pubname = 'supabase_realtime') then
-    alter publication supabase_realtime add table public.statistik_uebernahme;
+    if not exists (select 1 from pg_publication_tables
+                    where pubname = 'supabase_realtime'
+                      and schemaname = 'public' and tablename = 'statistik_uebernahme') then
+      alter publication supabase_realtime add table public.statistik_uebernahme;
+    end if;
   end if;
 end;
 $$;
