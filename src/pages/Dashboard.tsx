@@ -139,7 +139,10 @@ export function Dashboard({ profile, onSignOut }: Props) {
         </button>
       </header>
 
-      <main className="content">{inhalt()}</main>
+      {/* Das Fahrtenbuch ist breit; dort darf der Inhalt mehr Platz nutzen. */}
+      <main className={ansicht === 'fahrtenbuch' ? 'content content--breit' : 'content'}>
+        {inhalt()}
+      </main>
     </div>
   )
 }

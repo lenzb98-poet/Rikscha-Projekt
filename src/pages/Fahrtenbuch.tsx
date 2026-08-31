@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import {
-  ZUSTAND_TEXT,
+  RIKSCHAS,
   deleteUebernahme,
   formatiereKomma,
   formatiereZahl,
@@ -9,6 +9,7 @@ import {
   watchRides,
   werteAusGesamt,
   type Fahrt,
+  type Platz,
   type Uebernahme,
 } from '../lib/fahrten'
 import { toGermanError } from '../lib/errors'
@@ -16,12 +17,15 @@ import { UebernahmeDialog } from '../components/UebernahmeDialog'
 
 const datum = (iso: string) =>
   new Date(iso).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })
-const uhrzeit = (iso: string) =>
-  new Date(iso).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })
 
-/** Zahl oder Strich, wenn nichts eingetragen ist. */
-const wert = (n: number | null, formatiert = formatiereZahl) =>
-  n === null ? <span className="tab__leer">–</span> : formatiert(n)
+/** Minuten als Stunden mit Komma, wie im bisherigen Fahrtenbuch (2,5 statt 150). */
+function alsStundenZahl(minuten: number | null): string {
+  if (minuten === null) return ''
+  return formatiereKomma(Math.round((minuten / 60) * 100) / 100)
+}
+
+/** Eine Zeile der Tabelle: ein Rikscha-Platz einer Fahrt. */
+type Zeile = { fahrt: Fahrt; platz: Platz | null }
 
 export function Fahrtenbuch({ onZurueck }: { onZurueck: () => void }) {
   const [fahrten, setFahrten] = useState<Fahrt[] | null>(null)
@@ -57,6 +61,15 @@ export function Fahrtenbuch({ onZurueck }: { onZurueck: () => void }) {
 
   const summe = werteAusGesamt(fahrten ?? [], uebernahmen)
 
+  // Je belegtem Platz eine Zeile. Fahrten ohne eingetragene Person erscheinen
+  // mit einer Zeile, damit sie im Buch nicht fehlen.
+  const zeilen: Zeile[] = (fahrten ?? []).flatMap<Zeile>((fahrt) => {
+    const belegt = fahrt.plaetze.filter((p) => p.pilot_id !== null)
+    return belegt.length > 0
+      ? belegt.map((platz) => ({ fahrt, platz }))
+      : [{ fahrt, platz: null }]
+  })
+
   return (
     <>
       <button className="btn btn--zurueck" onClick={onZurueck}>
@@ -66,7 +79,7 @@ export function Fahrtenbuch({ onZurueck }: { onZurueck: () => void }) {
       <div className="seite__kopf">
         <div>
           <h2>Fahrtenbuch und Statistik</h2>
-          <p className="muted">Alle Fahrten und die übernommenen Zahlen im Überblick</p>
+          <p className="muted">Jede gefahrene Rikscha steht einzeln</p>
         </div>
         <button className="btn" onClick={() => setDialog({ offen: true })}>
           Zahlen übernehmen
@@ -80,21 +93,24 @@ export function Fahrtenbuch({ onZurueck }: { onZurueck: () => void }) {
       {fahrten && (
         <>
           <div className="tab__rahmen">
-            <table className="tab">
+            <table className="tab tab--buch">
               <thead>
                 <tr>
-                  <th className="tab__fix">Datum</th>
-                  <th>Uhrzeit</th>
-                  <th>Wo</th>
-                  <th>Zustand</th>
-                  <th>Pilot:innen</th>
-                  <th className="tab__zahl">km</th>
-                  <th className="tab__zahl">Minuten</th>
-                  <th className="tab__zahl">Fahrgäste</th>
-                  <th>Rikschas</th>
-                  <th>Infotext</th>
-                  <th>Mitteilungen</th>
-                  <th>Nachgetragen von</th>
+                  <th rowSpan={2} className="tab__fix">Nr.</th>
+                  <th rowSpan={2}>Datum</th>
+                  <th rowSpan={2}>Fahrer / Fahrerin</th>
+                  <th colSpan={4} className="tab__gruppe">Rikscha</th>
+                  <th rowSpan={2} className="tab__zahl">Passagiere</th>
+                  <th rowSpan={2} className="tab__zahl">Gefahrene KM</th>
+                  <th rowSpan={2} className="tab__zahl">Dauer / Zeit</th>
+                  <th rowSpan={2}>Bemerkungen</th>
+                </tr>
+                <tr>
+                  {RIKSCHAS.map((r) => (
+                    <th key={r} className="tab__kreuz">
+                      {r}
+                    </th>
+                  ))}
                 </tr>
               </thead>
 
@@ -102,17 +118,17 @@ export function Fahrtenbuch({ onZurueck }: { onZurueck: () => void }) {
                 {/* Übernommene Zahlen stehen ganz oben, vor den einzelnen Fahrten */}
                 {uebernahmen.map((u) => (
                   <tr key={u.id} className="tab__uebernahme">
-                    <td className="tab__fix">Übernahme</td>
+                    <td className="tab__fix">–</td>
                     <td>–</td>
                     <td>{u.bezeichnung}</td>
-                    <td>–</td>
-                    <td>–</td>
-                    <td className="tab__zahl">{formatiereKomma(Number(u.km))}</td>
-                    <td className="tab__zahl">{formatiereZahl(u.minuten)}</td>
+                    {RIKSCHAS.map((r) => (
+                      <td key={r} className="tab__kreuz" />
+                    ))}
                     <td className="tab__zahl">{formatiereZahl(u.personen)}</td>
-                    <td>–</td>
-                    <td>Aus der bisherigen Statistik</td>
+                    <td className="tab__zahl">{formatiereKomma(Number(u.km))}</td>
+                    <td className="tab__zahl">{alsStundenZahl(u.minuten)}</td>
                     <td>
+                      Aus der bisherigen Statistik
                       <button
                         className="tab__knopf"
                         onClick={() => setDialog({ offen: true, eintrag: u })}
@@ -123,47 +139,40 @@ export function Fahrtenbuch({ onZurueck }: { onZurueck: () => void }) {
                         Entfernen
                       </button>
                     </td>
-                    <td>{u.erfasst_von ?? '–'}</td>
                   </tr>
                 ))}
 
-                {fahrten.map((f) => (
-                  <tr key={f.id}>
-                    <td className="tab__fix">{datum(f.starts_at)}</td>
-                    <td>{uhrzeit(f.starts_at)}</td>
-                    <td>{f.location}</td>
-                    <td>
-                      <span className={`chip chip--${f.zustand}`}>{ZUSTAND_TEXT[f.zustand]}</span>
+                {zeilen.map(({ fahrt, platz }, i) => (
+                  <tr key={platz?.id ?? fahrt.id}>
+                    <td className="tab__fix">{i + 1}</td>
+                    <td>{datum(fahrt.starts_at)}</td>
+                    <td>{platz?.pilot_name ?? <span className="tab__leer">nicht besetzt</span>}</td>
+
+                    {RIKSCHAS.map((r) => (
+                      <td key={r} className="tab__kreuz">
+                        {platz?.rikscha === r ? 'X' : ''}
+                      </td>
+                    ))}
+
+                    <td className="tab__zahl">
+                      {platz?.report_passengers ?? ''}
                     </td>
-                    <td>{f.piloten.map((p) => p.name).join(', ') || <span className="tab__leer">–</span>}</td>
-                    <td className="tab__zahl">{wert(f.report_km, formatiereKomma)}</td>
-                    <td className="tab__zahl">{wert(f.report_minutes)}</td>
-                    <td className="tab__zahl">{wert(f.report_passengers)}</td>
-                    <td>
-                      {f.plaetze.filter((p) => p.rikscha).length === 0 ? (
-                        <span className="tab__leer">–</span>
-                      ) : (
-                        f.plaetze
-                          .filter((p) => p.rikscha)
-                          .map((p) => p.rikscha)
-                          .join(', ')
-                      )}
+                    <td className="tab__zahl">
+                      {platz?.report_km !== null && platz?.report_km !== undefined
+                        ? formatiereKomma(platz.report_km)
+                        : ''}
                     </td>
-                    <td className="tab__lang">{f.info || <span className="tab__leer">–</span>}</td>
+                    <td className="tab__zahl">{alsStundenZahl(platz?.report_minutes ?? null)}</td>
                     <td className="tab__lang">
-                      {f.notizen.length === 0 ? (
-                        <span className="tab__leer">–</span>
-                      ) : (
-                        f.notizen.map((n) => `${n.name}: ${n.body}`).join(' | ')
-                      )}
+                      {[fahrt.location, fahrt.info].filter(Boolean).join(' · ')}
+                      {fahrt.zustand === 'abgesagt' && ' (abgesagt)'}
                     </td>
-                    <td>{f.report_name ?? <span className="tab__leer">–</span>}</td>
                   </tr>
                 ))}
 
-                {fahrten.length === 0 && uebernahmen.length === 0 && (
+                {zeilen.length === 0 && uebernahmen.length === 0 && (
                   <tr>
-                    <td colSpan={12} className="tab__leerzeile">
+                    <td colSpan={11} className="tab__leerzeile">
                       Noch keine Fahrten und keine übernommenen Zahlen.
                     </td>
                   </tr>
@@ -173,17 +182,18 @@ export function Fahrtenbuch({ onZurueck }: { onZurueck: () => void }) {
               <tfoot>
                 <tr>
                   <td className="tab__fix">Summe</td>
-                  <td colSpan={4}>
-                    {formatiereZahl(fahrten.length)} Fahrten
+                  <td colSpan={6}>
+                    {formatiereZahl(zeilen.length)}{' '}
+                    {zeilen.length === 1 ? 'Eintrag' : 'Einträge'}
                     {uebernahmen.length > 0 &&
                       ` und ${formatiereZahl(uebernahmen.length)} ${
                         uebernahmen.length === 1 ? 'Übernahme' : 'Übernahmen'
                       }`}
                   </td>
-                  <td className="tab__zahl">{formatiereKomma(summe.km)}</td>
-                  <td className="tab__zahl">{formatiereZahl(summe.minuten)}</td>
                   <td className="tab__zahl">{formatiereZahl(summe.personen)}</td>
-                  <td colSpan={4} />
+                  <td className="tab__zahl">{formatiereKomma(summe.km)}</td>
+                  <td className="tab__zahl">{alsStundenZahl(summe.minuten)}</td>
+                  <td />
                 </tr>
               </tfoot>
             </table>
@@ -191,6 +201,7 @@ export function Fahrtenbuch({ onZurueck }: { onZurueck: () => void }) {
 
           <p className="hint tab__hinweis">
             Die Tabelle lässt sich zur Seite schieben, wenn nicht alle Spalten hineinpassen.
+            Die Dauer steht in Stunden, wie im bisherigen Fahrtenbuch.
           </p>
         </>
       )}

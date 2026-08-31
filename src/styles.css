@@ -1103,3 +1103,24 @@ body {
 .rikschas__zeile:last-child { border-bottom: 0; }
 .rikschas__name { font-weight: 700; color: var(--blau-dunkel); }
 .rikschas__werte { color: var(--muted); font-variant-numeric: tabular-nums; }
+
+/* --- Fahrtenbuch im gewohnten Aufbau ------------------------------------ */
+.tab--buch thead th { text-align: center; }
+.tab--buch thead th:nth-child(3) { text-align: left; }
+
+/* Die vier Rikscha-Spalten unter einer gemeinsamen Überschrift */
+.tab__gruppe {
+  text-align: center !important;
+  border-bottom: 1px solid var(--border);
+}
+
+.tab__kreuz {
+  text-align: center;
+  min-width: 58px;
+  font-weight: 700;
+  color: var(--blau-dunkel);
+}
+.tab--buch tbody td { vertical-align: middle; }
+
+/* Breitere Ansicht für das Fahrtenbuch */
+.content--breit { max-width: 1400px; }
