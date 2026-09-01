@@ -151,6 +151,9 @@ body {
 .btn--danger { background: var(--error); }
 .btn--danger:hover:not(:disabled) { background: #8f1e17; }
 
+.btn--ghost.btn--gefahr { color: var(--error); border-color: var(--error); }
+.btn--ghost.btn--gefahr:hover:not(:disabled) { background: #fdecea; }
+
 .btn--linkdanger {
   background: none;
   border: 0;

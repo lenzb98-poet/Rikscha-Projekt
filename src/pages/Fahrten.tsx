@@ -81,11 +81,11 @@ export function Fahrten({ onZurueck }: Props) {
               <>
                 <span className="fahrt__dabei">Du bist als Pilot:in eingetragen</span>
                 <button
-                  className="btn btn--ghost"
+                  className="btn btn--ghost btn--gefahr"
                   onClick={() => abmelden(f)}
                   disabled={busy === f.id}
                 >
-                  Abmelden
+                  Platz freigeben
                 </button>
               </>
             ) : (
