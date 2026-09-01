@@ -1034,6 +1034,28 @@ body {
 .tab__uebernahme td { background: #fbf3dd !important; font-style: italic; }
 .tab__uebernahme .tab__fix { background: #fbf3dd !important; font-style: normal; }
 
+/* Von Hand eintragbare Zellen im Fahrtenbuch */
+.tab__eingabe {
+  width: 100%;
+  min-width: 64px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 4px 6px;
+  font: inherit;
+  font-size: 13px;
+  text-align: right;
+  color: inherit;
+  background: transparent;
+}
+.tab__eingabe--lang { min-width: 220px; text-align: left; }
+.tab__eingabe:hover { border-color: var(--border); }
+.tab__eingabe:focus {
+  outline: none;
+  border-color: var(--blau);
+  background: #fff;
+}
+.tab__markierung { color: var(--z-abgesagt); font-size: 12px; white-space: nowrap; }
+
 .tab tfoot td {
   background: var(--z-offen-bg);
   font-weight: 700;

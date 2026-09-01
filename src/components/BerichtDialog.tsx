@@ -31,6 +31,7 @@ export function BerichtDialog({ fahrt, platz, onClose, onGespeichert }: Props) {
     stunden: minutenAlsStunden(platz.report_minutes),
     personen: platz.report_passengers !== null ? String(platz.report_passengers) : '',
     rikscha: platz.rikscha ?? '',
+    bemerkung: '',
   })
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)

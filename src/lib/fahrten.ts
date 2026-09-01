@@ -20,6 +20,7 @@ export type Platz = {
   report_km: number | null
   report_minutes: number | null
   report_passengers: number | null
+  report_bemerkung: string | null
   rikscha: RikschaName | null
   report_at: string | null
 }
@@ -265,6 +266,7 @@ export type Bericht = {
   stunden: string
   personen: string
   rikscha: RikschaName | ''
+  bemerkung: string
 }
 
 /**
@@ -285,12 +287,15 @@ export async function slotReport(slotId: string, b: Bericht): Promise<void> {
   // Auswertungen und die vorhandenen Daten unverändert.
   const stunden = zahl(b.stunden)
 
+  const bemerkung = b.bemerkung.trim()
+
   const { error } = await supabase.rpc('ride_slot_report', {
     p_slot_id: slotId,
     p_km: zahl(b.km),
     p_minutes: stunden === null ? null : Math.round(stunden * 60),
     p_passengers: zahl(b.personen),
     p_rikscha: b.rikscha || null,
+    p_bemerkung: bemerkung === '' ? null : bemerkung,
   })
   if (error) throw error
 }
