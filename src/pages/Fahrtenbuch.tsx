@@ -201,7 +201,12 @@ export function Fahrtenbuch({ onZurueck }: { onZurueck: () => void }) {
                 {zeilen.map(({ fahrt, platz }, i) => {
                   // Ohne Eintrag den ersten Platz der Fahrt zum Nachtragen nutzen,
                   // damit sich auch unbesetzte Fahrten von Hand ergänzen lassen.
-                  const ziel = platz ?? fahrt.plaetze[0] ?? null
+                  // Die Datenbank nimmt Angaben nur zu stattgefundenen, nicht
+                  // abgesagten Fahrten an. Sonst bliebe hier ein Feld stehen,
+                  // das sich ausfüllen lässt, aber nie speichern kann.
+                  const nachtragbar =
+                    new Date(fahrt.starts_at) < new Date() && fahrt.status !== 'abgesagt'
+                  const ziel = nachtragbar ? (platz ?? fahrt.plaetze[0] ?? null) : null
                   const werte = werteVon(platz)
                   const zeilenSchluessel = `${platz?.id ?? fahrt.id}-${ziel?.report_at ?? ''}`
 
@@ -226,7 +231,7 @@ export function Fahrtenbuch({ onZurueck }: { onZurueck: () => void }) {
                             }
                           />
                         ) : (
-                          ''
+                          werte.personen
                         )}
                       </td>
                       <td className="tab__zahl">
@@ -238,7 +243,7 @@ export function Fahrtenbuch({ onZurueck }: { onZurueck: () => void }) {
                             }
                           />
                         ) : (
-                          ''
+                          werte.km
                         )}
                       </td>
                       <td className="tab__zahl">
@@ -250,7 +255,7 @@ export function Fahrtenbuch({ onZurueck }: { onZurueck: () => void }) {
                             }
                           />
                         ) : (
-                          ''
+                          werte.stunden
                         )}
                       </td>
                       <td className="tab__lang">
@@ -264,7 +269,7 @@ export function Fahrtenbuch({ onZurueck }: { onZurueck: () => void }) {
                             }
                           />
                         ) : (
-                          ''
+                          werte.bemerkung || [fahrt.location, fahrt.info].filter(Boolean).join(' · ')
                         )}
                         {fahrt.zustand === 'abgesagt' && (
                           <span className="tab__markierung"> (abgesagt)</span>

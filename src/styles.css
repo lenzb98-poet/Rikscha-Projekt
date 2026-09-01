@@ -1038,17 +1038,19 @@ body {
 .tab__eingabe {
   width: 100%;
   min-width: 64px;
-  border: 1px solid transparent;
+  /* Sichtbar, aber zurückhaltend: sonst ist nicht erkennbar, welche Zellen
+     sich ausfüllen lassen und welche nur anzeigen. */
+  border: 1px solid #dbe3ee;
   border-radius: 6px;
   padding: 4px 6px;
   font: inherit;
   font-size: 13px;
   text-align: right;
   color: inherit;
-  background: transparent;
+  background: #fff;
 }
 .tab__eingabe--lang { min-width: 220px; text-align: left; }
-.tab__eingabe:hover { border-color: var(--border); }
+.tab__eingabe:hover { border-color: var(--blau); }
 .tab__eingabe:focus {
   outline: none;
   border-color: var(--blau);
