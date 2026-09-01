@@ -261,7 +261,8 @@ export async function rideCancel(rideId: string, grund: string): Promise<void> {
 
 export type Bericht = {
   km: string
-  minuten: string
+  /** Eingabe in Stunden, etwa "2,5" – gespeichert wird in Minuten. */
+  stunden: string
   personen: string
   rikscha: RikschaName | ''
 }
@@ -280,14 +281,24 @@ export async function slotReport(slotId: string, b: Bericht): Promise<void> {
     return t === '' ? null : Number(t)
   }
 
+  // Erfasst wird in Stunden, gespeichert in Minuten – so bleiben die
+  // Auswertungen und die vorhandenen Daten unverändert.
+  const stunden = zahl(b.stunden)
+
   const { error } = await supabase.rpc('ride_slot_report', {
     p_slot_id: slotId,
     p_km: zahl(b.km),
-    p_minutes: zahl(b.minuten),
+    p_minutes: stunden === null ? null : Math.round(stunden * 60),
     p_passengers: zahl(b.personen),
     p_rikscha: b.rikscha || null,
   })
   if (error) throw error
+}
+
+/** Minuten als Stundenwert für die Eingabe: 150 → "2,5" */
+export function minutenAlsStunden(minuten: number | null): string {
+  if (minuten === null) return ''
+  return String(Math.round((minuten / 60) * 100) / 100).replace('.', ',')
 }
 
 export type RikschaStatistik = {
@@ -454,7 +465,8 @@ export async function listUebernahmen(): Promise<Uebernahme[]> {
 export type UebernahmeEingabe = {
   bezeichnung: string
   km: string
-  minuten: string
+  /** Eingabe in Stunden, wie im bisherigen Fahrtenbuch. */
+  stunden: string
   personen: string
 }
 
@@ -467,7 +479,8 @@ export async function saveUebernahme(id: string | null, e: UebernahmeEingabe): P
     p_id: id,
     p_bezeichnung: e.bezeichnung.trim(),
     p_km: zahl(e.km),
-    p_minuten: zahl(e.minuten),
+    // Auch hier wird in Stunden erfasst und in Minuten gespeichert
+    p_minuten: Math.round(zahl(e.stunden) * 60),
     p_personen: zahl(e.personen),
   })
   if (error) throw error

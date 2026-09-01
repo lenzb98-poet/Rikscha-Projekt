@@ -2,6 +2,7 @@ import { useState } from 'react'
 import {
   fehlendeAngaben,
   formatiereFrist,
+  minutenAlsStunden,
   formatiereTermin,
   platzVollstaendig,
   slotReport,
@@ -27,7 +28,7 @@ export function BerichtDialog({ fahrt, platz, onClose, onGespeichert }: Props) {
   // Bereits Eingetragenes vorbelegen, damit sich ergänzen und korrigieren lässt
   const [werte, setWerte] = useState<Bericht>({
     km: platz.report_km !== null ? String(platz.report_km).replace('.', ',') : '',
-    minuten: platz.report_minutes !== null ? String(platz.report_minutes) : '',
+    stunden: minutenAlsStunden(platz.report_minutes),
     personen: platz.report_passengers !== null ? String(platz.report_passengers) : '',
     rikscha: platz.rikscha ?? '',
   })
@@ -38,7 +39,7 @@ export function BerichtDialog({ fahrt, platz, onClose, onGespeichert }: Props) {
     setWerte((w) => ({ ...w, [feld]: wert }))
   }
 
-  const gefuellt = [werte.km, werte.minuten, werte.personen, werte.rikscha].filter(
+  const gefuellt = [werte.km, werte.stunden, werte.personen, werte.rikscha].filter(
     (w) => w.trim() !== '',
   )
   const mindestensEine = gefuellt.length > 0
@@ -50,6 +51,9 @@ export function BerichtDialog({ fahrt, platz, onClose, onGespeichert }: Props) {
   const kmUngueltig =
     werte.km.trim() !== '' &&
     (isNaN(alsZahl(werte.km)) || alsZahl(werte.km) < 0 || alsZahl(werte.km) > 500)
+  const stundenUngueltig =
+    werte.stunden.trim() !== '' &&
+    (isNaN(alsZahl(werte.stunden)) || alsZahl(werte.stunden) < 0 || alsZahl(werte.stunden) > 24)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -151,21 +155,21 @@ export function BerichtDialog({ fahrt, platz, onClose, onGespeichert }: Props) {
 
           <label className="field" htmlFor="bericht-dauer">
             <span className="field__label">
-              Dauer <span className="field__optional">optional</span>
+              Fahrzeit <span className="field__optional">optional</span>
             </span>
             <div className="field__wrap">
+              {/* Wie im Fahrtenbuch in Stunden, deshalb Komma statt Zahlenfeld */}
               <input
                 id="bericht-dauer"
-                type="number"
-                inputMode="numeric"
-                min={0}
-                max={1440}
-                value={werte.minuten}
-                placeholder="z. B. 75"
-                onChange={(e) => setze('minuten', e.target.value)}
+                type="text"
+                inputMode="decimal"
+                value={werte.stunden}
+                placeholder="z. B. 2,5"
+                onChange={(e) => setze('stunden', e.target.value.replace(/[^0-9.,]/g, ''))}
               />
-              <span className="field__einheit">Minuten</span>
+              <span className="field__einheit">Stunden</span>
             </div>
+            <span className="hint">Halbe Stunden als Komma, etwa 2,5 für zweieinhalb.</span>
           </label>
 
           <label className="field" htmlFor="bericht-personen">
@@ -192,6 +196,12 @@ export function BerichtDialog({ fahrt, platz, onClose, onGespeichert }: Props) {
             </p>
           )}
 
+          {stundenUngueltig && (
+            <p className="alert alert--error">
+              Bitte die Fahrzeit als Stunden zwischen 0 und 24 angeben, zum Beispiel 2,5.
+            </p>
+          )}
+
           {error && <p className="alert alert--error">{error}</p>}
 
           <div className="overlay__actions">
@@ -201,7 +211,7 @@ export function BerichtDialog({ fahrt, platz, onClose, onGespeichert }: Props) {
             <button
               type="submit"
               className="btn"
-              disabled={busy || !mindestensEine || kmUngueltig}
+              disabled={busy || !mindestensEine || kmUngueltig || stundenUngueltig}
             >
               {busy ? 'Speichere …' : alleVier ? 'Fahrt abschließen' : 'Angaben speichern'}
             </button>

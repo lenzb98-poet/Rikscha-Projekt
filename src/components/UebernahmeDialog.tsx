@@ -1,5 +1,10 @@
 import { useState } from 'react'
-import { saveUebernahme, type Uebernahme, type UebernahmeEingabe } from '../lib/fahrten'
+import {
+  minutenAlsStunden,
+  saveUebernahme,
+  type Uebernahme,
+  type UebernahmeEingabe,
+} from '../lib/fahrten'
 import { toGermanError } from '../lib/errors'
 
 type Props = {
@@ -14,7 +19,7 @@ export function UebernahmeDialog({ eintrag, onClose, onGespeichert }: Props) {
   const [werte, setWerte] = useState<UebernahmeEingabe>({
     bezeichnung: eintrag?.bezeichnung ?? '',
     km: eintrag ? String(eintrag.km).replace('.', ',') : '',
-    minuten: eintrag ? String(eintrag.minuten) : '',
+    stunden: eintrag ? minutenAlsStunden(eintrag.minuten) : '',
     personen: eintrag ? String(eintrag.personen) : '',
   })
   const [error, setError] = useState<string | null>(null)
@@ -24,7 +29,7 @@ export function UebernahmeDialog({ eintrag, onClose, onGespeichert }: Props) {
     setWerte((w) => ({ ...w, [feld]: wert }))
   }
 
-  const hatWert = [werte.km, werte.minuten, werte.personen].some((w) => w.trim() !== '')
+  const hatWert = [werte.km, werte.stunden, werte.personen].some((w) => w.trim() !== '')
   const bereit = werte.bezeichnung.trim().length >= 2 && hatWert
 
   async function handleSubmit(e: React.FormEvent) {
@@ -94,19 +99,18 @@ export function UebernahmeDialog({ eintrag, onClose, onGespeichert }: Props) {
             </div>
           </label>
 
-          <label className="field" htmlFor="ue-minuten">
-            <span className="field__label">Minuten insgesamt</span>
+          <label className="field" htmlFor="ue-stunden">
+            <span className="field__label">Fahrzeit insgesamt</span>
             <div className="field__wrap">
               <input
-                id="ue-minuten"
-                type="number"
-                inputMode="numeric"
-                min={0}
-                value={werte.minuten}
-                placeholder="z. B. 39600"
-                onChange={(e) => setze('minuten', e.target.value)}
+                id="ue-stunden"
+                type="text"
+                inputMode="decimal"
+                value={werte.stunden}
+                placeholder="z. B. 660"
+                onChange={(e) => setze('stunden', e.target.value.replace(/[^0-9.,]/g, ''))}
               />
-              <span className="field__einheit">Minuten</span>
+              <span className="field__einheit">Stunden</span>
             </div>
           </label>
 

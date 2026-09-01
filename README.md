@@ -136,7 +136,12 @@ nicht ableiten lässt (abgesagt, vorzeitig abgeschlossen).
 
 Nachgetragen wird **je Rikscha-Platz**: Jede Pilot:in trägt für ihren eigenen
 Platz ein, wie weit sie gefahren ist, wie lange es gedauert hat, wie viele
-Fahrgäste dabei waren und **welche Rikscha** sie hatte. Zur Auswahl stehen die
+Fahrgäste dabei waren und **welche Rikscha** sie hatte.
+
+Die **Fahrzeit wird in Stunden erfasst** (2,5 für zweieinhalb), wie im
+bisherigen Fahrtenbuch. Gespeichert wird weiterhin in Minuten – die Umrechnung
+passiert bei der Eingabe, sodass Auswertung und vorhandene Daten unverändert
+bleiben. Zur Auswahl stehen die
 vier Rikschas des Vereins: **Fritz, Fred, Liese und Lotte**.
 
 Es genügt, **einzelne Angaben** zu machen und zu speichern – die übrigen können
