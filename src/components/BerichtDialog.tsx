@@ -63,7 +63,7 @@ export function BerichtDialog({ fahrt, platz, onClose, onGespeichert }: Props) {
       await slotReport(platz.id, werte)
       onGespeichert(
         alleVier
-          ? `Danke! Deine Angaben zu Rikscha ${platz.position} sind vollständig.`
+          ? `Danke! Deine Angaben zu Fahrer ${platz.position} sind vollständig.`
           : 'Angaben gespeichert. Vollständig ist es mit Kilometern, Dauer, Fahrgästen ' +
             'und der Rikscha.',
       )

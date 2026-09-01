@@ -32,12 +32,12 @@ export function PlatzDialog({ fahrt, platz, onClose, onGebucht }: Props) {
       if (aktion === 'buchen') {
         await bookSlot(platz.id)
         onGebucht(
-          `Du bist als Pilot:in für Rikscha ${platz.position} eingetragen – ` +
+          `Du bist als Pilot:in für Fahrer ${platz.position} eingetragen – ` +
             `${formatiereTermin(fahrt.starts_at)}.`,
         )
       } else {
         await releaseSlot(platz.id)
-        onGebucht(`Rikscha ${platz.position} ist wieder frei.`)
+        onGebucht(`Fahrer ${platz.position} ist wieder frei.`)
       }
     } catch (err) {
       setError(toGermanError(err))
@@ -57,7 +57,7 @@ export function PlatzDialog({ fahrt, platz, onClose, onGebucht }: Props) {
       }}
     >
       <div className="overlay__card">
-        <h3 id="platz-titel">Rikscha {platz.position}</h3>
+        <h3 id="platz-titel">Fahrer {platz.position}</h3>
         <p className="muted overlay__intro">
           {formatiereTermin(fahrt.starts_at)}
           <br />
@@ -68,7 +68,7 @@ export function PlatzDialog({ fahrt, platz, onClose, onGebucht }: Props) {
 
         <div className="platz__stand">
           <strong>
-            Rikscha {platz.position} von {fahrt.plaetze.length}
+            Fahrer {platz.position} von {fahrt.plaetze.length}
           </strong>
           <span>
             {platz.ist_meiner
@@ -83,7 +83,7 @@ export function PlatzDialog({ fahrt, platz, onClose, onGebucht }: Props) {
           <ul className="platz__liste">
             {fahrt.plaetze.map((p) => (
               <li key={p.id} className={p.id === platz.id ? 'platz__zeile platz__zeile--aktiv' : 'platz__zeile'}>
-                <span>Rikscha {p.position}</span>
+                <span>Fahrer {p.position}</span>
                 <span className={p.pilot_id ? '' : 'muted'}>
                   {p.pilot_name ?? 'frei'}
                   {p.ist_meiner && ' (du)'}

@@ -153,7 +153,7 @@ export function Fahrtenkalender({ onZurueck }: { onZurueck: () => void }) {
                         .join(' ')}
                       onClick={() => setGewaehlt({ fahrt, platz })}
                       title={
-                        `${fahrt.location} · Rikscha ${platz.position} von ${fahrt.plaetze.length} · ` +
+                        `${fahrt.location} · Fahrer ${platz.position} von ${fahrt.plaetze.length} · ` +
                         (platz.pilot_name ?? 'frei') +
                         ` · ${ZUSTAND_TEXT[fahrt.zustand]}`
                       }
