@@ -402,6 +402,9 @@ body {
 }
 .chat__eingabe textarea {
   flex: 1;
+  /* ohne das schrumpft die Textarea auf schmalen Bildschirmen nicht mit
+     und drängt den Senden-Button aus dem sichtbaren Bereich hinaus */
+  min-width: 0;
   resize: none;
   min-height: 66px;
   padding: 12px;
@@ -915,6 +918,14 @@ body {
 @media (max-width: 480px) {
   .kennzahl { flex: 1 1 100%; }
   .kennzahl__wert { font-size: 26px; }
+}
+
+/* Weniger Platzbedarf auf schmalen Handys, damit der Senden-Knopf
+   nicht durch Kamera-Knopf + Textfeld aus dem sichtbaren Bereich gedrängt wird */
+@media (max-width: 400px) {
+  .chat__eingabe { gap: 6px; padding: 10px; }
+  .chat__senden { min-width: 68px; padding: 10px 12px; }
+  .chat__bildknopf { width: 44px; font-size: 19px; }
 }
 
 /* Hinweis auf die Frist im Nachtrag-Dialog */
