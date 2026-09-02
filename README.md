@@ -81,6 +81,19 @@ Auf der Startseite führen zwei Knöpfe zu den Fahrten, für alle Rollen:
 Administratoren sehen zusätzlich **Fahrten verwalten** und
 **Fahrtenbuch / Statistik**.
 
+### Seniorenheime als Vorlage
+
+Beim Anlegen einer Fahrt stehen über dem Feld *Wo* die vier Meller
+Seniorenheime zur Auswahl. Ein Tipp darauf trägt Name und Anschrift als Ort
+ein und die Telefonnummer in den Infotext; beides bleibt danach frei
+änderbar. Wechselt man das Haus, wird die alte Telefonzeile ersetzt – selbst
+geschriebene Hinweise bleiben stehen.
+
+Die Liste steht in `src/lib/heime.ts`. Sie liegt bewusst im Programm und
+nicht in der Datenbank: vier Häuser vor Ort, die sich kaum ändern, brauchen
+keine eigene Verwaltung. Zieht ein Haus um oder kommt eines dazu, wird die
+Datei angepasst.
+
 ### Rikscha-Plätze
 
 Jede Fahrt hat so viele **Plätze**, wie Rikschas gebraucht werden – je Platz ein

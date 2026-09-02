@@ -13,6 +13,7 @@ import {
   type RideStatus,
 } from '../lib/fahrten'
 import { toGermanError } from '../lib/errors'
+import { SENIORENHEIME, heimOrt, infoMitTelefon, type Heim } from '../lib/heime'
 
 type Props = {
   /** Fehlt beim Anlegen einer neuen Fahrt. */
@@ -67,6 +68,15 @@ export function FahrtDialog({ fahrt, onClose, onGespeichert }: Props) {
 
   function setze<K extends keyof FahrtEingabe>(feld: K, wert: FahrtEingabe[K]) {
     setWerte((w) => ({ ...w, [feld]: wert }))
+  }
+
+  /** Ort und Telefonnummer des Hauses in einem Schritt übernehmen. */
+  function waehleHeim(h: Heim) {
+    setWerte((w) => ({
+      ...w,
+      location: heimOrt(h),
+      info: infoMitTelefon(w.info, h),
+    }))
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -176,6 +186,30 @@ export function FahrtDialog({ fahrt, onClose, onGespeichert }: Props) {
                   />
                 </div>
               </label>
+
+              <div className="field">
+                <span className="field__label">
+                  Seniorenheim <span className="field__optional">Vorlage</span>
+                </span>
+                <div className="heimwahl">
+                  {SENIORENHEIME.map((h) => (
+                    <button
+                      key={h.name}
+                      type="button"
+                      className={
+                        werte.location === heimOrt(h) ? 'heimchip heimchip--an' : 'heimchip'
+                      }
+                      onClick={() => waehleHeim(h)}
+                    >
+                      {h.name}
+                    </button>
+                  ))}
+                </div>
+                <span className="hint">
+                  Ein Tipp darauf trägt Anschrift und Telefonnummer ein. Beides lässt sich
+                  danach noch ändern.
+                </span>
+              </div>
 
               <label className="field" htmlFor="fahrt-ort">
                 <span className="field__label">Wo</span>
