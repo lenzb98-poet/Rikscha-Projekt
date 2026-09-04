@@ -10,6 +10,7 @@ import {
   type ChatNachricht,
 } from '../lib/supabase'
 import { verkleinereBild, formatiereGroesse } from '../lib/bilder'
+import { merkeGesehen } from '../lib/chatGelesen'
 import { toGermanError } from '../lib/errors'
 
 /** "Heute", "Gestern" oder das Datum – als Trenner zwischen den Tagen. */
@@ -51,6 +52,12 @@ export function Chat({ onZurueck, istAdmin }: Props) {
       .then(async (rows) => {
         const chronologisch = [...rows].reverse()
         setNachrichten(chronologisch)
+
+        // Was hier steht, gilt als gelesen. Maßgeblich ist der Zeitstempel
+        // der Datenbank, nicht die Uhr des Geräts – sonst zählte eine
+        // falsch gehende Uhr Nachrichten doppelt oder gar nicht.
+        const neueste = chronologisch[chronologisch.length - 1]
+        if (neueste) merkeGesehen(neueste.created_at)
 
         const pfade = chronologisch.map((n) => n.image_path).filter((p): p is string => !!p)
         if (pfade.length > 0) {

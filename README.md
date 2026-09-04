@@ -212,6 +212,27 @@ Der Absender wird serverseitig aus der Anmeldung bestimmt und lässt sich nicht
 fälschen. Gelesen wird über `list_messages`, weil die Policy auf `app_users`
 Nicht-Administratoren nur den eigenen Datensatz zeigt.
 
+### Ungelesene Nachrichten
+
+Am Chat-Knopf steht die Zahl der ungelesenen Nachrichten in einer roten Pille,
+wie am App-Symbol auf dem Handy; ab 100 als „99+“. Eigene Nachrichten zählen
+nicht mit.
+
+Wann jemand zuletzt hineingeschaut hat, steht **nur im Browser**
+(`localStorage`, Schlüssel `rikscha.chat-zuletzt-gesehen`) – die Datenbank
+kennt keinen Lesestand. Das spart eine Tabelle samt Schreibzugriffen, hat aber
+zwei Folgen:
+
+- Der Stand gilt **je Gerät**. Wer am Handy liest, sieht die Nachrichten am
+  Rechner weiterhin als ungelesen.
+- Beim **allerersten Start** gilt der jetzige Moment als gesehen. Sonst stünde
+  der ganze bisherige Verlauf als ungelesen am Knopf.
+
+Gemerkt wird der Zeitstempel der neuesten Nachricht aus der Datenbank, nicht
+die Uhr des Geräts – sonst zählte eine falsch gehende Uhr Nachrichten doppelt
+oder gar nicht. Gezählt wird serverseitig (`head: true`), es geht also nicht
+für jede Zählung der ganze Verlauf über die Leitung.
+
 ### Bilder
 
 Über das Kamerasymbol lassen sich Fotos anhängen. Vor dem Hochladen verkleinert

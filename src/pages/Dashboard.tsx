@@ -1,5 +1,6 @@
 import type { AppUser } from '../lib/useAuth'
 import { useFahrten } from '../lib/fahrten'
+import { useUngelesen } from '../lib/chatGelesen'
 import { useAnsicht } from '../lib/useAnsicht'
 import { Logo, RadelnLogo } from '../components/Marke'
 import { MeineFahrten } from '../components/MeineFahrten'
@@ -39,6 +40,8 @@ export function Dashboard({ profile, onSignOut }: Props) {
 
   const { fahrten, uebernahmen, laden } = useFahrten()
   const offene = fahrten?.filter((f) => f.zustand === 'offen').length ?? null
+  // Die Ansicht als Anlass: zurück aus dem Chat wird sofort neu gezählt
+  const ungelesen = useUngelesen(profile?.id, ansicht)
 
   function inhalt() {
     switch (ansicht) {
@@ -102,6 +105,16 @@ export function Dashboard({ profile, onSignOut }: Props) {
                 <div className="knopfblock knopfblock--breit">
                   <button className="btn btn--chat" onClick={() => setAnsicht('chat')}>
                     Piloten Chat
+                    {ungelesen > 0 && (
+                      <span
+                        className="abzeichen"
+                        aria-label={`${ungelesen} ungelesene ${
+                          ungelesen === 1 ? 'Nachricht' : 'Nachrichten'
+                        }`}
+                      >
+                        {ungelesen > 99 ? '99+' : ungelesen}
+                      </span>
+                    )}
                   </button>
                 </div>
               </div>

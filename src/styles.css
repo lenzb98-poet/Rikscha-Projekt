@@ -1015,6 +1015,27 @@ body {
 }
 .btn--chat:hover:not(:disabled) { background: #1eb959; }
 
+/* Zähler für ungelesene Nachrichten, wie am App-Symbol auf dem Handy:
+   rote Pille mit weißer Zahl. Rot auf dem Grün des Knopfes ist kräftig
+   genug, um sofort aufzufallen. */
+.abzeichen {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* Rund bei einer Ziffer, oval ab zwei - wie am Handy */
+  min-width: 21px;
+  height: 21px;
+  padding: 0 6px;
+  margin-left: 8px;
+  border-radius: 999px;
+  background: #e5342a;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  vertical-align: middle;
+}
+
 .badge--neutral { background: var(--z-offen-bg); color: var(--blau-dunkel); }
 
 .danger__stand { margin: 0 0 10px; font-size: 13px; }
