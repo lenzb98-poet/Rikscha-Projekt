@@ -166,7 +166,7 @@ export function Fahrtenkalender({ onZurueck }: { onZurueck: () => void }) {
                       </span>
                       {/* Am Handy bleibt nur die Nummer: für den Namen ist die
                           Spalte zu schmal, er steht im Fenster dahinter. */}
-                      <span className="kal__nummer">R{platz.position}</span>
+                      <span className="kal__nummer">F{platz.position}</span>
                       <span className="kal__wer">{platz.pilot_name ?? 'frei'}</span>
                     </button>
                   )
