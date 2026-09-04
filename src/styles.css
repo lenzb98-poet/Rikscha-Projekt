@@ -790,13 +790,41 @@ body {
   background: var(--z-offen);
   color: #fff;
 }
+/* Am Rechner steht alles in einer Zeile: Zeit, Nummer, Name. */
+.kal__zeit { font-weight: 600; }
+.kal__nummer { margin: 0 3px; }
 .kal__eintrag--besetzt { background: var(--z-besetzt); }
 .kal__eintrag--abgeschlossen { background: var(--z-abgeschlossen); }
 .kal__eintrag--abgesagt { background: var(--z-abgesagt); }
 
 @media (max-width: 560px) {
-  .kal__tag { min-height: 58px; padding: 3px; }
-  .kal__eintrag { font-size: 10px; padding: 2px 4px; }
+  /* Sieben Spalten lassen je Zelle nur gut 40 Pixel. Abstände und
+     Innenabstände werden deshalb knapper, damit die volle Uhrzeit
+     hineinpasst statt als „14:…“ abgeschnitten zu werden.
+     Die Karte greift dafür in den Seitenrand hinein - der Kalender ist
+     die einzige Ansicht, die jeden Pixel Breite braucht. */
+  .card--kalender {
+    padding: 12px 6px;
+    margin-left: -10px;
+    margin-right: -10px;
+  }
+  .kal__raster { gap: 3px; }
+  .kal__tag { min-height: 58px; padding: 2px; gap: 2px; }
+  .kal__eintrag {
+    /* Größere Tippfläche: der Eintrag muss angetippt werden */
+    min-height: 34px;
+    padding: 4px 2px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    line-height: 1.25;
+  }
+  .kal__zeit { font-size: 11px; font-weight: 700; }
+  .kal__nummer { margin: 0; font-size: 9px; opacity: 0.85; }
+  /* Der Name passt in dieser Breite nicht; er steht im Fenster dahinter. */
+  .kal__wer { display: none; }
   .knopfblock { flex: 1 1 100%; }
 }
 

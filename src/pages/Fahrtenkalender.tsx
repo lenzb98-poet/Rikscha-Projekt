@@ -99,7 +99,7 @@ export function Fahrtenkalender({ onZurueck }: { onZurueck: () => void }) {
         </span>
       </div>
 
-      <div className="card">
+      <div className="card card--kalender">
         <div className="kal__kopf">
           <button className="btn btn--ghost" onClick={() => verschiebe(-1)} aria-label="Voriger Monat">
             ‹
@@ -158,11 +158,16 @@ export function Fahrtenkalender({ onZurueck }: { onZurueck: () => void }) {
                         ` · ${ZUSTAND_TEXT[fahrt.zustand]}`
                       }
                     >
-                      {new Date(fahrt.starts_at).toLocaleTimeString('de-DE', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}{' '}
-                      R{platz.position} {platz.pilot_name ?? 'frei'}
+                      <span className="kal__zeit">
+                        {new Date(fahrt.starts_at).toLocaleTimeString('de-DE', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </span>
+                      {/* Am Handy bleibt nur die Nummer: für den Namen ist die
+                          Spalte zu schmal, er steht im Fenster dahinter. */}
+                      <span className="kal__nummer">R{platz.position}</span>
+                      <span className="kal__wer">{platz.pilot_name ?? 'frei'}</span>
                     </button>
                   )
                 })}
