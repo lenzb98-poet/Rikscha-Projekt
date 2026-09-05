@@ -1012,28 +1012,35 @@ body {
 .btn--chat {
   background: #25d366;
   color: #0a2e1a;
+  /* Bezugspunkt für das Abzeichen in der Ecke */
+  position: relative;
 }
 .btn--chat:hover:not(:disabled) { background: #1eb959; }
 
 /* Zähler für ungelesene Nachrichten, wie am App-Symbol auf dem Handy:
-   rote Pille mit weißer Zahl. Rot auf dem Grün des Knopfes ist kräftig
-   genug, um sofort aufzufallen. */
+   rote Pille mit weißer Zahl, oben rechts über der Ecke.
+
+   Absolut gesetzt, damit die Aufschrift mittig bleibt und nicht
+   verrutscht, sobald die Zahl erscheint oder zweistellig wird. */
 .abzeichen {
+  position: absolute;
+  top: -9px;
+  right: -7px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   /* Rund bei einer Ziffer, oval ab zwei - wie am Handy */
-  min-width: 21px;
-  height: 21px;
+  min-width: 22px;
+  height: 22px;
   padding: 0 6px;
-  margin-left: 8px;
   border-radius: 999px;
   background: #e5342a;
   color: #fff;
+  /* Heller Saum wie am Handy: trennt die Pille vom Grün darunter */
+  box-shadow: 0 0 0 2px var(--card);
   font-size: 13px;
   font-weight: 700;
   line-height: 1;
-  vertical-align: middle;
 }
 
 .badge--neutral { background: var(--z-offen-bg); color: var(--blau-dunkel); }
