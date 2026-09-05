@@ -41,7 +41,7 @@ export function Dashboard({ profile, onSignOut }: Props) {
   const { fahrten, uebernahmen, laden } = useFahrten()
   const offene = fahrten?.filter((f) => f.zustand === 'offen').length ?? null
   // Die Ansicht als Anlass: zurück aus dem Chat wird sofort neu gezählt
-  const ungelesen = useUngelesen(profile?.id, ansicht)
+  const ungelesen = useUngelesen(Boolean(profile), ansicht)
 
   function inhalt() {
     switch (ansicht) {

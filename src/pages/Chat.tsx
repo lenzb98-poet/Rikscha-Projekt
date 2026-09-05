@@ -10,7 +10,7 @@ import {
   type ChatNachricht,
 } from '../lib/supabase'
 import { verkleinereBild, formatiereGroesse } from '../lib/bilder'
-import { merkeGesehen } from '../lib/chatGelesen'
+import { chatGesehen } from '../lib/chatGelesen'
 import { toGermanError } from '../lib/errors'
 
 /** "Heute", "Gestern" oder das Datum – als Trenner zwischen den Tagen. */
@@ -45,6 +45,8 @@ export function Chat({ onZurueck, istAdmin }: Props) {
   const [busy, setBusy] = useState(false)
   const dateiRef = useRef<HTMLInputElement>(null)
   const verlaufRef = useRef<HTMLDivElement>(null)
+  /** Bis wohin der Lesestand schon gemeldet wurde. */
+  const gemeldetRef = useRef('')
 
   const laden = useCallback(() => {
     listMessages()
@@ -54,10 +56,19 @@ export function Chat({ onZurueck, istAdmin }: Props) {
         setNachrichten(chronologisch)
 
         // Was hier steht, gilt als gelesen. Maßgeblich ist der Zeitstempel
-        // der Datenbank, nicht die Uhr des Geräts – sonst zählte eine
-        // falsch gehende Uhr Nachrichten doppelt oder gar nicht.
+        // der Datenbank, nicht die Uhr des Geräts.
+        //
+        // Nur melden, wenn wirklich etwas Neueres dazugekommen ist: Der
+        // Verlauf wird alle 20 Sekunden nachgeladen, sonst ginge bei jedem
+        // Durchlauf ein Schreibzugriff hinaus.
         const neueste = chronologisch[chronologisch.length - 1]
-        if (neueste) merkeGesehen(neueste.created_at)
+        if (neueste && neueste.created_at > gemeldetRef.current) {
+          gemeldetRef.current = neueste.created_at
+          chatGesehen(neueste.created_at).catch(() => {
+            // Beim nächsten Laden wird es erneut versucht
+            gemeldetRef.current = ''
+          })
+        }
 
         const pfade = chronologisch.map((n) => n.image_path).filter((p): p is string => !!p)
         if (pfade.length > 0) {

@@ -4,59 +4,30 @@ import { supabase, watchMessages } from './supabase'
 /**
  * Ungelesene Chatnachrichten.
  *
- * Wann jemand zuletzt in den Chat geschaut hat, steht nur im Browser
- * (localStorage) – die Datenbank kennt keinen Lesestand. Das genügt für
- * einen Zähler am Knopf und spart eine Tabelle samt Schreibzugriffen.
+ * Der Lesestand steht in der Datenbank bei der Person selbst
+ * (app_users.chat_gesehen_bis) und gilt damit auf allen Geräten: Wer am
+ * Handy liest, sieht die Nachrichten am Rechner nicht mehr als ungelesen.
  *
- * Folge davon: Der Stand gilt je Gerät. Wer am Handy liest, sieht die
- * Nachrichten am Rechner weiterhin als ungelesen.
+ * Zeitstempel kommen ausschließlich vom Server. Die Uhr des Geräts spielt
+ * keine Rolle, und die Datenbank lässt den Stand ohnehin nur vorwärts und
+ * nie in die Zukunft wandern.
  */
-const SCHLUESSEL = 'rikscha.chat-zuletzt-gesehen'
 
 /**
- * Zeitpunkt des letzten Blicks in den Chat.
- *
- * Beim allerersten Mal gilt der jetzige Moment als gesehen. Sonst stünden
- * beim ersten Öffnen der App alle je geschriebenen Nachrichten als
- * ungelesen am Knopf – das wäre kein Hinweis, sondern nur Lärm.
+ * Hält fest, bis wohin gelesen wurde. Ohne Angabe gilt der Moment des
+ * Aufrufs. Gibt den tatsächlich gespeicherten Stand zurück.
  */
-export function zuletztGesehen(): string {
-  try {
-    const wert = localStorage.getItem(SCHLUESSEL)
-    if (wert) return wert
-  } catch {
-    // Kein Speicher (privater Modus): dann gibt es eben keinen Zähler
-  }
-  const jetzt = new Date().toISOString()
-  merkeGesehen(jetzt)
-  return jetzt
-}
-
-/** Hält fest, bis wohin gelesen wurde. */
-export function merkeGesehen(zeitpunkt: string): void {
-  try {
-    localStorage.setItem(SCHLUESSEL, zeitpunkt)
-  } catch {
-    // Ohne Speicher bleibt der Zähler bei 0 – besser als eine falsche Zahl
-  }
-}
-
-/**
- * Zählt Nachrichten, die nach dem letzten Blick geschrieben wurden.
- * Eigene zählen nicht mit – für sie braucht niemand einen Hinweis.
- *
- * Gezählt wird in der Datenbank (head: true holt keine Zeilen), damit für
- * den Zähler nicht der ganze Verlauf über die Leitung geht.
- */
-export async function ungeleseneAnzahl(meineId: string): Promise<number> {
-  const { count, error } = await supabase
-    .from('messages')
-    .select('id', { count: 'exact', head: true })
-    .gt('created_at', zuletztGesehen())
-    .neq('author_id', meineId)
-
+export async function chatGesehen(bis?: string): Promise<string> {
+  const { data, error } = await supabase.rpc('chat_gesehen', { p_bis: bis ?? null })
   if (error) throw error
-  return count ?? 0
+  return data as string
+}
+
+/** Zahl der ungelesenen Nachrichten; eigene zählen nicht mit. */
+export async function ungeleseneAnzahl(): Promise<number> {
+  const { data, error } = await supabase.rpc('chat_ungelesen')
+  if (error) throw error
+  return (data as number) ?? 0
 }
 
 /**
@@ -67,17 +38,17 @@ export async function ungeleseneAnzahl(meineId: string): Promise<number> {
  * den Zähler augenblicklich verschwinden sehen und nicht erst beim
  * nächsten Takt.
  */
-export function useUngelesen(meineId: string | undefined, anlass?: unknown): number {
+export function useUngelesen(angemeldet: boolean, anlass?: unknown): number {
   const [anzahl, setAnzahl] = useState(0)
 
   const zaehlen = useCallback(() => {
-    if (!meineId) return
-    ungeleseneAnzahl(meineId)
+    if (!angemeldet) return
+    ungeleseneAnzahl()
       .then(setAnzahl)
       .catch(() => {
         // Ein fehlgeschlagener Zähler darf die Startseite nicht stören
       })
-  }, [meineId])
+  }, [angemeldet])
 
   useEffect(() => {
     zaehlen()

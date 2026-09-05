@@ -218,20 +218,28 @@ Am Chat-Knopf steht die Zahl der ungelesenen Nachrichten in einer roten Pille,
 wie am App-Symbol auf dem Handy; ab 100 als „99+“. Eigene Nachrichten zählen
 nicht mit.
 
-Wann jemand zuletzt hineingeschaut hat, steht **nur im Browser**
-(`localStorage`, Schlüssel `rikscha.chat-zuletzt-gesehen`) – die Datenbank
-kennt keinen Lesestand. Das spart eine Tabelle samt Schreibzugriffen, hat aber
-zwei Folgen:
+Der Lesestand steht **in der Datenbank** bei der Person selbst
+(`app_users.chat_gesehen_bis`) und gilt damit auf allen Geräten: Wer am Handy
+liest, sieht dieselben Nachrichten am Rechner nicht mehr als ungelesen. Ein
+Zeitstempel je Person genügt, deshalb eine Spalte statt einer eigenen Tabelle.
 
-- Der Stand gilt **je Gerät**. Wer am Handy liest, sieht die Nachrichten am
-  Rechner weiterhin als ungelesen.
-- Beim **allerersten Start** gilt der jetzige Moment als gesehen. Sonst stünde
-  der ganze bisherige Verlauf als ungelesen am Knopf.
+- `chat_gesehen(p_bis)` – hält fest, bis wohin gelesen wurde
+- `chat_ungelesen()` – zählt, was danach von anderen kam
 
-Gemerkt wird der Zeitstempel der neuesten Nachricht aus der Datenbank, nicht
-die Uhr des Geräts – sonst zählte eine falsch gehende Uhr Nachrichten doppelt
-oder gar nicht. Gezählt wird serverseitig (`head: true`), es geht also nicht
-für jede Zählung der ganze Verlauf über die Leitung.
+Zwei Regeln schützen den Stand vor kaputten Uhren und mehreren Geräten:
+
+- Er wandert **nur vorwärts** (`greatest`). Sonst zöge ein zweites Gerät, das
+  noch einen älteren Verlauf anzeigt, schon Gelesenes wieder auf ungelesen.
+- Er wandert **nie in die Zukunft** (`least(…, now())`). Ein vorgehendes Gerät
+  würde sonst künftige Nachrichten im Voraus abhaken.
+
+Beim Öffnen des Chats wird der Stand einmal gemeldet, danach nur, wenn
+tatsächlich eine neuere Nachricht dazugekommen ist – der Verlauf lädt alle
+20 Sekunden nach, sonst ginge bei jedem Durchlauf ein Schreibzugriff hinaus.
+
+Wer neu angelegt wird und alle, die es zum Zeitpunkt der Migration schon gab,
+starten mit „jetzt gelesen“. Sonst stünde der gesamte bisherige Verlauf als
+ungelesen am Knopf.
 
 ### Bilder
 
