@@ -1418,3 +1418,4 @@ body {
 .vorlage__knoepfe { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-left: auto; }
 .vorlage__knoepfe .btn { font-size: 14px; padding: 7px 12px; }
 .vorlage__form { width: 100%; display: flex; flex-direction: column; gap: 12px; }
+.gesperrt { margin: 4px 0 0; font-size: 14px; color: var(--error); }

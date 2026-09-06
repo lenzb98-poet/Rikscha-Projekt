@@ -49,6 +49,8 @@ export function AdminEinstellungen({ onZurueck }: Props) {
   const zaehle = (pruefung: (m: TeamMember) => boolean) =>
     leute === null ? '–' : String(leute.filter(pruefung).length)
 
+  const gesperrt = leute?.filter((m) => !m.is_active).length ?? 0
+
   async function aufraeumen() {
     setRaeumtAuf(true)
     setHinweis(null)
@@ -91,8 +93,9 @@ export function AdminEinstellungen({ onZurueck }: Props) {
             <span className="kennzahl__einheit">aktiv</span>
           </div>
           <div className="kennzahl">
-            <span className="kennzahl__wert">{zaehle((m) => !m.is_active)}</span>
-            <span className="kennzahl__einheit">gesperrt</span>
+            {/* Angemeldet heißt: hat sich schon einmal ein Passwort vergeben. */}
+            <span className="kennzahl__wert">{zaehle((m) => m.hat_passwort === true)}</span>
+            <span className="kennzahl__einheit">angemeldet</span>
           </div>
           <div className="kennzahl">
             <span className="kennzahl__wert">{zaehle((m) => m.hat_passwort !== true)}</span>
@@ -100,6 +103,15 @@ export function AdminEinstellungen({ onZurueck }: Props) {
             <span className="kennzahl__zusatz">noch nie angemeldet</span>
           </div>
         </div>
+
+        {/* Gesperrte sind der Ausnahmefall - deshalb keine eigene Kennzahl
+            oben, sondern nur ein Hinweis darunter, und nur wenn es welche
+            gibt. */}
+        {gesperrt > 0 && (
+          <p className="gesperrt">
+            {gesperrt} {gesperrt === 1 ? 'Zugang ist' : 'Zugänge sind'} gesperrt
+          </p>
+        )}
 
         <ul className="liste">
           {(['admin', 'koordinator', 'fahrer'] as Rolle[]).map((r) => (
