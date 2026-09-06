@@ -16,9 +16,18 @@ type Props = {
   onSaved: (member: TeamMember) => void
   onDeleted: (name: string) => void
   onZurueckgesetzt: (name: string) => void
+  /** Löschen und die Administrationsrolle bleiben der Administration. */
+  istAdmin: boolean
 }
 
-export function EditUserDialog({ member, onClose, onSaved, onDeleted, onZurueckgesetzt }: Props) {
+export function EditUserDialog({
+  member,
+  onClose,
+  onSaved,
+  onDeleted,
+  onZurueckgesetzt,
+  istAdmin,
+}: Props) {
   const [werte, setWerte] = useState<Stammdaten>({
     fullName: member.full_name,
     role: member.role,
@@ -147,7 +156,13 @@ export function EditUserDialog({ member, onClose, onSaved, onDeleted, onZurueckg
             </p>
 
             <form onSubmit={handleSubmit} className="auth__form">
-              <StammdatenFelder praefix="edit" werte={werte} onChange={setWerte} autoFocus />
+              <StammdatenFelder
+                praefix="edit"
+                werte={werte}
+                onChange={setWerte}
+                autoFocus
+                istAdmin={istAdmin}
+              />
 
               <label className="check" htmlFor="edit-active">
                 <input
@@ -196,16 +211,20 @@ export function EditUserDialog({ member, onClose, onSaved, onDeleted, onZurueckg
                 </button>
               )}
 
-              <button
-                type="button"
-                className="btn btn--linkdanger"
-                onClick={() => {
-                  setError(null)
-                  setLoeschenBestaetigen(true)
-                }}
-              >
-                Eintrag löschen
-              </button>
+              {/* Löschen ist endgültig und bleibt der Administration;
+                  die Datenbank lehnt es sonst ohnehin ab. */}
+              {istAdmin && (
+                <button
+                  type="button"
+                  className="btn btn--linkdanger"
+                  onClick={() => {
+                    setError(null)
+                    setLoeschenBestaetigen(true)
+                  }}
+                >
+                  Eintrag löschen
+                </button>
+              )}
             </div>
           </>
         )}

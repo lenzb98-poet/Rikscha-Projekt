@@ -57,9 +57,10 @@ aller Pilot:innen. Wer sie ändern darf, hängt an der Rolle.
 | Liste sehen | ja | ja | ja |
 | Deaktivierte sehen, Passwortstand | – | ja | ja |
 | Anlegen, bearbeiten, deaktivieren | – | ja | ja |
+| Passwort zurücksetzen | – | ja | ja |
 | Administrationsrolle vergeben | – | – | ja |
-| Einträge der Administration ändern | – | – | ja |
-| Löschen, Passwort zurücksetzen | – | – | ja |
+| Einträge der Administration ändern, deren Passwort zurücksetzen | – | – | ja |
+| Löschen | – | – | ja |
 
 Gelesen wird über `list_piloten()`: Die Policy auf `app_users` zeigt
 Fahrer:innen weiterhin nur den eigenen Datensatz, direkte Abfragen bleiben also
@@ -69,9 +70,15 @@ geliefert.
 
 Die Grenzen der Koordination sind bewusst gesetzt: Ohne sie könnte sie sich
 über eine neu angelegte Person oder den eigenen Datensatz selbst zur
-Administration machen. Löschen und Passwort-Zurücksetzen bleiben ebenfalls der
-Administration vorbehalten – beides ist nicht rückholbar bzw. gibt einen Zugang
-zur Neuvergabe frei.
+Administration machen.
+
+Dass **Passwörter der Administration** ausgenommen sind, hat denselben Grund.
+Zurücksetzen entfernt das Anmeldekonto; die Person meldet sich danach nur mit
+ihrem Namen an und vergibt selbst ein neues Passwort. Wer ein fremdes Passwort
+zurücksetzt, könnte sich also unmittelbar danach unter diesem Namen anmelden –
+bei einem Administrationszugang wäre das ein Weg zu vollen Rechten.
+
+**Löschen** bleibt bei der Administration, weil es nicht rückholbar ist.
 
 Erfasst werden Name (Pflicht, zugleich Anmeldename), Rolle (Fahrer:in,
 Koordination, Administration), Telefon und E-Mail (beide optional) sowie die

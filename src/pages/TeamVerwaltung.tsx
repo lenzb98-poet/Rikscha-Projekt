@@ -126,6 +126,7 @@ export function TeamVerwaltung({ onZurueck, darfVerwalten, istAdmin }: Props) {
 
       {addOffen && (
         <AddUserDialog
+          istAdmin={istAdmin}
           onClose={() => setAddOffen(false)}
           onCreated={(m) => {
             setAddOffen(false)
@@ -137,6 +138,7 @@ export function TeamVerwaltung({ onZurueck, darfVerwalten, istAdmin }: Props) {
       {bearbeitet && (
         <EditUserDialog
           member={bearbeitet}
+          istAdmin={istAdmin}
           onClose={() => setBearbeitet(null)}
           onSaved={(m) => {
             setBearbeitet(null)
