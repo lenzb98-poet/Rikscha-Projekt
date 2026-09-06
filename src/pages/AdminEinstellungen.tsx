@@ -9,13 +9,11 @@ import { toGermanError } from '../lib/errors'
  * zusammen, was es schon gibt: den Stand der Zugänge, wer was darf und die
  * Wartungsaufgaben, die sonst nirgends sichtbar sind.
  *
- * Koordination und Administration sind gleichgestellt; nur das Löschen von
- * Zugängen der Administration bleibt der Administration vorbehalten. Deshalb
- * sehen beide diese Seite, und `istAdmin` steuert nur die Feinheiten im Text.
+ * Nur für die Administration: die Koordination darf zwar fast dasselbe, diese
+ * Seite bleibt aber der Administration vorbehalten.
  */
 type Props = {
   onZurueck: () => void
-  istAdmin: boolean
 }
 
 const ROLLENNAME: Record<Rolle, string> = {
@@ -35,7 +33,7 @@ const RECHTE: { was: string; wer: string }[] = [
   { was: 'Pilot/-innen Liste ansehen, Chat lesen und schreiben', wer: 'alle' },
 ]
 
-export function AdminEinstellungen({ onZurueck, istAdmin }: Props) {
+export function AdminEinstellungen({ onZurueck }: Props) {
   const [leute, setLeute] = useState<TeamMember[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [hinweis, setHinweis] = useState<string | null>(null)
@@ -77,11 +75,7 @@ export function AdminEinstellungen({ onZurueck, istAdmin }: Props) {
       <div className="seite__kopf">
         <div>
           <h2>Admin Einstellungen</h2>
-          <p className="muted">
-            {istAdmin
-              ? 'Angemeldet als Administration – du darfst alles.'
-              : 'Angemeldet als Koordination – du darfst alles außer Zugänge der Administration löschen und die Rolle „Administration“ vergeben.'}
-          </p>
+          <p className="muted">Nur für die Administration.</p>
         </div>
       </div>
 

@@ -1397,3 +1397,6 @@ body {
   line-height: 1.45;
 }
 .rechte li:last-child { border-bottom: none; }
+
+/* Knopf rechts oben neben der Begrüßung; bleibt auch im Umbruch rechtsbündig */
+.kopf__knopf { margin-left: auto; }

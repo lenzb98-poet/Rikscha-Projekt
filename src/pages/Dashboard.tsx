@@ -75,16 +75,28 @@ export function Dashboard({ profile, onSignOut }: Props) {
           />
         )
       case 'admin':
-        return darfVerwalten ? (
-          <AdminEinstellungen onZurueck={zurueck} istAdmin={istAdmin} />
-        ) : null
+        return istAdmin ? <AdminEinstellungen onZurueck={zurueck} /> : null
       case 'chat':
         return <Chat onZurueck={zurueck} darfVerwalten={darfVerwalten} />
       default:
         return (
           <>
-            <h2>Hallo {profile?.full_name ?? 'zusammen'}!</h2>
-            {profile && <p className="muted">Angemeldet als {ROLLEN[profile.role]}</p>}
+            <div className="seite__kopf">
+              <div>
+                <h2>Hallo {profile?.full_name ?? 'zusammen'}!</h2>
+                {profile && <p className="muted">Angemeldet als {ROLLEN[profile.role]}</p>}
+              </div>
+              {/* Nur die Administration - Koordination und Fahrer:innen
+                  sehen den Knopf nicht und kommen auch nicht in die Ansicht. */}
+              {istAdmin && (
+                <button
+                  className="btn btn--ghost kopf__knopf"
+                  onClick={() => setAnsicht('admin')}
+                >
+                  Admin Einstellungen
+                </button>
+              )}
+            </div>
 
             <MeineFahrten alle={fahrten} onAktualisiert={laden} />
 
@@ -154,19 +166,6 @@ export function Dashboard({ profile, onSignOut }: Props) {
                 Pilot/-innen Liste
               </button>
             </section>
-
-            {darfVerwalten && (
-              <section className="card">
-                <h3>Admin Einstellungen</h3>
-                <p className="muted card__text">
-                  Stand der Zugänge, wer welche Rechte hat und die Wartung – alles zur
-                  Verwaltung an einer Stelle.
-                </p>
-                <button className="btn" onClick={() => setAnsicht('admin')}>
-                  Admin Einstellungen
-                </button>
-              </section>
-            )}
 
             <Auswertung alle={fahrten} uebernahmen={uebernahmen} />
 
