@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { listUsers, raeumeBildspeicherAuf, type Rolle, type TeamMember } from '../lib/supabase'
 import { toGermanError } from '../lib/errors'
+import { HeimVorlagen } from '../components/HeimVorlagen'
 
 /**
  * Die Verwaltungsseite: alles, was die Leitung betrifft, an einer Stelle.
@@ -124,6 +125,8 @@ export function AdminEinstellungen({ onZurueck }: Props) {
           ))}
         </ul>
       </section>
+
+      <HeimVorlagen />
 
       <section className="card">
         <h3>Wartung</h3>

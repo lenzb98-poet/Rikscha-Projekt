@@ -13,7 +13,7 @@ import {
   type RideStatus,
 } from '../lib/fahrten'
 import { toGermanError } from '../lib/errors'
-import { SENIORENHEIME, heimOrt, infoMitTelefon, type Heim } from '../lib/heime'
+import { listHeime, heimOrt, infoMitTelefon, type Heim } from '../lib/heime'
 
 type Props = {
   /** Fehlt beim Anlegen einer neuen Fahrt. */
@@ -58,6 +58,8 @@ export function FahrtDialog({ fahrt, onClose, onGespeichert }: Props) {
    */
   const [anzahlText, setAnzahlText] = useState(String(fahrt?.pilots_needed ?? 1))
   const [alle, setAlle] = useState<Pilot[]>([])
+  /** Die Vorlagen der Seniorenheime; gepflegt in den Admin Einstellungen. */
+  const [heime, setHeime] = useState<Heim[]>([])
   /**
    * Ob die Namensliste ausgeklappt ist. Sie ist lang und meist gar nicht
    * nötig, weil sich Pilot:innen selbst eintragen - deshalb erst auf Wunsch.
@@ -75,6 +77,11 @@ export function FahrtDialog({ fahrt, onClose, onGespeichert }: Props) {
     listPilots()
       .then(setAlle)
       .catch(() => setAlle([]))
+    // Ohne Vorlagen lässt sich die Fahrt trotzdem anlegen - dann fehlt nur
+    // die Abkürzung. Deshalb hier kein Fehler im Dialog.
+    listHeime()
+      .then(setHeime)
+      .catch(() => setHeime([]))
   }, [])
 
   const anzahl = Number(anzahlText)
@@ -93,7 +100,7 @@ export function FahrtDialog({ fahrt, onClose, onGespeichert }: Props) {
     setWerte((w) => ({
       ...w,
       location: heimOrt(h),
-      info: infoMitTelefon(w.info, h),
+      info: infoMitTelefon(w.info, h, heime),
     }))
   }
 
@@ -239,14 +246,15 @@ export function FahrtDialog({ fahrt, onClose, onGespeichert }: Props) {
                 </div>
               </label>
 
+              {heime.length > 0 && (
               <div className="field">
                 <span className="field__label">
                   Seniorenheim <span className="field__optional">Vorlage</span>
                 </span>
                 <div className="heimwahl">
-                  {SENIORENHEIME.map((h) => (
+                  {heime.map((h) => (
                     <button
-                      key={h.name}
+                      key={h.id}
                       type="button"
                       className={
                         werte.location === heimOrt(h) ? 'heimchip heimchip--an' : 'heimchip'
@@ -262,6 +270,7 @@ export function FahrtDialog({ fahrt, onClose, onGespeichert }: Props) {
                   danach noch ändern.
                 </span>
               </div>
+              )}
 
               <label className="field" htmlFor="fahrt-ort">
                 <span className="field__label">Wo</span>
