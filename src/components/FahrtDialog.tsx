@@ -58,13 +58,16 @@ export function FahrtDialog({ fahrt, onClose, onGespeichert }: Props) {
   const [busy, setBusy] = useState(false)
   const [loeschenBestaetigen, setLoeschenBestaetigen] = useState(false)
 
-  // Auswahlliste nur beim Bearbeiten – beim Anlegen gibt es die Fahrt noch nicht
   useEffect(() => {
-    if (!fahrt) return
     listPilots()
       .then(setAlle)
       .catch(() => setAlle([]))
-  }, [fahrt])
+  }, [])
+
+  const zugeordnet = dabei.size
+  // Mehr Personen als Rikschas gehen nicht: die Datenbank weist das ab,
+  // also gar nicht erst anbieten.
+  const plaetzeVoll = zugeordnet >= werte.pilotsNeeded
 
   function setze<K extends keyof FahrtEingabe>(feld: K, wert: FahrtEingabe[K]) {
     setWerte((w) => ({ ...w, [feld]: wert }))
@@ -88,8 +91,27 @@ export function FahrtDialog({ fahrt, onClose, onGespeichert }: Props) {
         await updateRide(fahrt.id, werte)
         onGespeichert('Die Fahrt wurde gespeichert.')
       } else {
-        await createRide(werte)
-        onGespeichert('Die Fahrt wurde angelegt und steht jetzt unter „Offene Fahrten“.')
+        const neueId = await createRide(werte)
+
+        // Erst nach dem Anlegen gibt es die Fahrt, der die Plätze gehören.
+        // Scheitert eine Zuordnung, bleibt die Fahrt trotzdem bestehen -
+        // deshalb wird gesammelt gemeldet statt abgebrochen.
+        const misslungen: string[] = []
+        for (const p of alle.filter((p) => dabei.has(p.id))) {
+          try {
+            await setPilot(neueId, p.id, true)
+          } catch {
+            misslungen.push(p.name)
+          }
+        }
+
+        onGespeichert(
+          misslungen.length === 0
+            ? zugeordnet === 0
+              ? 'Die Fahrt wurde angelegt und steht jetzt unter „Offene Fahrten“.'
+              : `Die Fahrt wurde angelegt, ${zugeordnet === 1 ? 'eine Person ist' : `${zugeordnet} Personen sind`} zugeordnet.`
+            : `Die Fahrt wurde angelegt. Nicht zuordnen ließ sich: ${misslungen.join(', ')}.`,
+        )
       }
     } catch (err) {
       setError(toGermanError(err))
@@ -112,17 +134,28 @@ export function FahrtDialog({ fahrt, onClose, onGespeichert }: Props) {
     }
   }
 
+  function merke(id: string, neu: boolean) {
+    setDabei((s) => {
+      const kopie = new Set(s)
+      if (neu) kopie.add(id)
+      else kopie.delete(id)
+      return kopie
+    })
+  }
+
   async function schaltePilot(p: Pilot) {
-    if (!fahrt) return
     const neu = !dabei.has(p.id)
+
+    // Beim Anlegen gibt es die Fahrt noch nicht; gespeichert wird die
+    // Auswahl dann erst beim Absenden.
+    if (!fahrt) {
+      merke(p.id, neu)
+      return
+    }
+
     try {
       await setPilot(fahrt.id, p.id, neu)
-      setDabei((s) => {
-        const kopie = new Set(s)
-        if (neu) kopie.add(p.id)
-        else kopie.delete(p.id)
-        return kopie
-      })
+      merke(p.id, neu)
     } catch (err) {
       setError(toGermanError(err))
     }
@@ -170,7 +203,7 @@ export function FahrtDialog({ fahrt, onClose, onGespeichert }: Props) {
             <p className="muted overlay__intro">
               {fahrt
                 ? 'Angaben ändern oder Pilot:innen selbst zuordnen.'
-                : 'Nach dem Anlegen können sich Pilot:innen selbst eintragen.'}
+                : 'Wer schon feststeht, lässt sich gleich zuordnen; die übrigen Plätze bleiben offen.'}
             </p>
 
             <form onSubmit={handleSubmit} className="auth__form">
@@ -282,28 +315,41 @@ export function FahrtDialog({ fahrt, onClose, onGespeichert }: Props) {
                     </div>
                   </label>
 
-                  <div className="field">
-                    <span className="field__label">Pilot:innen zuordnen</span>
-                    <div className="pilotwahl">
-                      {alle.length === 0 && <span className="muted">Lade Liste …</span>}
-                      {alle.map((p) => (
-                        <button
-                          key={p.id}
-                          type="button"
-                          className={dabei.has(p.id) ? 'pilotchip pilotchip--an' : 'pilotchip'}
-                          onClick={() => schaltePilot(p)}
-                        >
-                          {dabei.has(p.id) ? '✓ ' : '+ '}
-                          {p.name}
-                        </button>
-                      ))}
-                    </div>
-                    <span className="hint">
-                      {dabei.size} von {werte.pilotsNeeded} eingetragen. Änderungen wirken sofort.
-                    </span>
-                  </div>
                 </>
               )}
+
+              <div className="field">
+                <span className="field__label">
+                  Pilot:innen zuordnen{' '}
+                  <span className="field__optional">optional</span>
+                </span>
+                <div className="pilotwahl">
+                  {alle.length === 0 && <span className="muted">Lade Liste …</span>}
+                  {alle.map((p) => {
+                    const drin = dabei.has(p.id)
+                    return (
+                      <button
+                        key={p.id}
+                        type="button"
+                        className={drin ? 'pilotchip pilotchip--an' : 'pilotchip'}
+                        onClick={() => schaltePilot(p)}
+                        disabled={busy || (!drin && plaetzeVoll)}
+                      >
+                        {drin ? '✓ ' : '+ '}
+                        {p.name}
+                      </button>
+                    )
+                  })}
+                </div>
+                <span className="hint">
+                  {zugeordnet} von {werte.pilotsNeeded} zugeordnet.{' '}
+                  {plaetzeVoll
+                    ? 'Für mehr Personen die Zahl der benötigten Pilot:innen erhöhen.'
+                    : fahrt
+                      ? 'Änderungen wirken sofort.'
+                      : 'Die übrigen Plätze bleiben offen, dort tragen sich Pilot:innen selbst ein.'}
+                </span>
+              </div>
 
               {error && <p className="alert alert--error">{error}</p>}
 

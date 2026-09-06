@@ -759,6 +759,8 @@ body {
   color: var(--text);
 }
 .pilotchip--an { background: var(--z-besetzt-bg); border-color: var(--z-besetzt); color: var(--z-besetzt); font-weight: 600; }
+/* Alle Plätze vergeben: die übrigen Namen sind dann nicht mehr wählbar */
+.pilotchip:disabled { opacity: 0.45; cursor: default; }
 
 /* Vorlagen für die Seniorenheime. Untereinander statt als Reihe: die Namen
    sind lang und würden nebeneinander unleserlich umbrechen. */

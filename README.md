@@ -150,7 +150,9 @@ die Zahl der Buchungen lässt sie sich nicht senken.
 ### Ablauf
 
 1. Die Koordination legt eine Fahrt an: Termin, Ort, Infotext und wie viele
-   Rikschas gebraucht werden.
+   Rikschas gebraucht werden. Wer schon feststeht, lässt sich dabei gleich
+   zuordnen – die Fahrt wird zuerst angelegt, danach werden die Plätze besetzt.
+   Mehr Personen als Rikschas nimmt die Auswahl nicht an.
 2. Die Fahrt erscheint unter **Offene Fahrten**. Wer mitfahren will, trägt sich
    dort oder über einen Platz im Kalender ein.
 3. Sind alle Plätze belegt, gilt die Fahrt als zugesagt und verschwindet aus den
