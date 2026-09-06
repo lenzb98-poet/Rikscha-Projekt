@@ -118,8 +118,11 @@ export function Dashboard({ profile, onSignOut }: Props) {
                   </button>
                 </div>
 
+                {/* Eigene Zeile unter den beiden blauen Knöpfen: in der
+                    Reihe daneben stand der Knopf sonst schief, weil unter
+                    "Offene Fahrten" noch die Zahl steht. */}
                 {darfVerwalten && (
-                  <div className="knopfblock">
+                  <div className="knopfblock knopfblock--breit">
                     <button
                       className="btn btn--ghost"
                       onClick={() => setAnsicht('fahrten-verwalten')}
@@ -130,7 +133,7 @@ export function Dashboard({ profile, onSignOut }: Props) {
                 )}
 
                 {darfVerwalten && (
-                  <div className="knopfblock">
+                  <div className="knopfblock knopfblock--breit">
                     <button className="btn btn--ghost" onClick={() => setAnsicht('fahrtenbuch')}>
                       Fahrtenbuch / Statistik
                     </button>
