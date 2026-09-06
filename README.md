@@ -102,8 +102,9 @@ deaktivieren, löschen oder die eigenen Rechte entziehen.
 
 Der Trigger `app_users_guard_privileges` sichert denselben Rahmen an der
 Tabelle ab, für den Fall, dass jemand die Funktionen umgeht: Rolle, Name und
-Freischaltung ändert nur, wer verwalten darf – und die Administrationsrolle
-vergibt dort niemand außer der Administration.
+Freischaltung ändert nur, wer verwalten darf. Ohne ihn könnte sich jede
+Fahrer:in über die eigene Zeile selbst befördern – die Policy erlaubt jeder
+Person Änderungen daran.
 
 ## Fahrten
 
@@ -112,7 +113,7 @@ Auf der Startseite führen zwei Knöpfe zu den Fahrten, für alle Rollen:
 - **Offene Fahrten** – es werden noch Pilot:innen gesucht
 - **Fahrtenkalender** – Monatsansicht, jede Rikscha einzeln
 
-Administratoren sehen zusätzlich **Fahrten verwalten** und
+Koordination und Administration sehen zusätzlich **Fahrten verwalten** und
 **Fahrtenbuch / Statistik**.
 
 ### Seniorenheime als Vorlage
