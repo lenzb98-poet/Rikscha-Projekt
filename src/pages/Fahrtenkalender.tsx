@@ -91,6 +91,11 @@ export function Fahrtenkalender({ onZurueck }: { onZurueck: () => void }) {
         <span className="kal__legendeneintrag">
           <span className="punkt punkt--besetzt" /> Vergeben
         </span>
+        {/* Reihenfolge wie der Ablauf einer Fahrt: erst offen, dann vergeben,
+            nach dem Termin fehlen die Angaben, dann abgeschlossen. */}
+        <span className="kal__legendeneintrag">
+          <span className="punkt punkt--nachtragen" /> {ZUSTAND_TEXT.nachtragen}
+        </span>
         <span className="kal__legendeneintrag">
           <span className="punkt punkt--abgeschlossen" /> Abgeschlossen
         </span>
