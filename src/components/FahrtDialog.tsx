@@ -50,7 +50,20 @@ export function FahrtDialog({ fahrt, onClose, onGespeichert }: Props) {
     pilotsNeeded: fahrt?.pilots_needed ?? 1,
     status: fahrt?.status ?? 'geplant',
   })
+  /**
+   * Die Anzahl als Text führen, nicht als Zahl.
+   *
+   * Als Zahl wurde ein geleertes Feld zu 0; tippte man danach eine 2, stand
+   * dort "02". Umgewandelt wird deshalb erst beim Absenden.
+   */
+  const [anzahlText, setAnzahlText] = useState(String(fahrt?.pilots_needed ?? 1))
   const [alle, setAlle] = useState<Pilot[]>([])
+  /**
+   * Ob die Namensliste ausgeklappt ist. Sie ist lang und meist gar nicht
+   * nötig, weil sich Pilot:innen selbst eintragen - deshalb erst auf Wunsch.
+   * Beim Bearbeiten offen, wenn bereits jemand zugeordnet ist.
+   */
+  const [zuordnen, setZuordnen] = useState((fahrt?.piloten ?? []).length > 0)
   const [dabei, setDabei] = useState<Set<string>>(
     () => new Set((fahrt?.piloten ?? []).map((p) => p.id)),
   )
@@ -64,10 +77,12 @@ export function FahrtDialog({ fahrt, onClose, onGespeichert }: Props) {
       .catch(() => setAlle([]))
   }, [])
 
+  const anzahl = Number(anzahlText)
+  const anzahlUngueltig = anzahlText === '' || !Number.isInteger(anzahl) || anzahl < 1 || anzahl > 20
   const zugeordnet = dabei.size
   // Mehr Personen als Rikschas gehen nicht: die Datenbank weist das ab,
   // also gar nicht erst anbieten.
-  const plaetzeVoll = zugeordnet >= werte.pilotsNeeded
+  const plaetzeVoll = !anzahlUngueltig && zugeordnet >= anzahl
 
   function setze<K extends keyof FahrtEingabe>(feld: K, wert: FahrtEingabe[K]) {
     setWerte((w) => ({ ...w, [feld]: wert }))
@@ -84,14 +99,18 @@ export function FahrtDialog({ fahrt, onClose, onGespeichert }: Props) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (anzahlUngueltig) {
+      setError('Bitte für die benötigten Pilot:innen eine Zahl zwischen 1 und 20 angeben.')
+      return
+    }
     setError(null)
     setBusy(true)
     try {
       if (fahrt) {
-        await updateRide(fahrt.id, werte)
+        await updateRide(fahrt.id, { ...werte, pilotsNeeded: anzahl })
         onGespeichert('Die Fahrt wurde gespeichert.')
       } else {
-        const neueId = await createRide(werte)
+        const neueId = await createRide({ ...werte, pilotsNeeded: anzahl })
 
         // Erst nach dem Anlegen gibt es die Fahrt, der die Plätze gehören.
         // Scheitert eine Zuordnung, bleibt die Fahrt trotzdem bestehen -
@@ -277,13 +296,16 @@ export function FahrtDialog({ fahrt, onClose, onGespeichert }: Props) {
               <label className="field" htmlFor="fahrt-anzahl">
                 <span className="field__label">Benötigte Pilot:innen</span>
                 <div className="field__wrap">
+                  {/* type="text" statt "number": Das Zahlenfeld machte aus
+                      einem geleerten Feld eine 0, sodass eine getippte 2 zu
+                      "02" wurde. inputMode holt am Handy die Zifferntastatur. */}
                   <input
                     id="fahrt-anzahl"
-                    type="number"
-                    min={1}
-                    max={20}
-                    value={werte.pilotsNeeded}
-                    onChange={(e) => setze('pilotsNeeded', Number(e.target.value))}
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="off"
+                    value={anzahlText}
+                    onChange={(e) => setAnzahlText(e.target.value.replace(/\D/g, '').slice(0, 2))}
                     required
                   />
                 </div>
@@ -319,10 +341,32 @@ export function FahrtDialog({ fahrt, onClose, onGespeichert }: Props) {
               )}
 
               <div className="field">
-                <span className="field__label">
-                  Pilot:innen zuordnen{' '}
-                  <span className="field__optional">optional</span>
-                </span>
+                <label className="check check--schlank" htmlFor="fahrt-zuordnen">
+                  <input
+                    id="fahrt-zuordnen"
+                    type="checkbox"
+                    checked={zuordnen}
+                    onChange={(e) => {
+                      setZuordnen(e.target.checked)
+                      // Abgehakt heißt: niemanden zuordnen. Beim Bearbeiten
+                      // bleiben bereits gespeicherte Zuordnungen bestehen -
+                      // sie hier still zu lösen wäre eine böse Überraschung.
+                      if (!e.target.checked && !fahrt) setDabei(new Set())
+                    }}
+                  />
+                  <span>
+                    <strong>Pilot:innen zuordnen</strong>
+                    <span className="check__hint">
+                      {zugeordnet > 0
+                        ? `${zugeordnet} ${zugeordnet === 1 ? 'Person ist' : 'Personen sind'} zugeordnet.`
+                        : 'Sonst tragen sich Pilot:innen selbst ein.'}
+                    </span>
+                  </span>
+                </label>
+              </div>
+
+              {zuordnen && (
+              <div className="field">
                 <div className="pilotwahl">
                   {alle.length === 0 && <span className="muted">Lade Liste …</span>}
                   {alle.map((p) => {
@@ -342,7 +386,7 @@ export function FahrtDialog({ fahrt, onClose, onGespeichert }: Props) {
                   })}
                 </div>
                 <span className="hint">
-                  {zugeordnet} von {werte.pilotsNeeded} zugeordnet.{' '}
+                  {zugeordnet} von {anzahlUngueltig ? '?' : anzahl} zugeordnet.{' '}
                   {plaetzeVoll
                     ? 'Für mehr Personen die Zahl der benötigten Pilot:innen erhöhen.'
                     : fahrt
@@ -350,6 +394,7 @@ export function FahrtDialog({ fahrt, onClose, onGespeichert }: Props) {
                       : 'Die übrigen Plätze bleiben offen, dort tragen sich Pilot:innen selbst ein.'}
                 </span>
               </div>
+              )}
 
               {error && <p className="alert alert--error">{error}</p>}
 
