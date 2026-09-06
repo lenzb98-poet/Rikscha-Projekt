@@ -222,6 +222,12 @@ export type ChatNachricht = {
   image_width: number | null
   image_height: number | null
   image_removed: boolean
+  /** Auf welche Nachricht sich diese bezieht; null bei einer gewöhnlichen. */
+  reply_to: string | null
+  reply_autor: string | null
+  /** Ausschnitt der Bezugsnachricht, von der Datenbank auf 140 Zeichen gekürzt. */
+  reply_text: string | null
+  reply_bild: boolean | null
 }
 
 export const BILDER_BUCKET = 'chat-bilder'
@@ -267,6 +273,8 @@ export type NeueNachricht = {
   imageSize?: number | null
   imageWidth?: number | null
   imageHeight?: number | null
+  /** Auf welche Nachricht geantwortet wird. */
+  replyTo?: string | null
 }
 
 /** Sendet eine Nachricht. Der Absender wird serverseitig aus der Anmeldung bestimmt. */
@@ -277,6 +285,7 @@ export async function sendMessage(n: NeueNachricht): Promise<ChatNachricht> {
     p_image_size: n.imageSize ?? null,
     p_image_width: n.imageWidth ?? null,
     p_image_height: n.imageHeight ?? null,
+    p_reply_to: n.replyTo ?? null,
   })
   if (error) throw error
   const row = Array.isArray(data) ? data[0] : data

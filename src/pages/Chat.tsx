@@ -42,12 +42,16 @@ export function Chat({ onZurueck, darfVerwalten }: Props) {
   const [text, setText] = useState('')
   const [auswahl, setAuswahl] = useState<Auswahl | null>(null)
   const [grossesBild, setGrossesBild] = useState<string | null>(null)
+  /** Nachricht, auf die gerade geantwortet wird. */
+  const [antwortAuf, setAntwortAuf] = useState<ChatNachricht | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const dateiRef = useRef<HTMLInputElement>(null)
   const verlaufRef = useRef<HTMLDivElement>(null)
   /** Bis wohin der Lesestand schon gemeldet wurde. */
   const gemeldetRef = useRef('')
+  /** Kurz hervorgehobene Nachricht, nachdem man einem Zitat gefolgt ist. */
+  const [hervorgehoben, setHervorgehoben] = useState<string | null>(null)
 
   const laden = useCallback(() => {
     listMessages()
@@ -137,9 +141,11 @@ export function Chat({ onZurueck, darfVerwalten }: Props) {
         imageSize: auswahl?.datei.size ?? null,
         imageWidth: auswahl?.breite ?? null,
         imageHeight: auswahl?.hoehe ?? null,
+        replyTo: antwortAuf?.id ?? null,
       })
 
       setText('')
+      setAntwortAuf(null)
       verwerfeAuswahl()
       laden()
 
@@ -158,6 +164,27 @@ export function Chat({ onZurueck, darfVerwalten }: Props) {
     } finally {
       setBusy(false)
     }
+  }
+
+  /**
+   * Springt zu der Nachricht, auf die geantwortet wurde, und hebt sie kurz
+   * hervor. Liegt sie außerhalb des geladenen Verlaufs, passiert nichts.
+   *
+   * Bewusst wird nur der Verlauf gescrollt und nicht scrollIntoView benutzt:
+   * Das zöge sonst die ganze Seite mit.
+   */
+  function springeZu(id: string | null) {
+    if (!id) return
+    const behaelter = verlaufRef.current
+    const ziel = behaelter?.querySelector<HTMLElement>(`[data-nachricht="${id}"]`)
+    if (!behaelter || !ziel) return
+
+    behaelter.scrollTo({
+      top: ziel.offsetTop - behaelter.clientHeight / 2 + ziel.clientHeight / 2,
+      behavior: 'smooth',
+    })
+    setHervorgehoben(id)
+    window.setTimeout(() => setHervorgehoben((h) => (h === id ? null : h)), 1600)
   }
 
   async function handleLoeschen(n: ChatNachricht) {
@@ -207,18 +234,33 @@ export function Chat({ onZurueck, darfVerwalten }: Props) {
             const adresse = n.image_path ? adressen[n.image_path] : undefined
 
             return (
-              <div key={n.id}>
+              <div key={n.id} data-nachricht={n.id}>
                 {neuerTag && <div className="chat__tag">{tag}</div>}
                 <div
                   className={[
                     'blase',
                     n.ist_eigene ? 'blase--eigen' : '',
                     n.image_path ? 'blase--bild' : '',
+                    hervorgehoben === n.id ? 'blase--hervor' : '',
                   ]
                     .filter(Boolean)
                     .join(' ')}
                 >
                   {!n.ist_eigene && <div className="blase__autor">{n.author_name}</div>}
+
+                  {n.reply_to && (
+                    <button
+                      type="button"
+                      className="zitat"
+                      onClick={() => springeZu(n.reply_to)}
+                      title="Zur ursprünglichen Nachricht"
+                    >
+                      <span className="zitat__autor">{n.reply_autor}</span>
+                      <span className="zitat__text">
+                        {n.reply_bild && !n.reply_text ? '📷 Bild' : n.reply_text}
+                      </span>
+                    </button>
+                  )}
 
                   {n.image_removed && (
                     <div className="blase__entfernt">
@@ -251,6 +293,13 @@ export function Chat({ onZurueck, darfVerwalten }: Props) {
 
                   <div className="blase__fuss">
                     <span>{uhrzeit(datum)}</span>
+                    <button
+                      className="blase__aktion"
+                      onClick={() => setAntwortAuf(n)}
+                      title="Auf diese Nachricht antworten"
+                    >
+                      Antworten
+                    </button>
                     {(n.ist_eigene || darfVerwalten) && (
                       <button
                         className="blase__loeschen"
@@ -278,6 +327,27 @@ export function Chat({ onZurueck, darfVerwalten }: Props) {
             </div>
             <button type="button" className="btn btn--ghost" onClick={verwerfeAuswahl}>
               Entfernen
+            </button>
+          </div>
+        )}
+
+        {antwortAuf && (
+          <div className="chat__antwort">
+            <div className="zitat zitat--vorschau">
+              <span className="zitat__autor">
+                Antwort an {antwortAuf.ist_eigene ? 'dich' : antwortAuf.author_name}
+              </span>
+              <span className="zitat__text">
+                {antwortAuf.body || (antwortAuf.image_path ? '📷 Bild' : '')}
+              </span>
+            </div>
+            <button
+              type="button"
+              className="btn btn--ghost"
+              onClick={() => setAntwortAuf(null)}
+              aria-label="Antwort verwerfen"
+            >
+              ✕
             </button>
           </div>
         )}

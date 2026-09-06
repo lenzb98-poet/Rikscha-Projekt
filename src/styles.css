@@ -376,7 +376,8 @@ body {
 }
 .blase--eigen .blase__fuss { color: rgba(255, 255, 255, 0.75); }
 
-.blase__loeschen {
+.blase__loeschen,
+.blase__aktion {
   background: none;
   border: 0;
   padding: 0;
@@ -386,6 +387,63 @@ body {
   text-decoration: underline;
   opacity: 0.85;
 }
+
+/* --- Antworten ---------------------------------------------------------- */
+/* Zitat der Nachricht, auf die geantwortet wurde. Der Balken links ist das
+   vertraute Zeichen dafür, dass hier etwas Fremdes wiedergegeben wird. */
+.zitat {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  width: 100%;
+  margin-bottom: 6px;
+  padding: 5px 9px;
+  border: 0;
+  border-left: 3px solid currentColor;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.06);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.blase--eigen .zitat { background: rgba(255, 255, 255, 0.16); }
+
+.zitat__autor { font-size: 12px; font-weight: 700; }
+.zitat__text {
+  font-size: 13px;
+  line-height: 1.35;
+  opacity: 0.85;
+  /* Nur ein Vorgeschmack: eine Zeile, der Rest steht ja oben im Verlauf */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Kurzes Aufleuchten, nachdem man einem Zitat gefolgt ist */
+.blase--hervor {
+  animation: blaseHervor 1.6s ease-out;
+}
+@keyframes blaseHervor {
+  0%, 45% { box-shadow: 0 0 0 3px var(--blau); }
+  100%    { box-shadow: 0 0 0 3px transparent; }
+}
+
+/* Vorschau über dem Eingabefeld */
+.chat__antwort {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px 0;
+}
+.chat__antwort .zitat {
+  margin: 0;
+  cursor: default;
+  color: var(--blau-dunkel);
+  background: var(--z-offen-bg);
+  min-width: 0;
+}
+.chat__antwort .btn { flex-shrink: 0; padding: 6px 11px; }
 
 .chat__eingabe {
   display: flex;

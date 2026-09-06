@@ -246,9 +246,18 @@ Ein gemeinsamer Verlauf für alle Freigeschalteten, erreichbar über den grünen
 Knopf **Piloten Chat** unter den Fahrten-Knöpfen.
 
 - Enter sendet, Umschalt+Enter macht einen Zeilenumbruch
+- **Antworten** an jeder Nachricht: Über dem Eingabefeld erscheint dann ein
+  Ausschnitt der ursprünglichen Nachricht, in der gesendeten Blase steht sie
+  als Zitat. Ein Tipp darauf springt zur ursprünglichen Nachricht und hebt sie
+  kurz hervor.
 - Eigene Nachrichten rechts in Blau, fremde links in Grau
 - Eigene Nachrichten löschbar, Administratoren auch fremde
 - Deaktivierte Zugänge können weder lesen noch schreiben
+
+Der Bezug einer Antwort steht in `messages.reply_to`. Wird die ursprüngliche
+Nachricht gelöscht, fällt er still weg (`on delete set null`) und die Antwort
+bleibt als gewöhnliche Nachricht stehen – eine Kopie des Textes aufzubewahren
+wäre bequemer, würde aber das Löschen unterlaufen.
 
 Der Absender wird serverseitig aus der Anmeldung bestimmt und lässt sich nicht
 fälschen. Gelesen wird über `list_messages`, weil die Policy auf `app_users`
