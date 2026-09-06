@@ -211,6 +211,21 @@ export async function deleteUser(id: string): Promise<string> {
   return (row as { full_name: string }).full_name
 }
 
+/**
+ * Die Zeichen zur Auswahl. Feste, kleine Liste statt einer vollen
+ * Emoji-Tastatur: überall gleich, ohne Fremdbibliothek, mit einem Griff
+ * bedienbar. Die Datenbank prüft dieselbe Liste.
+ */
+export const REAKTIONEN = ['👍', '❤️', '😊', '👏', '🙏', '😢'] as const
+
+export type Reaktion = {
+  emoji: string
+  anzahl: number
+  /** Wer reagiert hat, für den Tooltip. */
+  namen: string
+  ist_meine: boolean
+}
+
 export type ChatNachricht = {
   id: string
   body: string
@@ -228,6 +243,8 @@ export type ChatNachricht = {
   /** Ausschnitt der Bezugsnachricht, von der Datenbank auf 140 Zeichen gekürzt. */
   reply_text: string | null
   reply_bild: boolean | null
+  /** Nach Häufigkeit sortiert; leer, wenn niemand reagiert hat. */
+  reaktionen: Reaktion[]
 }
 
 export const BILDER_BUCKET = 'chat-bilder'
@@ -290,6 +307,19 @@ export async function sendMessage(n: NeueNachricht): Promise<ChatNachricht> {
   if (error) throw error
   const row = Array.isArray(data) ? data[0] : data
   return row as ChatNachricht
+}
+
+/**
+ * Setzt eine Reaktion oder nimmt sie wieder weg – derselbe Aufruf schaltet
+ * um. Gibt zurück, ob sie jetzt gesetzt ist.
+ */
+export async function reagiere(messageId: string, emoji: string): Promise<boolean> {
+  const { data, error } = await supabase.rpc('message_reagieren', {
+    p_message_id: messageId,
+    p_emoji: emoji,
+  })
+  if (error) throw error
+  return data as boolean
 }
 
 /** Löscht eine Nachricht samt Bild. Erlaubt für eigene, für Admins auch fremde. */

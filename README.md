@@ -252,9 +252,19 @@ Knopf **Piloten Chat** unter den Fahrten-Knöpfen.
   Ausschnitt der ursprünglichen Nachricht, in der gesendeten Blase steht sie
   als Zitat. Ein Tipp darauf springt zur ursprünglichen Nachricht und hebt sie
   kurz hervor.
+- **Reagieren** an jeder Nachricht: öffnet eine Leiste mit sechs Zeichen
+  (👍 ❤️ 😊 👏 🙏 😢). Gesetzte Reaktionen stehen als Chips unter der Nachricht,
+  mit Anzahl; ein Tipp auf einen Chip nimmt die eigene wieder zurück, der
+  Tooltip nennt die Namen.
 - Eigene Nachrichten rechts in Blau, fremde links in Grau
 - Eigene Nachrichten löschbar, Administratoren auch fremde
 - Deaktivierte Zugänge können weder lesen noch schreiben
+
+Die Auswahl der Zeichen ist bewusst klein und fest (`REAKTIONEN` im Programm,
+derselbe Check an `message_reactions`): auf jedem Gerät gleich, ohne
+Fremdbibliothek, mit einem Griff bedienbar. `message_reagieren()` schaltet um –
+dasselbe Zeichen erneut zu wählen nimmt es zurück. Wird eine Nachricht
+gelöscht, verschwinden ihre Reaktionen mit ihr.
 
 Der Bezug einer Antwort steht in `messages.reply_to`. Wird die ursprüngliche
 Nachricht gelöscht, fällt er still weg (`on delete set null`) und die Antwort

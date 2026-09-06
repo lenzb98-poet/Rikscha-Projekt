@@ -5,6 +5,8 @@ import {
   ladeBildHoch,
   listMessages,
   raeumeBildspeicherAuf,
+  reagiere,
+  REAKTIONEN,
   sendMessage,
   watchMessages,
   type ChatNachricht,
@@ -44,6 +46,8 @@ export function Chat({ onZurueck, darfVerwalten }: Props) {
   const [grossesBild, setGrossesBild] = useState<string | null>(null)
   /** Nachricht, auf die gerade geantwortet wird. */
   const [antwortAuf, setAntwortAuf] = useState<ChatNachricht | null>(null)
+  /** Nachricht, für die gerade die Zeichenauswahl offen steht. */
+  const [reaktionFuer, setReaktionFuer] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const dateiRef = useRef<HTMLInputElement>(null)
@@ -187,6 +191,16 @@ export function Chat({ onZurueck, darfVerwalten }: Props) {
     window.setTimeout(() => setHervorgehoben((h) => (h === id ? null : h)), 1600)
   }
 
+  async function handleReaktion(id: string, emoji: string) {
+    setReaktionFuer(null)
+    try {
+      await reagiere(id, emoji)
+      laden()
+    } catch (err) {
+      setError(toGermanError(err))
+    }
+  }
+
   async function handleLoeschen(n: ChatNachricht) {
     if (!confirm(`Nachricht von ${n.author_name} löschen?`)) return
     try {
@@ -291,8 +305,45 @@ export function Chat({ onZurueck, darfVerwalten }: Props) {
 
                   {n.body && <div className="blase__text">{n.body}</div>}
 
+                  {n.reaktionen.length > 0 && (
+                    <div className="reaktionen">
+                      {n.reaktionen.map((r) => (
+                        <button
+                          key={r.emoji}
+                          className={r.ist_meine ? 'reaktion reaktion--meine' : 'reaktion'}
+                          onClick={() => handleReaktion(n.id, r.emoji)}
+                          title={r.namen}
+                        >
+                          <span aria-hidden="true">{r.emoji}</span> {r.anzahl}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {reaktionFuer === n.id && (
+                    <div className="reaktionswahl">
+                      {REAKTIONEN.map((e) => (
+                        <button
+                          key={e}
+                          className="reaktionswahl__knopf"
+                          onClick={() => handleReaktion(n.id, e)}
+                          aria-label={`Mit ${e} reagieren`}
+                        >
+                          {e}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
                   <div className="blase__fuss">
                     <span>{uhrzeit(datum)}</span>
+                    <button
+                      className="blase__aktion"
+                      onClick={() => setReaktionFuer((f) => (f === n.id ? null : n.id))}
+                      title="Mit einem Zeichen reagieren"
+                    >
+                      Reagieren
+                    </button>
                     <button
                       className="blase__aktion"
                       onClick={() => setAntwortAuf(n)}
