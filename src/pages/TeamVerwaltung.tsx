@@ -10,7 +10,15 @@ const ROLLEN_TEXT: Record<Rolle, string> = {
   fahrer: 'Fahrer:in',
 }
 
-export function TeamVerwaltung({ onZurueck }: { onZurueck: () => void }) {
+type Props = {
+  onZurueck: () => void
+  /** Koordination und Administration dürfen ändern, alle anderen nur sehen. */
+  darfVerwalten: boolean
+  /** Nur die Administration darf an Einträge der Administration. */
+  istAdmin: boolean
+}
+
+export function TeamVerwaltung({ onZurueck, darfVerwalten, istAdmin }: Props) {
   const [members, setMembers] = useState<TeamMember[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [hinweis, setHinweis] = useState<string | null>(null)
@@ -48,28 +56,33 @@ export function TeamVerwaltung({ onZurueck }: { onZurueck: () => void }) {
 
       <div className="seite__kopf">
         <div>
-          <h2>Fahrer verwalten</h2>
+          <h2>Pilot/-innen Liste</h2>
           {members && (
             <p className="muted">
-              {members.length} {members.length === 1 ? 'Eintrag' : 'Einträge'}, davon {aktive}{' '}
-              freigeschaltet
+              {darfVerwalten
+                ? `${members.length} ${members.length === 1 ? 'Eintrag' : 'Einträge'}, davon ${aktive} freigeschaltet`
+                : `${members.length} ${members.length === 1 ? 'Person' : 'Personen'}`}
             </p>
           )}
         </div>
-        <button className="btn" onClick={() => setAddOffen(true)}>
-          Person hinzufügen
-        </button>
+        {darfVerwalten && (
+          <button className="btn" onClick={() => setAddOffen(true)}>
+            Person hinzufügen
+          </button>
+        )}
       </div>
 
       {hinweis && <p className="alert alert--ok">{hinweis}</p>}
       {error && <p className="alert alert--error">{error}</p>}
 
-      {!members && !error && <p className="muted">Lade Team …</p>}
+      {!members && !error && <p className="muted">Lade Liste …</p>}
 
       {members && members.length === 0 && (
         <div className="card">
           <p className="muted" style={{ margin: 0 }}>
-            Noch keine Einträge vorhanden. Über „Person hinzufügen" legst du die erste an.
+            {darfVerwalten
+              ? 'Noch keine Einträge vorhanden. Über „Person hinzufügen“ legst du die erste an.'
+              : 'Noch sind keine Pilot:innen eingetragen.'}
           </p>
         </div>
       )}
@@ -84,7 +97,12 @@ export function TeamVerwaltung({ onZurueck }: { onZurueck: () => void }) {
                   <span className="team__meta">
                     {ROLLEN_TEXT[m.role]}
                     {!m.is_active && <span className="badge">Deaktiviert</span>}
-                    {!hatPasswort(m) && <span className="badge badge--neutral">Kein Passwort</span>}
+                    {/* Wer noch kein Passwort hat, geht nur die Verwaltung
+                        etwas an – Fahrer:innen bekommen den Stand gar nicht
+                        erst geliefert. */}
+                    {darfVerwalten && !hatPasswort(m) && (
+                      <span className="badge badge--neutral">Kein Passwort</span>
+                    )}
                   </span>
                   {(m.phone || m.contact_email) && (
                     <span className="team__kontakt">
@@ -92,9 +110,14 @@ export function TeamVerwaltung({ onZurueck }: { onZurueck: () => void }) {
                     </span>
                   )}
                 </div>
-                <button className="btn btn--ghost" onClick={() => setBearbeitet(m)}>
-                  Bearbeiten
-                </button>
+                {/* Einträge der Administration bleiben der Administration
+                    vorbehalten; die Datenbank lehnt sie sonst ab. Dann lieber
+                    gar keinen Knopf anbieten. */}
+                {darfVerwalten && (istAdmin || m.role !== 'admin') && (
+                  <button className="btn btn--ghost" onClick={() => setBearbeitet(m)}>
+                    Bearbeiten
+                  </button>
+                )}
               </li>
             ))}
           </ul>

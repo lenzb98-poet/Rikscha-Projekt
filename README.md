@@ -47,11 +47,31 @@ gültig.
 im Browser oder nur für die laufende Browsersitzung. Die letzte Wahl ist beim
 nächsten Mal vorausgewählt.
 
-## Fahrer verwalten
+## Pilot/-innen Liste
 
-Administratoren finden auf der Startseite **Fahrer verwalten**: Liste aller
-Einträge mit Rolle und Status, dazu Anlegen, Bearbeiten, Deaktivieren und
-Löschen.
+Die Liste steht **allen Angemeldeten** offen: Namen, Rolle und Kontaktdaten
+aller Pilot:innen. Wer sie ändern darf, hängt an der Rolle.
+
+| | Fahrer:in | Koordination | Administration |
+|---|---|---|---|
+| Liste sehen | ja | ja | ja |
+| Deaktivierte sehen, Passwortstand | – | ja | ja |
+| Anlegen, bearbeiten, deaktivieren | – | ja | ja |
+| Administrationsrolle vergeben | – | – | ja |
+| Einträge der Administration ändern | – | – | ja |
+| Löschen, Passwort zurücksetzen | – | – | ja |
+
+Gelesen wird über `list_piloten()`: Die Policy auf `app_users` zeigt
+Fahrer:innen weiterhin nur den eigenen Datensatz, direkte Abfragen bleiben also
+zu. Die Funktion entscheidet auch, wer wen sieht – Deaktivierte und der
+Passwortstand sind Verwaltungswissen und werden Fahrer:innen gar nicht erst
+geliefert.
+
+Die Grenzen der Koordination sind bewusst gesetzt: Ohne sie könnte sie sich
+über eine neu angelegte Person oder den eigenen Datensatz selbst zur
+Administration machen. Löschen und Passwort-Zurücksetzen bleiben ebenfalls der
+Administration vorbehalten – beides ist nicht rückholbar bzw. gibt einen Zugang
+zur Neuvergabe frei.
 
 Erfasst werden Name (Pflicht, zugleich Anmeldename), Rolle (Fahrer:in,
 Koordination, Administration), Telefon und E-Mail (beide optional) sowie die
@@ -70,6 +90,11 @@ Die Rechteprüfung liegt in der Datenbank (`admin_create_user`,
 `admin_update_user`, `admin_delete_user`, `admin_reset_password`), nicht in der
 Oberfläche. Zusätzlich verhindert sie, dass Administratoren sich selbst
 deaktivieren, löschen oder die eigenen Rechte entziehen.
+
+Der Trigger `app_users_guard_privileges` sichert denselben Rahmen an der
+Tabelle ab, für den Fall, dass jemand die Funktionen umgeht: Rolle, Name und
+Freischaltung ändert nur, wer verwalten darf – und die Administrationsrolle
+vergibt dort niemand außer der Administration.
 
 ## Fahrten
 

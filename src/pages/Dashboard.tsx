@@ -36,6 +36,8 @@ function anzahlText(anzahl: number | null, einzahl: string, mehrzahl: string): s
 export function Dashboard({ profile, onSignOut }: Props) {
   const [ansicht, setAnsicht] = useAnsicht<Ansicht>('start')
   const istAdmin = profile?.role === 'admin'
+  // Die Liste dürfen Koordination und Administration ändern, sehen alle
+  const darfVerwalten = profile?.role === 'admin' || profile?.role === 'koordinator'
   const zurueck = () => setAnsicht('start')
 
   const { fahrten, uebernahmen, laden } = useFahrten()
@@ -54,7 +56,13 @@ export function Dashboard({ profile, onSignOut }: Props) {
       case 'fahrtenbuch':
         return istAdmin ? <Fahrtenbuch onZurueck={zurueck} /> : null
       case 'team':
-        return istAdmin ? <TeamVerwaltung onZurueck={zurueck} /> : null
+        return (
+          <TeamVerwaltung
+            onZurueck={zurueck}
+            darfVerwalten={darfVerwalten}
+            istAdmin={istAdmin}
+          />
+        )
       case 'chat':
         return <Chat onZurueck={zurueck} istAdmin={istAdmin} />
       default:
@@ -120,17 +128,17 @@ export function Dashboard({ profile, onSignOut }: Props) {
               </div>
             </section>
 
-            {istAdmin && (
-              <section className="card">
-                <h3>Fahrer verwalten</h3>
-                <p className="muted card__text">
-                  Personen freischalten, Angaben ändern, Zugänge sperren oder Einträge entfernen.
-                </p>
-                <button className="btn" onClick={() => setAnsicht('team')}>
-                  Fahrer verwalten
-                </button>
-              </section>
-            )}
+            <section className="card">
+              <h3>Pilot/-innen Liste</h3>
+              <p className="muted card__text">
+                {darfVerwalten
+                  ? 'Wer fährt mit? Personen freischalten, Angaben ändern, Zugänge sperren oder Einträge entfernen.'
+                  : 'Wer fährt mit? Namen und Kontaktdaten aller Pilot:innen.'}
+              </p>
+              <button className="btn" onClick={() => setAnsicht('team')}>
+                Pilot/-innen Liste
+              </button>
+            </section>
 
             <Auswertung alle={fahrten} uebernahmen={uebernahmen} />
 

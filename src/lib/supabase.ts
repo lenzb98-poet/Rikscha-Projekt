@@ -139,16 +139,22 @@ export type TeamMember = {
   is_active: boolean
   phone: string | null
   contact_email: string | null
-  /** Gesetzt, sobald die Person ein Passwort vergeben hat. */
-  auth_user_id: string | null
+  /**
+   * Ob die Person schon ein Passwort vergeben hat. Null für Fahrer:innen –
+   * das ist Verwaltungswissen und wird ihnen gar nicht erst geliefert.
+   */
+  hat_passwort?: boolean | null
 }
 
-/** Lädt alle Einträge. Nicht-Admins erhalten durch RLS nur den eigenen. */
+/**
+ * Lädt die Pilot:innen-Liste.
+ *
+ * Über `list_piloten`, weil die Policy auf `app_users` Fahrer:innen nur den
+ * eigenen Datensatz zeigt. Die Funktion entscheidet auch, wer wen sieht:
+ * Deaktivierte erscheinen nur für Koordination und Administration.
+ */
 export async function listUsers(): Promise<TeamMember[]> {
-  const { data, error } = await supabase
-    .from('app_users')
-    .select('id, full_name, role, is_active, phone, contact_email, auth_user_id')
-    .order('full_name')
+  const { data, error } = await supabase.rpc('list_piloten')
   if (error) throw error
   return (data ?? []) as TeamMember[]
 }
@@ -180,7 +186,7 @@ export async function updateUser(
 
 /** Hat die Person schon ein Passwort vergeben? */
 export function hatPasswort(m: TeamMember): boolean {
-  return m.auth_user_id !== null
+  return m.hat_passwort === true
 }
 
 /**
