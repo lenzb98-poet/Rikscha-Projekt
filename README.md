@@ -56,9 +56,11 @@ aller Pilot:innen. Wer sie ändern darf, hängt an der Rolle.
 |---|---|---|---|
 | Liste sehen | ja | ja | ja |
 | Deaktivierte sehen, Passwortstand | – | ja | ja |
-| Anlegen, bearbeiten, deaktivieren, Rollen vergeben | – | ja | ja |
+| Anlegen, bearbeiten, deaktivieren | – | ja | ja |
+| Rolle Fahrer:in / Koordination vergeben | – | ja | ja |
 | Passwort zurücksetzen | – | ja | ja |
 | Einträge löschen | – | ja | ja |
+| **Administrationsrolle vergeben und entziehen** | – | – | ja |
 | **Zugänge der Administration löschen** | – | – | ja |
 
 Gelesen wird über `list_piloten()`: Die Policy auf `app_users` zeigt
@@ -67,20 +69,20 @@ zu. Die Funktion entscheidet auch, wer wen sieht – Deaktivierte und der
 Passwortstand sind Verwaltungswissen und werden Fahrer:innen gar nicht erst
 geliefert.
 
-**Koordination und Administration sind gleichgestellt.** Beide dürfen Fahrten
-anlegen und bearbeiten, das Fahrtenbuch führen, fremde Chatnachrichten löschen,
-Rollen vergeben und Passwörter zurücksetzen. Geprüft wird überall
-`darf_verwalten()`; `is_admin()` bleibt erhalten und meint weiterhin
-ausschließlich die Administration, gebraucht wird es nur noch für die eine
-Ausnahme.
+**Koordination und Administration sind weitgehend gleichgestellt.** Beide
+dürfen Fahrten anlegen und bearbeiten, das Fahrtenbuch führen, fremde
+Chatnachrichten löschen, Personen anlegen, bearbeiten, deaktivieren, löschen
+und Passwörter zurücksetzen. Geprüft wird dafür überall `darf_verwalten()`.
 
-Die Ausnahme: **Zugänge der Administration löschen** darf nur die
-Administration – Löschen ist nicht rückholbar.
+Zwei Dinge bleiben bei der Administration, geprüft mit `is_admin()`:
 
-Da die Koordination auch die Administrationsrolle vergeben darf, kann sie sich
-selbst zur Administration machen und danach auch Administrationszugänge
-löschen. Die Ausnahme ist also eine Bremse gegen Versehen, keine Mauer gegen
-Absicht – so gewollt, weil beide Rollen dieselbe Vertrauensstufe haben.
+- **Zugänge der Administration löschen** – Löschen ist nicht rückholbar.
+- **Die Administrationsrolle vergeben *und entziehen***.
+
+Dass auch das Entziehen gesperrt ist, hält die erste Regel dicht: Sonst könnte
+die Koordination einer Administration erst die Rolle nehmen und den Zugang
+danach löschen. Alles Übrige an einem Eintrag der Administration – Name,
+Telefon, E-Mail, Freischaltung – darf die Koordination weiterhin ändern.
 
 Erfasst werden Name (Pflicht, zugleich Anmeldename), Rolle (Fahrer:in,
 Koordination, Administration), Telefon und E-Mail (beide optional) sowie die

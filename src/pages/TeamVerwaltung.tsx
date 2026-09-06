@@ -123,6 +123,7 @@ export function TeamVerwaltung({ onZurueck, darfVerwalten, istAdmin }: Props) {
 
       {addOffen && (
         <AddUserDialog
+          istAdmin={istAdmin}
           onClose={() => setAddOffen(false)}
           onCreated={(m) => {
             setAddOffen(false)

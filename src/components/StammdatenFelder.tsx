@@ -12,10 +12,18 @@ type Props = {
   werte: Stammdaten
   onChange: (werte: Stammdaten) => void
   autoFocus?: boolean
+  /** Die Administrationsrolle vergibt und entzieht nur die Administration. */
+  istAdmin: boolean
 }
 
 /** Die Stammdatenfelder, gemeinsam genutzt von Anlegen und Bearbeiten. */
-export function StammdatenFelder({ praefix, werte, onChange, autoFocus }: Props) {
+export function StammdatenFelder({ praefix, werte, onChange, autoFocus, istAdmin }: Props) {
+  // Für die Koordination ist die Administrationsrolle keine Wahl: weder
+  // vergeben noch entziehen. Steht sie schon, bleibt das Feld sichtbar,
+  // aber gesperrt - sonst ginge sie beim Speichern still verloren.
+  const istAdminEintrag = werte.role === 'admin'
+  const rollenGesperrt = !istAdmin && istAdminEintrag
+  const rollen = ROLLEN.filter((r) => r.wert !== 'admin' || istAdmin || istAdminEintrag)
   function setze<K extends keyof Stammdaten>(feld: K, wert: Stammdaten[K]) {
     onChange({ ...werte, [feld]: wert })
   }
@@ -45,15 +53,21 @@ export function StammdatenFelder({ praefix, werte, onChange, autoFocus }: Props)
           <select
             id={`${praefix}-role`}
             value={werte.role}
+            disabled={rollenGesperrt}
             onChange={(e) => setze('role', e.target.value as Rolle)}
           >
-            {ROLLEN.map((r) => (
+            {rollen.map((r) => (
               <option key={r.wert} value={r.wert}>
                 {r.text}
               </option>
             ))}
           </select>
         </div>
+        {rollenGesperrt && (
+          <span className="hint">
+            Die Administrationsrolle ändert nur die Administration.
+          </span>
+        )}
       </label>
 
       <label className="field" htmlFor={`${praefix}-phone`}>
