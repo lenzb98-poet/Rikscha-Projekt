@@ -1116,7 +1116,15 @@ body {
 
 .tab__zahl { text-align: right; font-variant-numeric: tabular-nums; }
 .tab__leer { color: var(--muted); }
-.tab__lang { max-width: 320px; white-space: normal; }
+/* td mitschreiben: ".tab td" setzt nowrap und ist sonst spezifischer,
+   der Umbruch würde also nicht greifen und der Text liefe in die
+   Nachbarspalte hinein. */
+.tab td.tab__lang,
+.tab th.tab__lang {
+  max-width: 320px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
 .tab__leerzeile { text-align: center; color: var(--muted); padding: 24px 12px; }
 
 .tab__uebernahme td { background: #fbf3dd !important; font-style: italic; }

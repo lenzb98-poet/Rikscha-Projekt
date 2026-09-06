@@ -209,14 +209,19 @@ lässt sich weiterhin nachtragen.
 Der Knopf **Fahrtenbuch / Statistik** führt zu einer Tabelle im gewohnten
 Aufbau:
 
-| Nr. | Datum | Fahrer / Fahrerin | Fritz · Fred · Liese · Lotte | Passagiere | Gefahrene KM | Dauer / Zeit | Bemerkungen |
+| Nr. | Datum | Fahrer / Fahrerin | Fritz · Fred · Liese · Lotte | Passagiere | Gefahrene KM | Dauer / Zeit | Wo | Infotext |
 
 **Jede gefahrene Rikscha steht einzeln.** Fahren zwei Personen gemeinsam, gibt
 es zwei Zeilen mit demselben Datum. Die gefahrene Rikscha wird mit einem **X**
 in ihrer Spalte gekennzeichnet.
 
 Die Dauer steht in **Stunden** (2,5 statt 150 Minuten), wie im bisherigen Buch;
-erfasst wird sie in Minuten. Unter „Bemerkungen" stehen Ort und Infotext.
+erfasst wird sie in Minuten.
+
+**Wo** und **Infotext** stehen in eigenen Spalten und gehören zur Fahrt, nicht
+zum einzelnen Platz. Geändert werden sie deshalb unter *Fahrten verwalten* und
+stehen hier nur zum Lesen – sonst änderte eine Zeile auch alle anderen Zeilen
+derselben Fahrt mit.
 
 Die Tabelle lässt sich waagerecht schieben, die Nummernspalte bleibt stehen.
 Unten fasst eine Summenzeile alles zusammen.

@@ -159,7 +159,8 @@ export function Fahrtenbuch({ onZurueck }: { onZurueck: () => void }) {
                   <th rowSpan={2} className="tab__zahl">Passagiere</th>
                   <th rowSpan={2} className="tab__zahl">Gefahrene KM</th>
                   <th rowSpan={2} className="tab__zahl">Dauer / Zeit</th>
-                  <th rowSpan={2}>Bemerkungen</th>
+                  <th rowSpan={2}>Wo</th>
+                  <th rowSpan={2}>Infotext</th>
                 </tr>
                 <tr>
                   {RIKSCHAS.map((r) => (
@@ -183,8 +184,8 @@ export function Fahrtenbuch({ onZurueck }: { onZurueck: () => void }) {
                     <td className="tab__zahl">{formatiereZahl(u.personen)}</td>
                     <td className="tab__zahl">{formatiereKomma(Number(u.km))}</td>
                     <td className="tab__zahl">{alsStundenZahl(u.minuten)}</td>
+                    <td>Aus der bisherigen Statistik</td>
                     <td>
-                      Aus der bisherigen Statistik
                       <button
                         className="tab__knopf"
                         onClick={() => setDialog({ offen: true, eintrag: u })}
@@ -258,19 +259,12 @@ export function Fahrtenbuch({ onZurueck }: { onZurueck: () => void }) {
                           werte.stunden
                         )}
                       </td>
+                      {/* Ort und Infotext gehören zur Fahrt, nicht zum
+                          einzelnen Platz. Geändert werden sie deshalb unter
+                          „Fahrten verwalten“ und stehen hier nur zum Lesen. */}
+                      <td className="tab__lang">{fahrt.location}</td>
                       <td className="tab__lang">
-                        {ziel ? (
-                          <Zelle
-                            breit
-                            wert={werte.bemerkung}
-                            platzhalter={[fahrt.location, fahrt.info].filter(Boolean).join(' · ')}
-                            onSpeichern={(neu) =>
-                              speichern(ziel.id, { ...werte, bemerkung: neu }, ziel.rikscha)
-                            }
-                          />
-                        ) : (
-                          werte.bemerkung || [fahrt.location, fahrt.info].filter(Boolean).join(' · ')
-                        )}
+                        {fahrt.info}
                         {fahrt.zustand === 'abgesagt' && (
                           <span className="tab__markierung"> (abgesagt)</span>
                         )}
@@ -281,7 +275,7 @@ export function Fahrtenbuch({ onZurueck }: { onZurueck: () => void }) {
 
                 {zeilen.length === 0 && uebernahmen.length === 0 && (
                   <tr>
-                    <td colSpan={11} className="tab__leerzeile">
+                    <td colSpan={12} className="tab__leerzeile">
                       Noch keine Fahrten und keine übernommenen Zahlen.
                     </td>
                   </tr>
@@ -302,7 +296,7 @@ export function Fahrtenbuch({ onZurueck }: { onZurueck: () => void }) {
                   <td className="tab__zahl">{formatiereZahl(summe.personen)}</td>
                   <td className="tab__zahl">{formatiereKomma(summe.km)}</td>
                   <td className="tab__zahl">{alsStundenZahl(summe.minuten)}</td>
-                  <td />
+                  <td colSpan={2} />
                 </tr>
               </tfoot>
             </table>
