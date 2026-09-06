@@ -1382,3 +1382,18 @@ body {
 .klapp__pfeil { color: var(--muted); font-size: 13px; }
 .klapp__zahl { margin-left: auto; color: var(--muted); font-weight: 400; }
 .klapp .fahrten { margin-top: 12px; }
+
+/* Admin Einstellungen */
+.liste { margin: 16px 0; padding-left: 20px; line-height: 1.7; }
+.rechte { list-style: none; margin: 0; padding: 0; }
+.rechte li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+  line-height: 1.45;
+}
+.rechte li:last-child { border-bottom: none; }

@@ -12,6 +12,7 @@ import { Fahrten } from './Fahrten'
 import { Fahrtenkalender } from './Fahrtenkalender'
 import { FahrtenVerwaltung } from './FahrtenVerwaltung'
 import { Fahrtenbuch } from './Fahrtenbuch'
+import { AdminEinstellungen } from './AdminEinstellungen'
 
 type Props = {
   profile: AppUser | null
@@ -24,7 +25,15 @@ const ROLLEN: Record<AppUser['role'], string> = {
   fahrer: 'Fahrer:in',
 }
 
-type Ansicht = 'start' | 'offene' | 'kalender' | 'fahrten-verwalten' | 'fahrtenbuch' | 'team' | 'chat'
+type Ansicht =
+  | 'start'
+  | 'offene'
+  | 'kalender'
+  | 'fahrten-verwalten'
+  | 'fahrtenbuch'
+  | 'team'
+  | 'chat'
+  | 'admin'
 
 /** "3 offene Fahrten", "1 offene Fahrt", "Zurzeit keine" */
 function anzahlText(anzahl: number | null, einzahl: string, mehrzahl: string): string {
@@ -65,6 +74,10 @@ export function Dashboard({ profile, onSignOut }: Props) {
             istAdmin={istAdmin}
           />
         )
+      case 'admin':
+        return darfVerwalten ? (
+          <AdminEinstellungen onZurueck={zurueck} istAdmin={istAdmin} />
+        ) : null
       case 'chat':
         return <Chat onZurueck={zurueck} darfVerwalten={darfVerwalten} />
       default:
@@ -141,6 +154,19 @@ export function Dashboard({ profile, onSignOut }: Props) {
                 Pilot/-innen Liste
               </button>
             </section>
+
+            {darfVerwalten && (
+              <section className="card">
+                <h3>Admin Einstellungen</h3>
+                <p className="muted card__text">
+                  Stand der Zugänge, wer welche Rechte hat und die Wartung – alles zur
+                  Verwaltung an einer Stelle.
+                </p>
+                <button className="btn" onClick={() => setAnsicht('admin')}>
+                  Admin Einstellungen
+                </button>
+              </section>
+            )}
 
             <Auswertung alle={fahrten} uebernahmen={uebernahmen} />
 
