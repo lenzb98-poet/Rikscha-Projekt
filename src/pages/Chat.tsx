@@ -30,12 +30,13 @@ const uhrzeit = (d: Date) => d.toLocaleTimeString('de-DE', { hour: '2-digit', mi
 type Auswahl = { datei: Blob; vorschau: string; breite: number; hoehe: number }
 
 type Props = {
-  istAdmin: boolean
+  /** Koordination und Administration dürfen auch fremde Nachrichten löschen. */
+  darfVerwalten: boolean
   /** Fehlt, wenn der Chat direkt auf der Startseite steht. */
   onZurueck?: () => void
 }
 
-export function Chat({ onZurueck, istAdmin }: Props) {
+export function Chat({ onZurueck, darfVerwalten }: Props) {
   const [nachrichten, setNachrichten] = useState<ChatNachricht[] | null>(null)
   const [adressen, setAdressen] = useState<Record<string, string>>({})
   const [text, setText] = useState('')
@@ -250,7 +251,7 @@ export function Chat({ onZurueck, istAdmin }: Props) {
 
                   <div className="blase__fuss">
                     <span>{uhrzeit(datum)}</span>
-                    {(n.ist_eigene || istAdmin) && (
+                    {(n.ist_eigene || darfVerwalten) && (
                       <button
                         className="blase__loeschen"
                         onClick={() => handleLoeschen(n)}

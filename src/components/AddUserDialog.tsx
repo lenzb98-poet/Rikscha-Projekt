@@ -4,13 +4,11 @@ import { toGermanError } from '../lib/errors'
 import { StammdatenFelder, LEERE_STAMMDATEN } from './StammdatenFelder'
 
 type Props = {
-  /** Die Administrationsrolle vergibt nur die Administration. */
-  istAdmin: boolean
   onClose: () => void
   onCreated: (member: TeamMember) => void
 }
 
-export function AddUserDialog({ onClose, onCreated, istAdmin }: Props) {
+export function AddUserDialog({ onClose, onCreated }: Props) {
   const [werte, setWerte] = useState<Stammdaten>(LEERE_STAMMDATEN)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -45,13 +43,7 @@ export function AddUserDialog({ onClose, onCreated, istAdmin }: Props) {
         </p>
 
         <form onSubmit={handleSubmit} className="auth__form">
-          <StammdatenFelder
-            praefix="add"
-            werte={werte}
-            onChange={setWerte}
-            autoFocus
-            istAdmin={istAdmin}
-          />
+          <StammdatenFelder praefix="add" werte={werte} onChange={setWerte} autoFocus />
 
           {error && <p className="alert alert--error">{error}</p>}
 

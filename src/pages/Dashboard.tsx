@@ -35,9 +35,11 @@ function anzahlText(anzahl: number | null, einzahl: string, mehrzahl: string): s
 
 export function Dashboard({ profile, onSignOut }: Props) {
   const [ansicht, setAnsicht] = useAnsicht<Ansicht>('start')
+  // Koordination und Administration sind gleichgestellt. Einzige Ausnahme:
+  // Zugänge der Administration löschen darf nur die Administration - dafür
+  // wird istAdmin noch gebraucht.
   const istAdmin = profile?.role === 'admin'
-  // Die Liste dürfen Koordination und Administration ändern, sehen alle
-  const darfVerwalten = profile?.role === 'admin' || profile?.role === 'koordinator'
+  const darfVerwalten = istAdmin || profile?.role === 'koordinator'
   const zurueck = () => setAnsicht('start')
 
   const { fahrten, uebernahmen, laden } = useFahrten()
@@ -52,9 +54,9 @@ export function Dashboard({ profile, onSignOut }: Props) {
       case 'kalender':
         return <Fahrtenkalender onZurueck={zurueck} />
       case 'fahrten-verwalten':
-        return istAdmin ? <FahrtenVerwaltung onZurueck={zurueck} /> : null
+        return darfVerwalten ? <FahrtenVerwaltung onZurueck={zurueck} /> : null
       case 'fahrtenbuch':
-        return istAdmin ? <Fahrtenbuch onZurueck={zurueck} /> : null
+        return darfVerwalten ? <Fahrtenbuch onZurueck={zurueck} /> : null
       case 'team':
         return (
           <TeamVerwaltung
@@ -64,7 +66,7 @@ export function Dashboard({ profile, onSignOut }: Props) {
           />
         )
       case 'chat':
-        return <Chat onZurueck={zurueck} istAdmin={istAdmin} />
+        return <Chat onZurueck={zurueck} darfVerwalten={darfVerwalten} />
       default:
         return (
           <>
@@ -91,7 +93,7 @@ export function Dashboard({ profile, onSignOut }: Props) {
                   </button>
                 </div>
 
-                {istAdmin && (
+                {darfVerwalten && (
                   <div className="knopfblock">
                     <button
                       className="btn btn--ghost"
@@ -102,7 +104,7 @@ export function Dashboard({ profile, onSignOut }: Props) {
                   </div>
                 )}
 
-                {istAdmin && (
+                {darfVerwalten && (
                   <div className="knopfblock">
                     <button className="btn btn--ghost" onClick={() => setAnsicht('fahrtenbuch')}>
                       Fahrtenbuch / Statistik

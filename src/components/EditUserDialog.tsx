@@ -16,7 +16,7 @@ type Props = {
   onSaved: (member: TeamMember) => void
   onDeleted: (name: string) => void
   onZurueckgesetzt: (name: string) => void
-  /** Löschen und die Administrationsrolle bleiben der Administration. */
+  /** Zugänge der Administration löscht nur die Administration. */
   istAdmin: boolean
 }
 
@@ -156,13 +156,7 @@ export function EditUserDialog({
             </p>
 
             <form onSubmit={handleSubmit} className="auth__form">
-              <StammdatenFelder
-                praefix="edit"
-                werte={werte}
-                onChange={setWerte}
-                autoFocus
-                istAdmin={istAdmin}
-              />
+              <StammdatenFelder praefix="edit" werte={werte} onChange={setWerte} autoFocus />
 
               <label className="check" htmlFor="edit-active">
                 <input
@@ -211,9 +205,9 @@ export function EditUserDialog({
                 </button>
               )}
 
-              {/* Löschen ist endgültig und bleibt der Administration;
+              {/* Zugänge der Administration entfernt nur die Administration;
                   die Datenbank lehnt es sonst ohnehin ab. */}
-              {istAdmin && (
+              {(istAdmin || member.role !== 'admin') && (
                 <button
                   type="button"
                   className="btn btn--linkdanger"

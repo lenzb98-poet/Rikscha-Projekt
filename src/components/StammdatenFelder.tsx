@@ -12,17 +12,10 @@ type Props = {
   werte: Stammdaten
   onChange: (werte: Stammdaten) => void
   autoFocus?: boolean
-  /** Die Administrationsrolle vergibt nur die Administration. */
-  istAdmin: boolean
 }
 
 /** Die Stammdatenfelder, gemeinsam genutzt von Anlegen und Bearbeiten. */
-export function StammdatenFelder({ praefix, werte, onChange, autoFocus, istAdmin }: Props) {
-  // Der Koordination die Administrationsrolle anzubieten wäre irreführend -
-  // die Datenbank lehnt sie ab. Eine bereits gesetzte bleibt sichtbar.
-  const rollen = ROLLEN.filter(
-    (r) => r.wert !== 'admin' || istAdmin || werte.role === 'admin',
-  )
+export function StammdatenFelder({ praefix, werte, onChange, autoFocus }: Props) {
   function setze<K extends keyof Stammdaten>(feld: K, wert: Stammdaten[K]) {
     onChange({ ...werte, [feld]: wert })
   }
@@ -54,7 +47,7 @@ export function StammdatenFelder({ praefix, werte, onChange, autoFocus, istAdmin
             value={werte.role}
             onChange={(e) => setze('role', e.target.value as Rolle)}
           >
-            {rollen.map((r) => (
+            {ROLLEN.map((r) => (
               <option key={r.wert} value={r.wert}>
                 {r.text}
               </option>

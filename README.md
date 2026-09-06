@@ -56,11 +56,10 @@ aller Pilot:innen. Wer sie ändern darf, hängt an der Rolle.
 |---|---|---|---|
 | Liste sehen | ja | ja | ja |
 | Deaktivierte sehen, Passwortstand | – | ja | ja |
-| Anlegen, bearbeiten, deaktivieren | – | ja | ja |
+| Anlegen, bearbeiten, deaktivieren, Rollen vergeben | – | ja | ja |
 | Passwort zurücksetzen | – | ja | ja |
-| Administrationsrolle vergeben | – | – | ja |
-| Einträge der Administration ändern, deren Passwort zurücksetzen | – | – | ja |
-| Löschen | – | – | ja |
+| Einträge löschen | – | ja | ja |
+| **Zugänge der Administration löschen** | – | – | ja |
 
 Gelesen wird über `list_piloten()`: Die Policy auf `app_users` zeigt
 Fahrer:innen weiterhin nur den eigenen Datensatz, direkte Abfragen bleiben also
@@ -68,17 +67,20 @@ zu. Die Funktion entscheidet auch, wer wen sieht – Deaktivierte und der
 Passwortstand sind Verwaltungswissen und werden Fahrer:innen gar nicht erst
 geliefert.
 
-Die Grenzen der Koordination sind bewusst gesetzt: Ohne sie könnte sie sich
-über eine neu angelegte Person oder den eigenen Datensatz selbst zur
-Administration machen.
+**Koordination und Administration sind gleichgestellt.** Beide dürfen Fahrten
+anlegen und bearbeiten, das Fahrtenbuch führen, fremde Chatnachrichten löschen,
+Rollen vergeben und Passwörter zurücksetzen. Geprüft wird überall
+`darf_verwalten()`; `is_admin()` bleibt erhalten und meint weiterhin
+ausschließlich die Administration, gebraucht wird es nur noch für die eine
+Ausnahme.
 
-Dass **Passwörter der Administration** ausgenommen sind, hat denselben Grund.
-Zurücksetzen entfernt das Anmeldekonto; die Person meldet sich danach nur mit
-ihrem Namen an und vergibt selbst ein neues Passwort. Wer ein fremdes Passwort
-zurücksetzt, könnte sich also unmittelbar danach unter diesem Namen anmelden –
-bei einem Administrationszugang wäre das ein Weg zu vollen Rechten.
+Die Ausnahme: **Zugänge der Administration löschen** darf nur die
+Administration – Löschen ist nicht rückholbar.
 
-**Löschen** bleibt bei der Administration, weil es nicht rückholbar ist.
+Da die Koordination auch die Administrationsrolle vergeben darf, kann sie sich
+selbst zur Administration machen und danach auch Administrationszugänge
+löschen. Die Ausnahme ist also eine Bremse gegen Versehen, keine Mauer gegen
+Absicht – so gewollt, weil beide Rollen dieselbe Vertrauensstufe haben.
 
 Erfasst werden Name (Pflicht, zugleich Anmeldename), Rolle (Fahrer:in,
 Koordination, Administration), Telefon und E-Mail (beide optional) sowie die

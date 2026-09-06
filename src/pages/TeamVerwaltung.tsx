@@ -14,7 +14,7 @@ type Props = {
   onZurueck: () => void
   /** Koordination und Administration dürfen ändern, alle anderen nur sehen. */
   darfVerwalten: boolean
-  /** Nur die Administration darf an Einträge der Administration. */
+  /** Zugänge der Administration löscht nur die Administration. */
   istAdmin: boolean
 }
 
@@ -110,10 +110,7 @@ export function TeamVerwaltung({ onZurueck, darfVerwalten, istAdmin }: Props) {
                     </span>
                   )}
                 </div>
-                {/* Einträge der Administration bleiben der Administration
-                    vorbehalten; die Datenbank lehnt sie sonst ab. Dann lieber
-                    gar keinen Knopf anbieten. */}
-                {darfVerwalten && (istAdmin || m.role !== 'admin') && (
+                {darfVerwalten && (
                   <button className="btn btn--ghost" onClick={() => setBearbeitet(m)}>
                     Bearbeiten
                   </button>
@@ -126,7 +123,6 @@ export function TeamVerwaltung({ onZurueck, darfVerwalten, istAdmin }: Props) {
 
       {addOffen && (
         <AddUserDialog
-          istAdmin={istAdmin}
           onClose={() => setAddOffen(false)}
           onCreated={(m) => {
             setAddOffen(false)
