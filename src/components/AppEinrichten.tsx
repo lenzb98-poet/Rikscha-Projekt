@@ -21,7 +21,9 @@ function laeuftAlsApp(): boolean {
   return Boolean(alsApp || iosApp)
 }
 
-const ANLEITUNG: Record<Exclude<System, 'desktop'>, { titel: string; schritte: string[] }> = {
+type Anleitung = { titel: string; schritte: string[]; hinweis?: string }
+
+const ANLEITUNG: Record<Exclude<System, 'desktop'>, Anleitung> = {
   ios: {
     titel: 'iPhone und iPad',
     schritte: [
@@ -30,15 +32,21 @@ const ANLEITUNG: Record<Exclude<System, 'desktop'>, { titel: string; schritte: s
       'In der Liste nach unten wischen und <strong>„Zum Home-Bildschirm“</strong> wählen.',
       'Oben rechts auf <strong>„Hinzufügen“</strong> tippen.',
     ],
+    hinweis:
+      'Auf dem iPhone klappt das am zuverlässigsten mit Safari. Nutzt du sonst ' +
+      'einen anderen Browser, öffne die Seite für diesen einen Schritt in Safari.',
   },
   android: {
     titel: 'Android',
     schritte: [
-      'Diese Seite in <strong>Chrome</strong> öffnen.',
-      'Oben rechts auf das <strong>Menü</strong> tippen – die drei Punkte.',
-      '<strong>„App installieren“</strong> wählen. Steht das nicht da, <strong>„Zum Startbildschirm hinzufügen“</strong> nehmen.',
-      'Mit <strong>„Installieren“</strong> bestätigen.',
+      'Diese Seite in deinem Browser öffnen – <strong>Chrome</strong>, <strong>Samsung Internet</strong>, <strong>Firefox</strong>, <strong>Edge</strong> oder <strong>Opera</strong>.',
+      'Das <strong>Menü</strong> öffnen: bei Chrome, Firefox und Opera die <strong>drei Punkte</strong>, bei Samsung Internet und Edge die <strong>drei Striche</strong>. Je nach Browser sitzt es oben rechts oder unten.',
+      'Den Eintrag mit <strong>„installieren“</strong> oder <strong>„Startbildschirm“</strong> wählen – er heißt je nach Browser „App installieren“, „Zum Startbildschirm hinzufügen“ oder „Seite hinzufügen zu“.',
+      'Bestätigen, fertig.',
     ],
+    hinweis:
+      'Alle gängigen Android-Browser können das. Nur die Beschriftung und die ' +
+      'Stelle des Menüs sind etwas anders – der Weg ist überall derselbe.',
   },
 }
 
@@ -101,6 +109,9 @@ export function AppEinrichten() {
                     <li key={n} dangerouslySetInnerHTML={{ __html: schritt }} />
                   ))}
                 </ol>
+                {ANLEITUNG[s].hinweis && (
+                  <p className="hint einrichten__browser">{ANLEITUNG[s].hinweis}</p>
+                )}
                 {i === 0 && reihenfolge.length > 1 && <hr className="einrichten__trenner" />}
               </section>
             ))}

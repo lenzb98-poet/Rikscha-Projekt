@@ -872,6 +872,16 @@ body {
 .einrichten__trenner { border: 0; border-top: 1px solid var(--border); margin: 18px 0; }
 .einrichten__hinweis { margin: 16px 0 18px; }
 
+/* Hinweis, dass auch andere Browser funktionieren */
+.einrichten__browser {
+  margin: 10px 0 0;
+  padding: 9px 11px;
+  border-radius: 8px;
+  background: var(--z-offen-bg);
+  color: var(--blau-dunkel);
+  line-height: 1.5;
+}
+
 /* --- Nachtrag nach der Fahrt -------------------------------------------- */
 :root {
   --z-nachtragen: #b35c00;
