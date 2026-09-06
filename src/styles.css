@@ -1361,3 +1361,24 @@ body {
 
 /* Breitere Ansicht für das Fahrtenbuch */
 .content--breit { max-width: 1400px; }
+
+/* Ausklappbares Feld für erledigte Fahrten am Seitenende */
+.klapp { margin-top: 24px; }
+.klapp__kopf {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--text);
+  border-radius: 14px;
+  padding: 14px 16px;
+  font-size: 15px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+.klapp__pfeil { color: var(--muted); font-size: 13px; }
+.klapp__zahl { margin-left: auto; color: var(--muted); font-weight: 400; }
+.klapp .fahrten { margin-top: 12px; }

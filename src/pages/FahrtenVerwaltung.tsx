@@ -20,6 +20,7 @@ export function FahrtenVerwaltung({ onZurueck }: { onZurueck: () => void }) {
   const [bearbeitet, setBearbeitet] = useState<Fahrt | null>(null)
   const [hinweis, setHinweis] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [klappOffen, setKlappOffen] = useState(false)
 
   const laden = useCallback(() => {
     listRides('alle')
@@ -39,7 +40,13 @@ export function FahrtenVerwaltung({ onZurueck }: { onZurueck: () => void }) {
     laden()
   }
 
-  const sichtbar = fahrten?.filter((f) => filter === 'alle' || f.zustand === filter)
+  // Abgeschlossene Fahrten stehen unten in ihrem eigenen, ausklappbaren Feld.
+  // Sie sind erledigt und würden die Liste der noch anstehenden Fahrten sonst
+  // zuwachsen lassen - deshalb tauchen sie oben gar nicht mehr auf.
+  const abgeschlossen = fahrten?.filter((f) => f.zustand === 'abgeschlossen') ?? []
+  const sichtbar = fahrten?.filter(
+    (f) => f.zustand !== 'abgeschlossen' && (filter === 'alle' || f.zustand === filter),
+  )
 
   return (
     <>
@@ -69,7 +76,12 @@ export function FahrtenVerwaltung({ onZurueck }: { onZurueck: () => void }) {
           <button
             key={f.wert}
             className={filter === f.wert ? 'filter filter--an' : 'filter'}
-            onClick={() => setFilter(f.wert)}
+            onClick={() => {
+              setFilter(f.wert)
+              // Der Filter „Abgeschlossen“ zeigt auf das Feld unten - also
+              // klappt er es gleich mit auf.
+              if (f.wert === 'abgeschlossen') setKlappOffen(true)
+            }}
           >
             {f.text}
             {fahrten && f.wert !== 'alle' && (
@@ -83,7 +95,7 @@ export function FahrtenVerwaltung({ onZurueck }: { onZurueck: () => void }) {
 
       {!fahrten && !error && <p className="muted">Lade Fahrten …</p>}
 
-      {sichtbar?.length === 0 && (
+      {sichtbar?.length === 0 && filter !== 'abgeschlossen' && (
         <div className="card">
           <p className="muted" style={{ margin: 0 }}>
             {filter === 'alle'
@@ -102,6 +114,34 @@ export function FahrtenVerwaltung({ onZurueck }: { onZurueck: () => void }) {
           </FahrtKarte>
         ))}
       </div>
+
+      {abgeschlossen.length > 0 && (
+        <section className="klapp">
+          <button
+            className="klapp__kopf"
+            onClick={() => setKlappOffen((o) => !o)}
+            aria-expanded={klappOffen}
+            aria-controls="abgeschlossene-fahrten"
+          >
+            <span className="klapp__pfeil" aria-hidden="true">
+              {klappOffen ? '▾' : '▸'}
+            </span>
+            Abgeschlossene Fahrten
+            <span className="klapp__zahl">{abgeschlossen.length}</span>
+          </button>
+          {klappOffen && (
+            <div className="fahrten" id="abgeschlossene-fahrten">
+              {abgeschlossen.map((f) => (
+                <FahrtKarte key={f.id} fahrt={f}>
+                  <button className="btn btn--ghost" onClick={() => setBearbeitet(f)}>
+                    Bearbeiten
+                  </button>
+                </FahrtKarte>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
 
       {neu && <FahrtDialog onClose={() => setNeu(false)} onGespeichert={fertig} />}
       {bearbeitet && (
