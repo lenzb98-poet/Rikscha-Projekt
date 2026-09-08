@@ -21,6 +21,7 @@ export function UebernahmeDialog({ eintrag, onClose, onGespeichert }: Props) {
     km: eintrag ? String(eintrag.km).replace('.', ',') : '',
     stunden: eintrag ? minutenAlsStunden(eintrag.minuten) : '',
     personen: eintrag ? String(eintrag.personen) : '',
+    fahrten: eintrag ? String(eintrag.fahrten) : '',
   })
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -29,7 +30,9 @@ export function UebernahmeDialog({ eintrag, onClose, onGespeichert }: Props) {
     setWerte((w) => ({ ...w, [feld]: wert }))
   }
 
-  const hatWert = [werte.km, werte.stunden, werte.personen].some((w) => w.trim() !== '')
+  const hatWert = [werte.km, werte.stunden, werte.personen, werte.fahrten].some(
+    (w) => w.trim() !== '',
+  )
   const bereit = werte.bezeichnung.trim().length >= 2 && hatWert
 
   async function handleSubmit(e: React.FormEvent) {
@@ -127,6 +130,23 @@ export function UebernahmeDialog({ eintrag, onClose, onGespeichert }: Props) {
                 onChange={(e) => setze('personen', e.target.value)}
               />
             </div>
+          </label>
+
+          <label className="field" htmlFor="ue-fahrten">
+            <span className="field__label">Fahrten insgesamt</span>
+            <div className="field__wrap">
+              <input
+                id="ue-fahrten"
+                type="text"
+                inputMode="numeric"
+                value={werte.fahrten}
+                placeholder="z. B. 310"
+                onChange={(e) => setze('fahrten', e.target.value.replace(/\D/g, ''))}
+              />
+            </div>
+            <span className="hint">
+              Zählt in der Auswertung zu den Fahrten dieser App dazu.
+            </span>
           </label>
 
           {error && <p className="alert alert--error">{error}</p>}

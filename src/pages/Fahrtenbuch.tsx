@@ -184,7 +184,13 @@ export function Fahrtenbuch({ onZurueck }: { onZurueck: () => void }) {
                     <td className="tab__zahl">{formatiereZahl(u.personen)}</td>
                     <td className="tab__zahl">{formatiereKomma(Number(u.km))}</td>
                     <td className="tab__zahl">{alsStundenZahl(u.minuten)}</td>
-                    <td>Aus der bisherigen Statistik</td>
+                    <td>
+                      Aus der bisherigen Statistik
+                      {u.fahrten > 0 &&
+                        ` · ${formatiereZahl(u.fahrten)} ${
+                          u.fahrten === 1 ? 'Fahrt' : 'Fahrten'
+                        }`}
+                    </td>
                     <td>
                       <button
                         className="tab__knopf"

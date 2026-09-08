@@ -457,6 +457,8 @@ export type Uebernahme = {
   km: number
   minuten: number
   personen: number
+  /** Wie viele Fahrten hinter den übernommenen Zahlen stehen. */
+  fahrten: number
   erfasst_von: string | null
   erfasst_am: string
 }
@@ -473,6 +475,7 @@ export type UebernahmeEingabe = {
   /** Eingabe in Stunden, wie im bisherigen Fahrtenbuch. */
   stunden: string
   personen: string
+  fahrten: string
 }
 
 export async function saveUebernahme(id: string | null, e: UebernahmeEingabe): Promise<void> {
@@ -487,6 +490,7 @@ export async function saveUebernahme(id: string | null, e: UebernahmeEingabe): P
     // Auch hier wird in Stunden erfasst und in Minuten gespeichert
     p_minuten: Math.round(zahl(e.stunden) * 60),
     p_personen: zahl(e.personen),
+    p_fahrten: zahl(e.fahrten),
   })
   if (error) throw error
 }
@@ -504,6 +508,7 @@ export function werteAusGesamt(fahrten: Fahrt[], uebernahmen: Uebernahme[]): Aus
     summe.km += Number(u.km) || 0
     summe.minuten += u.minuten || 0
     summe.personen += u.personen || 0
+    summe.fahrten += u.fahrten || 0
   }
 
   summe.km = Math.round(summe.km * 10) / 10
