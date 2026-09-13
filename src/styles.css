@@ -353,15 +353,21 @@ body {
   border-radius: 14px;
   background: #eef2f7;
   border-bottom-left-radius: 4px;
+  /* Farbiger Streifen in der Farbe der Person; die Farbe setzt das Programm.
+     Auch ohne Farbe vorhanden, damit die Blasen gleich breit bleiben. */
+  border-left: 3px solid transparent;
 }
 .blase--eigen {
   margin-left: auto;
   background: var(--blau);
   color: #fff;
+  border-left-color: transparent;
   border-bottom-left-radius: 14px;
   border-bottom-right-radius: 4px;
 }
 
+/* Die Farbe je Person setzt das Programm; var(--blau) bleibt als Rückfall,
+   falls einmal kein Name vorliegt. */
 .blase__autor { font-size: 13px; font-weight: 700; color: var(--blau); margin-bottom: 2px; }
 .blase__text { font-size: 15px; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; }
 

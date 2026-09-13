@@ -14,6 +14,7 @@ import {
 import { verkleinereBild, formatiereGroesse } from '../lib/bilder'
 import { chatGesehen } from '../lib/chatGelesen'
 import { toGermanError } from '../lib/errors'
+import { farbeFuerName } from '../lib/chatFarben'
 
 /** "Heute", "Gestern" oder das Datum – als Trenner zwischen den Tagen. */
 function tagesTitel(datum: Date): string {
@@ -247,6 +248,10 @@ export function Chat({ onZurueck, darfVerwalten }: Props) {
             letzterTag = tag
             const adresse = n.image_path ? adressen[n.image_path] : undefined
 
+            // Eigene Nachrichten stehen in der blauen Blase - dort bliebe
+            // eine Namensfarbe unlesbar und der Name fehlt ohnehin.
+            const farbe = n.ist_eigene ? undefined : farbeFuerName(n.author_name)
+
             return (
               <div key={n.id} data-nachricht={n.id}>
                 {neuerTag && <div className="chat__tag">{tag}</div>}
@@ -259,8 +264,13 @@ export function Chat({ onZurueck, darfVerwalten }: Props) {
                   ]
                     .filter(Boolean)
                     .join(' ')}
+                  style={farbe ? { borderLeftColor: farbe } : undefined}
                 >
-                  {!n.ist_eigene && <div className="blase__autor">{n.author_name}</div>}
+                  {!n.ist_eigene && (
+                    <div className="blase__autor" style={{ color: farbe }}>
+                      {n.author_name}
+                    </div>
+                  )}
 
                   {n.reply_to && (
                     <button
@@ -269,7 +279,16 @@ export function Chat({ onZurueck, darfVerwalten }: Props) {
                       onClick={() => springeZu(n.reply_to)}
                       title="Zur ursprünglichen Nachricht"
                     >
-                      <span className="zitat__autor">{n.reply_autor}</span>
+                      <span
+                        className="zitat__autor"
+                        style={
+                          // Im eigenen, blauen Kasten wuerde die Farbe
+                          // untergehen - dort bleibt es bei Weiss.
+                          n.ist_eigene ? undefined : { color: farbeFuerName(n.reply_autor) }
+                        }
+                      >
+                        {n.reply_autor}
+                      </span>
                       <span className="zitat__text">
                         {n.reply_bild && !n.reply_text ? '📷 Bild' : n.reply_text}
                       </span>
