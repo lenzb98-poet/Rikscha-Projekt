@@ -11,28 +11,33 @@
  * bekommt ein Zitat dieselbe Farbe wie die Person, von der es stammt; dort
  * ist nur der Name bekannt, keine Kennung.
  *
- * Alle Farben erreichen auf dem Blasenhintergrund (#eef2f7) mindestens
- * 4,4:1 Kontrast und sind damit auch in kleiner Schrift gut lesbar.
+ * Die Farben laufen einmal um den ganzen Farbkreis, in Schritten von 20
+ * Grad. Ihre Helligkeit ist jeweils so weit abgesenkt, dass alle auf dem
+ * Blasenhintergrund (#eef2f7) auf 4,9:1 Kontrast kommen - gut lesbar auch
+ * in der kleinen Namenszeile, und untereinander gleich kräftig. Gelb und
+ * Grün geraten dabei zwangsläufig dunkler als Blau und Rot: Sie sind von
+ * sich aus heller und müssen weiter abgedunkelt werden, um lesbar zu
+ * bleiben.
  */
 const FARBEN = [
-  '#1d4ed8', // Blau
-  '#be123c', // Rot
-  '#0f766e', // Petrol
-  '#b45309', // Orange
-  '#7c3aed', // Violett
-  '#15803d', // Grün
-  '#a21caf', // Magenta
-  '#0e7490', // Cyan
-  '#9a3412', // Braun
-  '#4d7c0f', // Oliv
-  '#86198f', // Lila
-  '#374fa0', // Indigo
-  '#065f46', // Tannengrün
-  '#c2410c', // Ziegelrot
-  '#8a5a2b', // Karamell
-  '#4338ca', // Königsblau
-  '#155e75', // Stahlblau
-  '#9f1239', // Weinrot
+  '#d11111', // Rot
+  '#b4460f', // Orangerot
+  '#8b610b', // Ocker
+  '#6c6c09', // Oliv
+  '#507309', // Grasgrün
+  '#2e780a', // Blattgrün
+  '#0a7a0a', // Grün
+  '#0a792f', // Smaragd
+  '#0a7853', // Petrol
+  '#097575', // Türkis
+  '#0d6fa0', // Stahlblau
+  '#155dec', // Blau
+  '#5151f1', // Indigo
+  '#7a40ef', // Violett
+  '#a213ea', // Purpur
+  '#b80fb8', // Magenta
+  '#c51089', // Pink
+  '#ce1150', // Himbeere
 ]
 
 export function farbeFuerName(name: string | null | undefined): string {
