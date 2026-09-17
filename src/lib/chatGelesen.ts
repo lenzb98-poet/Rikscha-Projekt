@@ -23,6 +23,18 @@ export async function chatGesehen(bis?: string): Promise<string> {
   return data as string
 }
 
+/**
+ * Der eigene Lesestand, ohne ihn zu verändern.
+ *
+ * Gebraucht für die Trennlinie im Verlauf: Sie muss den Stand kennen, wie er
+ * vor dem Öffnen des Chats war - `chatGesehen` würde ihn weiterschieben.
+ */
+export async function lesestand(): Promise<string | null> {
+  const { data, error } = await supabase.rpc('chat_lesestand')
+  if (error) throw error
+  return (data as string | null) ?? null
+}
+
 /** Zahl der ungelesenen Nachrichten; eigene zählen nicht mit. */
 export async function ungeleseneAnzahl(): Promise<number> {
   const { data, error } = await supabase.rpc('chat_ungelesen')

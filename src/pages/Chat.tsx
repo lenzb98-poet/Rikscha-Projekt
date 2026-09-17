@@ -12,7 +12,7 @@ import {
   type ChatNachricht,
 } from '../lib/supabase'
 import { verkleinereBild, formatiereGroesse } from '../lib/bilder'
-import { chatGesehen } from '../lib/chatGelesen'
+import { chatGesehen, lesestand } from '../lib/chatGelesen'
 import { toGermanError } from '../lib/errors'
 import { farbeFuerName } from '../lib/chatFarben'
 
@@ -57,12 +57,28 @@ export function Chat({ onZurueck, darfVerwalten }: Props) {
   const gemeldetRef = useRef('')
   /** Kurz hervorgehobene Nachricht, nachdem man einem Zitat gefolgt ist. */
   const [hervorgehoben, setHervorgehoben] = useState<string | null>(null)
+  /**
+   * Der Lesestand, wie er beim Öffnen war - die Grenze für die Trennlinie.
+   *
+   * Einmal beim Öffnen geholt und danach nicht mehr angefasst: Die Linie
+   * soll stehen bleiben, solange man im Chat ist, auch wenn der Lesestand
+   * gleich darauf weiterwandert. Als Versprechen abgelegt, damit das Melden
+   * des neuen Stands erst danach passiert und den alten nicht überholt.
+   */
+  const [grenzeHolen] = useState(() => lesestand().catch(() => null))
+  const [grenze, setGrenze] = useState<string | null>(null)
+  /** Ob schon einmal zur Trennlinie gesprungen wurde. */
+  const gesprungenRef = useRef(false)
 
   const laden = useCallback(() => {
     listMessages()
       // Die Datenbank liefert die neuesten zuerst, angezeigt wird chronologisch
       .then(async (rows) => {
         const chronologisch = [...rows].reverse()
+
+        // Den alten Lesestand vor dem Anzeigen kennen: Sonst gäbe es einen
+        // Durchgang ohne Trennlinie, und der Sprung dorthin liefe ins Leere.
+        setGrenze(await grenzeHolen)
         setNachrichten(chronologisch)
 
         // Was hier steht, gilt als gelesen. Maßgeblich ist der Zeitstempel
@@ -86,20 +102,42 @@ export function Chat({ onZurueck, darfVerwalten }: Props) {
         }
       })
       .catch((err) => setError(toGermanError(err)))
-  }, [])
+  }, [grenzeHolen])
 
   useEffect(() => {
     laden()
     return watchMessages(laden)
   }, [laden])
 
+  // Die erste Nachricht, die beim Öffnen noch ungelesen war. Eigene zählen
+  // nicht mit - wer selbst geschrieben hat, hat den Verlauf gesehen.
+  const ersteUngelesen =
+    grenze === null
+      ? null
+      : (nachrichten?.find((n) => !n.ist_eigene && n.created_at > grenze)?.id ?? null)
+
   // Beim Öffnen und bei neuen Nachrichten ans Ende des Verlaufs springen.
   // Bewusst nur den Verlauf scrollen: steht der Chat auf der Startseite,
   // würde scrollIntoView die ganze Seite nach unten ziehen.
   useEffect(() => {
     const el = verlaufRef.current
-    if (el) el.scrollTop = el.scrollHeight
-  }, [nachrichten?.length])
+    if (!el) return
+
+    // Beim ersten Mal an die Trennlinie, damit man sofort sieht, wo das
+    // Ungelesene anfängt - danach wie gewohnt ans Ende.
+    // Erst springen, wenn der Lesestand da ist - sonst gilt der Sprung als
+    // erledigt, bevor die Trennlinie überhaupt steht.
+    if (!gesprungenRef.current && grenze !== null && nachrichten && nachrichten.length > 0) {
+      gesprungenRef.current = true
+      const linie = el.querySelector<HTMLElement>('[data-ungelesen]')
+      if (linie) {
+        el.scrollTop = Math.max(0, linie.offsetTop - 24)
+        return
+      }
+    }
+
+    el.scrollTop = el.scrollHeight
+  }, [nachrichten?.length, ersteUngelesen, grenze])
 
   // Vorschaubild wieder freigeben
   useEffect(() => {
@@ -242,6 +280,7 @@ export function Chat({ onZurueck, darfVerwalten }: Props) {
           )}
 
           {nachrichten?.map((n) => {
+            const ungelesenAbHier = n.id === ersteUngelesen
             const datum = new Date(n.created_at)
             const tag = tagesTitel(datum)
             const neuerTag = tag !== letzterTag
@@ -255,6 +294,11 @@ export function Chat({ onZurueck, darfVerwalten }: Props) {
             return (
               <div key={n.id} data-nachricht={n.id}>
                 {neuerTag && <div className="chat__tag">{tag}</div>}
+                {ungelesenAbHier && (
+                  <div className="chat__ungelesen" data-ungelesen>
+                    <span>Ungelesene Nachrichten</span>
+                  </div>
+                )}
                 <div
                   className={[
                     'blase',
