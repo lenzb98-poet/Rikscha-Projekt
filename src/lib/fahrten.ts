@@ -306,21 +306,6 @@ export function minutenAlsStunden(minuten: number | null): string {
   return String(Math.round((minuten / 60) * 100) / 100).replace('.', ',')
 }
 
-export type RikschaStatistik = {
-  rikscha: string
-  km: number
-  minuten: number
-  personen: number
-  fahrten: number
-}
-
-/** Summen je Rikscha über alle nachgetragenen Plätze. */
-export async function rikschaStatistik(): Promise<RikschaStatistik[]> {
-  const { data, error } = await supabase.rpc('rikscha_statistik')
-  if (error) throw error
-  return (data ?? []) as RikschaStatistik[]
-}
-
 /** Sind alle Angaben zu diesem Platz vorhanden? */
 export function platzVollstaendig(p: Platz): boolean {
   return (
