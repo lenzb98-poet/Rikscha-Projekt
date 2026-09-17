@@ -996,8 +996,12 @@ body {
 
 /* --- Nachtrag nach der Fahrt -------------------------------------------- */
 :root {
-  --z-nachtragen: #b35c00;
-  --z-nachtragen-bg: #fdf0e2;
+  /* Neutrales Grau: Fehlende Angaben sind kein Alarm, sondern eine offene
+     Kleinigkeit - Orange stand zwischen den anderen Zustaenden zu laut da.
+     Dunkel genug für weiße Schrift im Kalender (6,4:1) und als Text auf der
+     hellen Flaeche (5,6:1). */
+  --z-nachtragen: #57606a;
+  --z-nachtragen-bg: #eef0f2;
 }
 
 .fahrt--nachtragen { border-left-color: var(--z-nachtragen); }
