@@ -144,7 +144,17 @@ export function Fahrtenkalender({ onZurueck }: { onZurueck: () => void }) {
                 {eintraege.map(({ fahrt, platz }) => {
                   // Ein freier Platz einer geplanten Fahrt lädt zum Buchen ein
                   const frei = platz.pilot_id === null && fahrt.zustand !== 'abgesagt'
-                  const art = frei ? 'offen' : fahrt.zustand === 'offen' ? 'besetzt' : fahrt.zustand
+                  // Ist der Tag der Fahrt schon vorbei, wurde der Platz nicht
+                  // mehr genommen - dann lädt er nicht mehr zum Buchen ein und
+                  // soll auch nicht mehr wie eine offene, buchbare Fahrt wirken.
+                  const vorbei = new Date(fahrt.starts_at) < new Date()
+                  const art = frei
+                    ? vorbei
+                      ? 'offen-vorbei'
+                      : 'offen'
+                    : fahrt.zustand === 'offen'
+                      ? 'besetzt'
+                      : fahrt.zustand
 
                   return (
                     <button

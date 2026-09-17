@@ -908,6 +908,10 @@ body {
 .kal__eintrag--besetzt { background: var(--z-besetzt); }
 .kal__eintrag--abgeschlossen { background: var(--z-abgeschlossen); }
 .kal__eintrag--abgesagt { background: var(--z-abgesagt); }
+/* Frei geblieben, aber der Tag ist vorbei: nicht mehr das kräftige Blau
+   einer noch buchbaren Fahrt, sondern dasselbe Blau mit weniger Sättigung
+   (s. 60% -> 28%). Weiße Schrift kommt darauf weiterhin auf über 7:1. */
+.kal__eintrag--offen-vorbei { background: #425a74; }
 
 @media (max-width: 560px) {
   /* Sieben Spalten lassen je Zelle nur gut 40 Pixel. Abstände und
