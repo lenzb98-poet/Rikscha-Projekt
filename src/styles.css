@@ -1001,12 +1001,11 @@ body {
 
 /* --- Nachtrag nach der Fahrt -------------------------------------------- */
 :root {
-  /* Neutrales Grau: Fehlende Angaben sind kein Alarm, sondern eine offene
-     Kleinigkeit - Orange stand zwischen den anderen Zustaenden zu laut da.
-     Dunkel genug für weiße Schrift im Kalender (6,4:1) und als Text auf der
-     hellen Flaeche (5,6:1). */
-  --z-nachtragen: #57606a;
-  --z-nachtragen-bg: #eef0f2;
+  /* Kräftiges Pink mit hohem Kontrast, klar getrennt vom Rot von "Abgesagt"
+     (Farbton 330° statt 3°). Weiße Schrift im Kalender kommt darauf auf
+     7,0:1, Text auf der hellen Fläche auf 6,0:1 - beides nachgerechnet. */
+  --z-nachtragen: #aa1861;
+  --z-nachtragen-bg: #fce9f2;
 }
 
 .fahrt--nachtragen { border-left-color: var(--z-nachtragen); }
@@ -1033,15 +1032,18 @@ body {
   font-weight: 600;
 }
 
-/* Aufforderung auf der Startseite */
+/* Aufforderung auf der Startseite - eigenes Gelb statt des Pink von
+   "Angaben fehlen": Das Feld ist eine Erinnerung an die eigene Person,
+   kein Merkmal einer fremden Fahrt im Kalender. Dunkler Text auf der
+   hellen Fläche kommt auf 5,5:1 Kontrast, nachgerechnet. */
 .nachtrag {
   margin-top: 20px;
-  background: var(--z-nachtragen-bg);
-  border: 1px solid #f0d5b4;
+  background: #f9f1d2;
+  border: 1px solid #ecd579;
   border-radius: 14px;
   padding: 18px;
 }
-.nachtrag h3 { margin: 0 0 6px; font-size: 16px; color: var(--z-nachtragen); }
+.nachtrag h3 { margin: 0 0 6px; font-size: 16px; color: #7a5c00; }
 .nachtrag__text { margin: 0 0 14px; font-size: 14px; line-height: 1.5; color: var(--muted); }
 .nachtrag__fahrt {
   display: flex;
@@ -1050,7 +1052,7 @@ body {
   gap: 12px;
   flex-wrap: wrap;
   padding-top: 12px;
-  border-top: 1px solid #f0d5b4;
+  border-top: 1px solid #ecd579;
 }
 .nachtrag__fahrt:first-of-type { padding-top: 0; border-top: 0; }
 
