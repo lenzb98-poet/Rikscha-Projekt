@@ -1032,18 +1032,17 @@ body {
   font-weight: 600;
 }
 
-/* Aufforderung auf der Startseite - eigenes Gelb statt des Pink von
-   "Angaben fehlen": Das Feld ist eine Erinnerung an die eigene Person,
-   kein Merkmal einer fremden Fahrt im Kalender. Dunkler Text auf der
-   hellen Fläche kommt auf 5,5:1 Kontrast, nachgerechnet. */
+/* Aufforderung auf der Startseite - hochkontrastiges Rosa, dieselbe Farbe
+   wie "Angaben fehlen" im Kalender. Der dunkle Text (--z-nachtragen) kommt
+   auf der hellen Fläche auf 6,0:1 Kontrast, nachgerechnet. */
 .nachtrag {
   margin-top: 20px;
-  background: #f9f1d2;
-  border: 1px solid #ecd579;
+  background: var(--z-nachtragen-bg);
+  border: 1px solid #e6a8c7;
   border-radius: 14px;
   padding: 18px;
 }
-.nachtrag h3 { margin: 0 0 6px; font-size: 16px; color: #7a5c00; }
+.nachtrag h3 { margin: 0 0 6px; font-size: 16px; color: var(--z-nachtragen); }
 .nachtrag__text { margin: 0 0 14px; font-size: 14px; line-height: 1.5; color: var(--muted); }
 .nachtrag__fahrt {
   display: flex;
@@ -1052,7 +1051,7 @@ body {
   gap: 12px;
   flex-wrap: wrap;
   padding-top: 12px;
-  border-top: 1px solid #ecd579;
+  border-top: 1px solid #e6a8c7;
 }
 .nachtrag__fahrt:first-of-type { padding-top: 0; border-top: 0; }
 
