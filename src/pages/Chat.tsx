@@ -49,6 +49,8 @@ export function Chat({ onZurueck, darfVerwalten }: Props) {
   const [antwortAuf, setAntwortAuf] = useState<ChatNachricht | null>(null)
   /** Nachricht, für die gerade die Zeichenauswahl offen steht. */
   const [reaktionFuer, setReaktionFuer] = useState<string | null>(null)
+  /** Welche Namensliste gerade offen steht: Nachricht und Zeichen. */
+  const [namenFuer, setNamenFuer] = useState<{ id: string; emoji: string } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const dateiRef = useRef<HTMLInputElement>(null)
@@ -374,13 +376,26 @@ export function Chat({ onZurueck, darfVerwalten }: Props) {
                         <button
                           key={r.emoji}
                           className={r.ist_meine ? 'reaktion reaktion--meine' : 'reaktion'}
-                          onClick={() => handleReaktion(n.id, r.emoji)}
-                          title={r.namen}
+                          // Antippen zeigt, wer reagiert hat - zum Setzen oder
+                          // Zurücknehmen der eigenen Reaktion dient "Reagieren"
+                          // mit derselben Zeichenauswahl.
+                          onClick={() =>
+                            setNamenFuer((f) =>
+                              f?.id === n.id && f.emoji === r.emoji ? null : { id: n.id, emoji: r.emoji },
+                            )
+                          }
                         >
                           <span aria-hidden="true">{r.emoji}</span> {r.anzahl}
                         </button>
                       ))}
                     </div>
+                  )}
+
+                  {namenFuer?.id === n.id && (
+                    <p className="reaktion__namen">
+                      <span aria-hidden="true">{namenFuer.emoji}</span>{' '}
+                      {n.reaktionen.find((r) => r.emoji === namenFuer.emoji)?.namen}
+                    </p>
                   )}
 
                   {reaktionFuer === n.id && (
@@ -402,7 +417,10 @@ export function Chat({ onZurueck, darfVerwalten }: Props) {
                     <span>{uhrzeit(datum)}</span>
                     <button
                       className="blase__aktion"
-                      onClick={() => setReaktionFuer((f) => (f === n.id ? null : n.id))}
+                      onClick={() => {
+                        setReaktionFuer((f) => (f === n.id ? null : n.id))
+                        setNamenFuer(null)
+                      }}
                       title="Mit einem Zeichen reagieren"
                     >
                       Reagieren

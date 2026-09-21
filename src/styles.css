@@ -458,6 +458,17 @@ body {
 /* Die eigene hervorheben, damit man sieht, wo man selbst mitgezählt wird */
 .reaktion--meine { border-color: var(--blau); background: var(--z-offen-bg); font-weight: 700; }
 
+/* Wer mit diesem Zeichen reagiert hat - erscheint nach Antippen der Reaktion.
+   Auf dem Handy gibt es keinen Hover für den title-Text, daher als eigene,
+   antippbare Zeile statt als Tooltip. */
+.reaktion__namen {
+  margin: 4px 0 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: inherit;
+  opacity: 0.85;
+}
+
 /* Auswahlleiste, erscheint auf "Reagieren" */
 .reaktionswahl {
   display: flex;
