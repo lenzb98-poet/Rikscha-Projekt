@@ -339,29 +339,30 @@ export async function deleteMessage(id: string): Promise<void> {
 }
 
 /**
- * Räumt den Bildspeicher auf: älteste Bilder verschwinden, bis die Grenze von
- * 750 MiB wieder eingehalten wird.
+ * Räumt den Bildspeicher auf, nach dem Speicher-Budget des Betreibers: Die
+ * ältesten Chat-Bilder aller Organisationen verschwinden zuerst, bis die
+ * Grenze wieder eingehalten wird.
  *
- * Dreistufig, weil ein Löschen in der Datenbank die Datei im Speicher nicht
- * mit entfernt. Bricht der Ablauf ab, läuft er beim nächsten Hochladen erneut.
- * Gibt die Zahl der entfernten Bilder zurück.
+ * Die Datenbank markiert die Bilder und setzt sie auf eine Löschliste; die
+ * Dateien selbst kann nur die App aus dem Speicher entfernen. Jede angemeldete
+ * Person darf das für Dateien auf der Liste - auch aus anderen Organisationen.
+ * Bricht der Ablauf ab, läuft er beim nächsten Start oder Hochladen erneut.
+ * Gibt die Zahl der entfernten Dateien zurück.
  */
 export async function raeumeBildspeicherAuf(): Promise<number> {
-  const { data, error } = await supabase.rpc('chat_aufraeum_kandidaten')
+  const { data, error } = await supabase.rpc('speicher_aufraeumen')
   if (error) throw error
 
-  const pfade = ((data ?? []) as { image_path: string }[])
-    .map((r) => r.image_path)
-    .filter(Boolean)
+  const pfade = ((data ?? []) as { pfad: string }[]).map((r) => r.pfad).filter(Boolean)
   if (pfade.length === 0) return 0
 
   const { error: weg } = await supabase.storage.from(BILDER_BUCKET).remove(pfade)
   if (weg) throw weg
 
-  const { error: melden } = await supabase.rpc('chat_bilder_geloescht', { p_pfade: pfade })
+  const { data: erledigt, error: melden } = await supabase.rpc('bilder_entfernt', { p_pfade: pfade })
   if (melden) throw melden
 
-  return pfade.length
+  return (erledigt as number) ?? 0
 }
 
 /**

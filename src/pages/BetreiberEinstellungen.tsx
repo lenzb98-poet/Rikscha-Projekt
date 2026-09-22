@@ -11,12 +11,14 @@ import {
 import { formatiereGroesse } from '../lib/bilder'
 import { formatiereZahl } from '../lib/fahrten'
 import { toGermanError } from '../lib/errors'
+import { SpeicherBudget } from '../components/SpeicherBudget'
 
 /**
  * Die Betreiber Einstellungen: alle Organisationen, die die App nutzen.
  *
- * Anlegen (mit erster Administration), bearbeiten, stilllegen, löschen und
- * ein grober Blick auf den Speicher. Die eigene Organisation lässt sich weder
+ * Anlegen (mit erster Administration), bearbeiten, stilllegen, löschen, ein
+ * grober Blick auf den Speicher je Organisation und das Speicher-Budget für
+ * alle zusammen. Die eigene Organisation lässt sich weder
  * stilllegen noch löschen - sonst sperrte sich der Betreiber selbst aus.
  *
  * Löschen entfernt eine Organisation mit allem, was ihr gehört, und verlangt
@@ -247,6 +249,8 @@ export function BetreiberEinstellungen({ onZurueck }: { onZurueck: () => void })
 
       {hinweis && <p className="alert alert--ok betreiber__hinweis">{hinweis}</p>}
       {error && <p className="alert alert--error">{error}</p>}
+
+      <SpeicherBudget />
 
       <section className="card">
         <div className="card__head">

@@ -1,7 +1,9 @@
+import { useEffect } from 'react'
 import type { AppUser } from '../lib/useAuth'
 import { useFahrten } from '../lib/fahrten'
 import { useUngelesen } from '../lib/chatGelesen'
 import { useAnsicht } from '../lib/useAnsicht'
+import { raeumeBildspeicherAuf } from '../lib/supabase'
 import { Logo, RadelnLogo } from '../components/Marke'
 import { MeineFahrten } from '../components/MeineFahrten'
 import { AppEinrichten } from '../components/AppEinrichten'
@@ -57,6 +59,12 @@ export function Dashboard({ profile, onSignOut }: Props) {
   const offene = fahrten?.filter((f) => f.zustand === 'offen').length ?? null
   // Die Ansicht als Anlass: zurück aus dem Chat wird sofort neu gezählt
   const ungelesen = useUngelesen(Boolean(profile), ansicht)
+
+  // Bei jedem Start den Bildspeicher nach dem Speicher-Budget aufräumen. Leise:
+  // Scheitert es, läuft es beim nächsten Start oder Hochladen erneut.
+  useEffect(() => {
+    if (profile) raeumeBildspeicherAuf().catch(() => {})
+  }, [profile])
 
   function inhalt() {
     switch (ansicht) {

@@ -1650,3 +1650,44 @@ th.tab__kreuz--still { color: var(--muted); font-style: italic; }
 .org__link .btn--link { padding: 0; font-size: 13px; }
 .org__neu-titel { margin: 0; font-size: 15px; color: var(--blau-dunkel); }
 .hint.org__hinweis { margin: 0; }
+
+/* --- Speicher-Budget in den Betreiber Einstellungen ---------------------- */
+.budget__balken {
+  position: relative;
+  display: flex;
+  height: 14px;
+  border-radius: 999px;
+  background: var(--border);
+  overflow: visible;
+}
+.budget__teil { display: block; height: 100%; min-width: 2px; }
+.budget__teil:first-child { border-radius: 999px 0 0 999px; }
+.budget__teil--daten { background: var(--muted); }
+.budget__teil--bilder { background: var(--blau); }
+/* Senkrechter Strich: bis hierhin dürfen Bilder reichen */
+.budget__grenze {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--error);
+  border-radius: 1px;
+}
+.budget__legende { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
+.budget__punkt {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 8px;
+  border-radius: 3px;
+  background: var(--border);
+  vertical-align: baseline;
+}
+.budget__punkt--daten { background: var(--muted); }
+.budget__punkt--bilder { background: var(--blau); }
+.hint.budget__erklaerung { margin: 10px 0 0; }
+.budget__ausstehend .btn--link { padding: 0; }
+.budget__form { margin-top: 18px; }
+.budget__felder { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+.budget__knoepfe { margin-top: 14px; }

@@ -88,8 +88,8 @@ Außerdem je Organisation: **Logo, Akzentfarbe und Name** (Tabelle
 `einstellungen`, eine Zeile je Organisation; vor der Anmeldung gilt die
 gewählte, danach die eigene), **Rikschas und Heime** mit eigenen Namen,
 **Bilder** im Speicher unter `<org_id>/…` (ältere Dateien der
-Stammorganisation liegen weiter ohne Ordner) und die **Speichergrenze** für
-Chat-Bilder.
+Stammorganisation liegen weiter ohne Ordner). Die Grenze für Chat-Bilder gilt
+dagegen für alle zusammen (siehe *Speicher-Budget*).
 
 Die technische Anmeldekennung trägt außerhalb der Stammorganisation das Kürzel
 (`vorname.nachname@kürzel.rikscha-fahrten.de`), damit gleiche Namen in
@@ -416,11 +416,39 @@ ungelesen am Knopf.
 die App sie auf höchstens 1600 px – ein Handyfoto schrumpft dadurch von mehreren
 Megabyte auf unter 100 KB.
 
-Der Speicher ist auf **750 MiB** begrenzt. Wird die Grenze überschritten,
-verschwinden die **ältesten Bilder zuerst**; der Text bleibt stehen, an der
-Stelle des Bildes erscheint ein Hinweis. Aufgeräumt wird nach jedem Hochladen in
-drei Schritten – Kandidaten erfragen, Dateien löschen, Löschung melden – weil
-ein `DELETE` in der Datenbank die Datei im Speicher nicht mit entfernt.
+Wie viel Platz Bilder haben, legt der Betreiber im **Speicher-Budget** fest
+(siehe unten). Wird die Grenze überschritten, verschwinden die **ältesten Bilder
+zuerst** – über alle Organisationen hinweg; der Text bleibt stehen, an der
+Stelle des Bildes erscheint ein Hinweis.
+
+### Speicher-Budget
+
+In den **Betreiber Einstellungen** stehen zwei Grenzen für alle Organisationen
+zusammen (Migration `0040`, Tabelle `speicher_budget`):
+
+- **Gesamtbudget**, Vorgabe **1 GB** (1024 MB), mindestens 100 MB
+- **Bildspeicher**: höchstens so viel für Chat-Bilder, Vorgabe 750 MB
+
+Für Bilder gilt stets die **kleinere** der beiden: der eingestellte
+Bildspeicher oder das, was das Gesamtbudget nach den **übrigen Daten** lässt –
+der ganzen Datenbank (auch Anmeldekonten und Verwaltung) und den Logos.
+Wachsen die übrigen Daten, schrumpft der Platz für Bilder mit, und die ältesten
+verschwinden (FIFO über alle Organisationen).
+
+Geräumt wird in zwei Schritten, weil eine Datenbankfunktion Dateien im
+Speicher nicht selbst löschen kann:
+
+1. `speicher_aufraeumen()` markiert die ältesten Bilder, bis die Grenze
+   eingehalten ist, und setzt sie auf die **Löschliste** (`bild_loeschliste`).
+   Auch Dateien ohne Nachricht (etwa nach abgebrochenem Senden, älter als zehn
+   Minuten) kommen darauf.
+2. Die App entfernt die Dateien auf der Liste aus dem Speicher und meldet sie
+   mit `bilder_entfernt()`. Dateien auf der Liste darf **jede** angemeldete
+   Person löschen, auch aus dem Ordner einer anderen Organisation – nur diese.
+
+Die App räumt **bei jedem Start** und **nach jedem Hochladen** auf, außerdem
+beim Speichern eines neuen Budgets und über *Bildspeicher aufräumen* in den
+Admin Einstellungen. Wer das Budget senkt, sieht vorher, wie viel weichen muss.
 
 ## Als App auf dem Handy
 
