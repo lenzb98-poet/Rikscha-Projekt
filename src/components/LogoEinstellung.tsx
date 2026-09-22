@@ -1,12 +1,12 @@
 import { useRef, useState } from 'react'
 import { Logo } from './Marke'
-import { logoEntfernen, logoHochladen, pruefeLogo, useVereinslogo } from '../lib/vereinslogo'
+import { logoEntfernen, logoHochladen, pruefeLogo, useVereinslogo } from '../lib/erscheinungsbild'
 import { toGermanError } from '../lib/errors'
 
 /**
  * Das Logo der Organisation hochladen oder zum Standard zurückkehren.
  *
- * Die Vorschau steht auf demselben Blau wie die Leiste und die Anmeldeseite,
+ * Die Vorschau steht auf derselben Akzentfarbe wie die Leiste und die Anmeldeseite,
  * damit gleich zu sehen ist, ob das Logo dort lesbar ist.
  */
 export function LogoEinstellung() {
@@ -59,7 +59,7 @@ export function LogoEinstellung() {
     <section className="card">
       <h3>Logo</h3>
       <p className="muted card__text">
-        Erscheint oben links in der Leiste und auf der Anmeldeseite, jeweils auf blauem Grund.
+        Erscheint oben links in der Leiste und auf der Anmeldeseite, jeweils auf der Akzentfarbe.
         Am besten eignet sich eine helle Fassung mit durchsichtigem Hintergrund (PNG), höchstens
         2 MB.
       </p>

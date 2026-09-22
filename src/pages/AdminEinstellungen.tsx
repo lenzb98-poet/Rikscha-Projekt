@@ -3,13 +3,14 @@ import { listUsers, raeumeBildspeicherAuf, type Rolle, type TeamMember } from '.
 import { toGermanError } from '../lib/errors'
 import { HeimVorlagen } from '../components/HeimVorlagen'
 import { LogoEinstellung } from '../components/LogoEinstellung'
+import { AkzentfarbeEinstellung } from '../components/AkzentfarbeEinstellung'
 
 /**
  * Die Verwaltungsseite: alles, was die Leitung betrifft, an einer Stelle.
  *
  * Die Seite fasst zusammen, was es schon gibt: den Stand der Zugänge, wer was
  * darf und die Wartungsaufgaben, die sonst nirgends sichtbar sind. Dazu kommt
- * das Erscheinungsbild der Organisation, zuerst das Logo.
+ * das Erscheinungsbild der Organisation: Logo und Akzentfarbe.
  *
  * Nur für die Administration: die Koordination darf zwar fast dasselbe, diese
  * Seite bleibt aber der Administration vorbehalten.
@@ -87,6 +88,7 @@ export function AdminEinstellungen({ onZurueck }: Props) {
       {error && <p className="alert alert--error">{error}</p>}
 
       <LogoEinstellung />
+      <AkzentfarbeEinstellung />
 
       <section className="card">
         <h3>Zugänge</h3>

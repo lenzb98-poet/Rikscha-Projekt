@@ -359,6 +359,24 @@ Anmeldeseite das Logo vor der Anmeldung zeigt; hochladen und ändern darf nur
 die Administration. SVG ist ausgeschlossen, weil solche Dateien Skripte
 enthalten können.
 
+### Akzentfarbe
+
+Ebenfalls in den **Admin Einstellungen** wählt die Administration die
+Akzentfarbe (Farbrad oder Farbcode `#rrggbb`, mit Vorschau). Sie ersetzt das
+Blau in Leiste, Anmeldeseite, Knöpfen und Überschriften; die dunklere und die
+hellere Abstufung berechnet die App selbst (`src/lib/erscheinungsbild.ts`).
+Ohne eigene Farbe setzt die App nichts, dann gelten genau die Töne aus
+`src/styles.css`.
+
+- Weiße Schrift muss auf der Farbe lesbar bleiben: Unter einem Kontrast von
+  4,5 : 1 lässt sie sich nicht speichern.
+- Die Zustandsfarben der Fahrten (offen, besetzt, abgesagt) bleiben fest,
+  damit sie bei jeder Akzentfarbe unterscheidbar sind.
+- Die Farbe liegt in `einstellungen.akzentfarbe` (Migration `0033`) und kommt
+  zusammen mit dem Logo aus `erscheinungsbild()`, auch vor der Anmeldung.
+- Das Symbol und die Farbe beim Installieren als App (`manifest.webmanifest`)
+  bleiben blau; sie stehen fest in der Datei.
+
 ## Fehleranzeige
 
 Eine Start-Diagnose in `index.html` läuft vor der App und fängt ab, was das

@@ -1,17 +1,24 @@
 /* Gestaltung nach dem Auftritt der Hospiz-Initiative Melle e.V.
    Markenfarbe #245892, aus dem Hintergrundbild der Website entnommen.
-   Weiße Schrift darauf erreicht ein Kontrastverhältnis von 7,3:1. */
+   Weiße Schrift darauf erreicht ein Kontrastverhältnis von 7,3:1.
+
+   Die --blau-Töne sind die Akzentfarbe: Wählt die Administration eine eigene,
+   überschreibt src/lib/erscheinungsbild.ts sie am Wurzelelement. Die
+   Statusfarben (--z-*) bleiben fest, damit „offen" und „besetzt" bei jeder
+   Akzentfarbe unterscheidbar bleiben. */
 :root {
   --blau: #245892;
   --blau-dunkel: #1a4270;
   --blau-hell: #3a6da6;
+  /* Zarte Tönung der Markenfarbe für Hover und Hinweise */
+  --blau-zart: #eaf0f7;
   --bg: #eef2f7;
   --card: #ffffff;
   --text: #1f2a37;
   --muted: #5b6b7f;
   --border: #d9e1ec;
   --error: #b3261e;
-  --ok: #245892;
+  --ok: var(--blau);
   --warn: #8a6100;
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
@@ -87,6 +94,49 @@ body {
 .logo-vorschau img { max-width: 100%; max-height: 80px; object-fit: contain; display: block; }
 .logo-knoepfe { display: flex; flex-wrap: wrap; gap: 8px; }
 .logo-datei { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+
+/* --- Akzentfarbe in den Admin Einstellungen ------------------------------ */
+.farbwahl { display: flex; align-items: flex-end; gap: 12px; }
+.farbwahl__rad {
+  width: 56px;
+  height: 46px;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fff;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.farbwahl__code { flex: 1; min-width: 0; }
+.farbwahl__code input { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.farbwahl__knoepfe { margin-top: 16px; }
+
+/* Die Vorschau bekommt die Farbstufen als eigene Variablen; so wirkt die
+   Farbe hier, bevor sie gespeichert und für die ganze Seite gesetzt ist. */
+.farbvorschau {
+  margin-top: 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.farbvorschau__leiste {
+  padding: 12px 14px;
+  background: var(--blau);
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+}
+.farbvorschau__inhalt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px;
+  background: var(--bg);
+}
+.farbvorschau__titel { color: var(--blau-dunkel); }
+.farbvorschau__knopf { padding: 9px 16px; font-size: 14px; cursor: default; }
+.hint.farbkontrast { margin: 10px 0 0; }
 
 .auth__card {
   width: 100%;
@@ -166,7 +216,7 @@ body {
   padding: 9px 14px;
   font-size: 14px;
 }
-.btn--ghost:hover:not(:disabled) { background: #eaf0f7; }
+.btn--ghost:hover:not(:disabled) { background: var(--blau-zart); }
 
 .btn--danger { background: var(--error); }
 .btn--danger:hover:not(:disabled) { background: #8f1e17; }
@@ -190,7 +240,7 @@ body {
 
 .alert { margin: 16px 0 0; padding: 12px 14px; border-radius: 10px; font-size: 14px; line-height: 1.45; }
 .alert--error { background: #fdecea; color: var(--error); }
-.alert--ok { background: #e8eff7; color: var(--blau-dunkel); }
+.alert--ok { background: var(--blau-zart); color: var(--blau-dunkel); }
 .alert--warn { background: #fdf3df; color: var(--warn); }
 
 /* --- Angemeldete Ansicht ------------------------------------------------ */

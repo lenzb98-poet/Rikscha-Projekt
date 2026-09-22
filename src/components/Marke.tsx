@@ -1,11 +1,11 @@
 import logo from '../assets/logo.png'
 import moewe from '../assets/moewe.png'
 import radeln from '../assets/radeln-ohne-alter.png'
-import { useVereinslogo } from '../lib/vereinslogo'
+import { useVereinslogo } from '../lib/erscheinungsbild'
 
 /**
  * Logo der Organisation: das in den Admin Einstellungen hochgeladene, sonst
- * die Wortmarke des Vereins. Steht auf blauem Grund, daher helle Logos.
+ * die Wortmarke des Vereins. Steht auf der Akzentfarbe, daher helle Logos.
  */
 export function Logo({ className }: { className?: string }) {
   const eigenes = useVereinslogo()

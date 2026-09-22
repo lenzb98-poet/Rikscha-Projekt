@@ -10,7 +10,7 @@ import {
 import { toGermanError } from '../lib/errors'
 import { PasswordField, validatePassword } from '../components/PasswordField'
 import { Logo, Moewe, RadelnLogo } from '../components/Marke'
-import { useVereinslogo } from '../lib/vereinslogo'
+import { useVereinslogo } from '../lib/erscheinungsbild'
 
 type Step = 'name' | 'password' | 'create-password' | 'confirm-mail'
 
