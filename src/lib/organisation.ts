@@ -44,6 +44,11 @@ function setze(o: Organisation | null) {
   hoerer.forEach((h) => h())
 }
 
+/** Die gewählte Organisation außerhalb von React. */
+export function gewaehlteOrganisation(): Organisation | null {
+  return gewaehlt
+}
+
 /** Die gewählte Organisation, null solange keine gewählt ist. */
 export function useOrganisation(): Organisation | null {
   return useSyncExternalStore(
@@ -62,6 +67,23 @@ export function waehleOrganisation(o: Organisation): void {
 /** Zurück zur Auswahl. */
 export function organisationWechseln(): void {
   setze(null)
+}
+
+/** Hört auf einen Wechsel der gewählten Organisation. */
+export function beiOrganisationswechsel(h: () => void): () => void {
+  hoerer.add(h)
+  return () => hoerer.delete(h)
+}
+
+/**
+ * Die Organisation der angemeldeten Person, aus der Datenbank. Dateien im
+ * Speicher liegen in einem Ordner mit dieser Kennung.
+ */
+export async function eigeneOrgId(): Promise<string> {
+  const { data, error } = await supabase.rpc('eigene_org_id')
+  if (error) throw error
+  if (!data) throw new Error('Dein Zugang ist nicht freigeschaltet.')
+  return data as string
 }
 
 /** Alle Organisationen, die die App nutzen - lesbar auch vor der Anmeldung. */

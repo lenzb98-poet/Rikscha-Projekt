@@ -277,7 +277,10 @@ export async function bildAdressen(pfade: string[]): Promise<Record<string, stri
 
 /** Lädt ein Bild hoch und gibt seinen Pfad im Speicher zurück. */
 export async function ladeBildHoch(datei: Blob, endung = 'jpg'): Promise<string> {
-  const pfad = `${crypto.randomUUID()}.${endung}`
+  // Jede Organisation hat ihren eigenen Ordner im Speicher
+  const { data: org, error: orgFehler } = await supabase.rpc('eigene_org_id')
+  if (orgFehler) throw orgFehler
+  const pfad = `${org as string}/${crypto.randomUUID()}.${endung}`
   const { error } = await supabase.storage
     .from(BILDER_BUCKET)
     .upload(pfad, datei, { contentType: datei.type || 'image/jpeg', upsert: false })

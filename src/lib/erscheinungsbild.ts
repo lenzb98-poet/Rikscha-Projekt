@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react'
 import { supabase } from './supabase'
+import { beiOrganisationswechsel, eigeneOrgId, gewaehlteOrganisation } from './organisation'
 
 /**
  * Das Erscheinungsbild der Organisation: Logo, Akzentfarbe und Name der App,
@@ -7,6 +8,9 @@ import { supabase } from './supabase'
  *
  * Alle Stellen lesen denselben Stand. Ändert die Administration etwas, wechselt
  * es überall sofort, ohne die Seite neu zu laden.
+ *
+ * Jede Organisation hat ihr eigenes Erscheinungsbild. Vor der Anmeldung gilt
+ * die gewählte, danach die eigene; bei einem Wechsel wird neu geladen.
  *
  * Der zuletzt bekannte Stand liegt im Browser. So stehen beim nächsten Öffnen
  * gleich das richtige Logo und die richtige Farbe da, statt kurz die alten
@@ -77,11 +81,13 @@ function logoAdresse(pfad: string | null): string | null {
   return supabase.storage.from(LOGO_BUCKET).getPublicUrl(pfad).data.publicUrl
 }
 
-/** Fragt das Erscheinungsbild einmal pro Seitenaufruf ab. */
+/** Fragt das Erscheinungsbild einmal ab - erneut nach einem Wechsel. */
 async function lade() {
   if (geladen) return
   geladen = true
-  const { data, error } = await supabase.rpc('erscheinungsbild')
+  const { data, error } = await supabase.rpc('erscheinungsbild', {
+    p_org_id: gewaehlteOrganisation()?.id ?? null,
+  })
   if (error) {
     // Datenbank noch ohne die Funktion oder offline: beim Bekannten bleiben
     geladen = false
@@ -97,6 +103,16 @@ async function lade() {
     name: zeile?.app_name ?? null,
   })
 }
+
+/** Nach einem Wechsel der Organisation oder der Anmeldung neu laden. */
+function neuLaden() {
+  geladen = false
+  if (hoerer.size > 0) void lade()
+}
+beiOrganisationswechsel(neuLaden)
+supabase.auth.onAuthStateChange((ereignis) => {
+  if (ereignis === 'SIGNED_IN' || ereignis === 'SIGNED_OUT') neuLaden()
+})
 
 function abonniere(h: () => void) {
   hoerer.add(h)
@@ -155,7 +171,8 @@ export function pruefeLogo(datei: File): string | null {
  */
 export async function logoHochladen(datei: File): Promise<void> {
   const endung = datei.type === 'image/png' ? 'png' : datei.type === 'image/webp' ? 'webp' : 'jpg'
-  const pfad = `logo-${Date.now()}.${endung}`
+  // Jede Organisation hat ihren eigenen Ordner im Speicher
+  const pfad = `${await eigeneOrgId()}/logo-${Date.now()}.${endung}`
 
   const { error: hoch } = await supabase.storage
     .from(LOGO_BUCKET)

@@ -38,10 +38,7 @@ Die Organisationen stehen in der Tabelle `organisationen` (Migration `0036`),
 gelesen vor der Anmeldung über `list_organisationen()`, die nur Name und
 Kürzel herausgibt. Die erste ist die Hospiz-Initiative Melle e.V. (`melle`).
 
-**Noch nicht getrennt sind die Daten:** Fahrten, Personen, Chat und
-Einstellungen gehören allen gemeinsam. Solange es nur eine Organisation gibt,
-macht das keinen Unterschied; vor einer zweiten bekommt jede Tabelle eine
-`org_id`.
+Die **Daten sind nach Organisation getrennt** (siehe *Trennung der Daten*).
 
 ## Betreiber
 
@@ -68,13 +65,38 @@ Der Betreiber sieht in den **Admin Einstellungen** ganz oben das Feld
 
 Die eigene Organisation lässt sich weder stilllegen noch löschen.
 
-**Sperre bis zur Trennung der Daten:** Personen, Fahrten, Chat, Heime, Rikschas
-und übernommene Zahlen tragen seit `0037` eine `org_id`, die übrigen
-Funktionen filtern aber noch nicht danach. Bis dahin gilt nur als
-freigeschaltet, wer zur **Stammorganisation** gehört (`current_app_user_id`,
-`is_admin`, `darf_verwalten`); die Anmeldung für andere Organisationen meldet
-„wird gerade eingerichtet“. Personenliste und Personenverwaltung zeigen schon
-jetzt nur die eigene Organisation, Namen sind je Organisation eindeutig.
+Personenliste und Personenverwaltung zeigen nur die eigene Organisation,
+Namen sind je Organisation eindeutig.
+
+## Trennung der Daten
+
+Seit Migration `0038` sieht und ändert jede Organisation nur ihre eigenen
+Daten. Zwei Schichten sorgen dafür:
+
+1. **Schreiben – ein Wächter an jeder Tabelle.** Die Trigger `org_schutz_*`
+   prüfen bei jedem Anlegen, Ändern und Löschen, ob der Eintrag zur eigenen
+   Organisation gehört – egal, welche Funktion schreibt. Auch Verweise werden
+   geprüft: Pilot:in und Rikscha eines Platzes, die beantwortete Nachricht, die
+   Nachricht einer Reaktion. Sonst: „Dieser Eintrag gehört zu einer anderen
+   Organisation.“ Nur das Löschen einer ganzen Organisation durch den Betreiber
+   schaltet den Wächter für diese eine Transaktion ab.
+2. **Lesen – Funktionen und Zeilenregeln.** Jede Lesefunktion filtert nach
+   `eigene_org_id()`, ebenso jede Zeilenregel (RLS). Die Zeilenregeln gelten
+   auch für die Live-Aktualisierung der Fahrten und des Chats.
+
+Außerdem je Organisation: **Logo, Akzentfarbe und Name** (Tabelle
+`einstellungen`, eine Zeile je Organisation; vor der Anmeldung gilt die
+gewählte, danach die eigene), **Rikschas und Heime** mit eigenen Namen,
+**Bilder** im Speicher unter `<org_id>/…` (ältere Dateien der
+Stammorganisation liegen weiter ohne Ordner) und die **Speichergrenze** für
+Chat-Bilder.
+
+Die technische Anmeldekennung trägt außerhalb der Stammorganisation das Kürzel
+(`vorname.nachname@kürzel.rikscha-fahrten.de`), damit gleiche Namen in
+verschiedenen Organisationen nicht zusammenstoßen.
+
+Eine **stillgelegte** Organisation gilt als nicht freigeschaltet: Auch wer
+schon angemeldet ist, sieht dann nichts mehr.
 
 ## Anmeldung
 

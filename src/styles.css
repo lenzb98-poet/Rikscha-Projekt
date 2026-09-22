@@ -1622,7 +1622,6 @@ th.tab__kreuz--still { color: var(--muted); font-style: italic; }
 .betreiber-feld__pfeil { font-size: 22px; color: var(--blau); flex-shrink: 0; }
 
 .betreiber__gesamt { font-size: 13px; }
-.betreiber__sperre { margin: 0 0 8px; }
 .betreiber__hinweis { word-break: break-word; }
 
 .org__text { gap: 4px; min-width: 0; flex: 1 1 260px; }

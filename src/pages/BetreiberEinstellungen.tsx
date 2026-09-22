@@ -259,12 +259,6 @@ export function BetreiberEinstellungen({ onZurueck }: { onZurueck: () => void })
           )}
         </div>
 
-        <p className="alert alert--warn betreiber__sperre">
-          Die Daten der Organisationen sind noch nicht voneinander getrennt. Bis dahin kann sich
-          nur die Stammorganisation anmelden; neue Organisationen lassen sich schon anlegen und
-          vorbereiten.
-        </p>
-
         {!orgs && !error && <p className="muted">Lade Organisationen …</p>}
 
         <ul className="vorlagen">
