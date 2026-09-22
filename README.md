@@ -98,6 +98,13 @@ verschiedenen Organisationen nicht zusammenstoßen.
 Eine **stillgelegte** Organisation gilt als nicht freigeschaltet: Auch wer
 schon angemeldet ist, sieht dann nichts mehr.
 
+**Aufrufrechte** (Migration `0039`): Ohne Anmeldung lassen sich nur die vier
+Funktionen aufrufen, die Auswahl- und Anmeldeseite brauchen –
+`list_organisationen`, `check_login_name`, `erscheinungsbild` und (für ältere
+Fassungen der App) `vereinslogo`. Neue Funktionen sind nicht mehr von selbst
+für alle aufrufbar; wer eine vor der Anmeldung braucht, gibt sie ausdrücklich
+frei.
+
 ## Anmeldung
 
 Angemeldet wird sich mit dem **vollen Namen**, nicht mit einer E-Mail-Adresse.
