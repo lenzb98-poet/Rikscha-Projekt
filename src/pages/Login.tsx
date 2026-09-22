@@ -9,8 +9,7 @@ import {
 } from '../lib/supabase'
 import { toGermanError } from '../lib/errors'
 import { PasswordField, validatePassword } from '../components/PasswordField'
-import { Logo, Moewe, RadelnLogo } from '../components/Marke'
-import { useVereinslogo } from '../lib/erscheinungsbild'
+import { Logo, RadelnLogo } from '../components/Marke'
 
 type Step = 'name' | 'password' | 'create-password' | 'confirm-mail'
 
@@ -26,8 +25,6 @@ export function Login() {
   const [busy, setBusy] = useState(false)
   // Die letzte Wahl ist beim nächsten Mal vorausgewählt
   const [bleiben, setBleiben] = useState(angemeldetBleiben)
-  // Die Möwe gehört zur Wortmarke des Vereins, zu einem eigenen Logo nicht
-  const eigenesLogo = useVereinslogo()
 
   function reset() {
     setStep('name')
@@ -122,7 +119,6 @@ export function Login() {
   return (
     <div className="auth">
       <div className="auth__inner">
-        {eigenesLogo === null && <Moewe className="marke-moewe" />}
         <Logo className="marke-logo" />
 
         <div className="auth__card">

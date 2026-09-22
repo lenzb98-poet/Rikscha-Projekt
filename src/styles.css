@@ -60,14 +60,6 @@ body {
   gap: 22px;
 }
 
-/* Kleines Motiv über der Wortmarke, leicht nach rechts versetzt */
-.marke-moewe {
-  width: 116px;
-  height: auto;
-  display: block;
-  margin: 0 0 -14px 54px;
-}
-
 .marke-logo {
   width: 100%;
   max-width: 340px;
@@ -80,7 +72,7 @@ body {
 }
 
 /* --- Logo in den Admin Einstellungen ------------------------------------- */
-/* Vorschau auf demselben Blau wie Leiste und Anmeldeseite */
+/* Vorschau auf derselben Akzentfarbe wie Leiste und Anmeldeseite */
 .logo-vorschau {
   display: flex;
   align-items: center;
@@ -91,6 +83,7 @@ body {
   border-radius: 10px;
   background: var(--blau);
 }
+.logo-vorschau__leer { color: rgba(255, 255, 255, 0.85); font-size: 14px; }
 .logo-vorschau img { max-width: 100%; max-height: 80px; object-fit: contain; display: block; }
 .logo-knoepfe { display: flex; flex-wrap: wrap; gap: 8px; }
 .logo-datei { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }

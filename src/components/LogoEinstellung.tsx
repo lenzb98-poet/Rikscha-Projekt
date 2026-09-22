@@ -4,7 +4,8 @@ import { logoEntfernen, logoHochladen, pruefeLogo, useVereinslogo } from '../lib
 import { toGermanError } from '../lib/errors'
 
 /**
- * Das Logo der Organisation hochladen oder zum Standard zurückkehren.
+ * Das Logo der Organisation hochladen oder wieder entfernen. Ohne Logo bleibt
+ * der Platz in der Leiste und auf der Anmeldeseite leer.
  *
  * Die Vorschau steht auf derselben Akzentfarbe wie die Leiste und die Anmeldeseite,
  * damit gleich zu sehen ist, ob das Logo dort lesbar ist.
@@ -42,12 +43,13 @@ export function LogoEinstellung() {
   }
 
   async function zuruecksetzen() {
+    if (!confirm('Logo entfernen? Die Datei wird gelöscht.')) return
     setError(null)
     setHinweis(null)
     setBusy(true)
     try {
       await logoEntfernen()
-      setHinweis('Das Standard-Logo ist wiederhergestellt.')
+      setHinweis('Das Logo ist entfernt.')
     } catch (err) {
       setError(toGermanError(err))
     } finally {
@@ -61,11 +63,15 @@ export function LogoEinstellung() {
       <p className="muted card__text">
         Erscheint oben links in der Leiste und auf der Anmeldeseite, jeweils auf der Akzentfarbe.
         Am besten eignet sich eine helle Fassung mit durchsichtigem Hintergrund (PNG), höchstens
-        2 MB.
+        2 MB. Ohne Logo bleibt der Platz leer.
       </p>
 
       <div className="logo-vorschau">
-        <Logo />
+        {eigenes ? (
+          <Logo />
+        ) : (
+          <span className="logo-vorschau__leer">Noch kein Logo hochgeladen</span>
+        )}
       </div>
 
       {hinweis && <p className="alert alert--ok">{hinweis}</p>}
@@ -86,7 +92,7 @@ export function LogoEinstellung() {
         </button>
         {eigenes && (
           <button className="btn btn--ghost" onClick={zuruecksetzen} disabled={busy}>
-            Standard-Logo verwenden
+            Logo entfernen
           </button>
         )}
       </div>

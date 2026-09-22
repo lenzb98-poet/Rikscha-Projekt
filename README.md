@@ -338,8 +338,8 @@ Offline funktioniert die App nicht – dafür wäre ein Service Worker nötig.
 Die Oberfläche folgt dem Auftritt des Vereins:
 
 - Markenfarbe `#245892`, aus dem Hintergrundbild der Website entnommen
-- Wortmarke und Möwe liegen als `src/assets/logo.png` und `src/assets/moewe.png`
-- Das Logo ist weiß und steht nur auf blauem Grund
+- Die weiße Wortmarke des Vereins liegt als Vorlage unter `src/assets/logo.png`;
+  angezeigt wird sie nur, wenn sie in den Admin Einstellungen hochgeladen ist
 - Der Knopf zum Chat trägt das Grün von WhatsApp (`#25d366`) mit dunkler
   Schrift: Weiß käme nur auf 1,98:1 Kontrast, dunkel erreicht 7,46:1
 
@@ -348,10 +348,10 @@ Farben sind als CSS-Variablen in `src/styles.css` unter `:root` gesammelt.
 ### Eigenes Logo
 
 In den **Admin Einstellungen** lädt die Administration das Logo der
-Organisation hoch (PNG, JPG oder WebP, höchstens 2 MB). Es ersetzt die
-Wortmarke oben links in der Leiste und auf der Anmeldeseite; die Möwe
-erscheint dann nicht mehr. „Standard-Logo verwenden" stellt die Wortmarke
-wieder her.
+Organisation hoch (PNG, JPG oder WebP, höchstens 2 MB). Es erscheint oben
+links in der Leiste und auf der Anmeldeseite. **Ohne hochgeladenes Logo bleibt
+der Platz leer** – die App bringt kein eigenes mit. „Logo entfernen" löscht es
+wieder.
 
 Das Logo liegt im Speicherort `vereinslogo`, der Pfad in der Tabelle
 `einstellungen` (Migration `0032`). Beides ist öffentlich lesbar, weil die

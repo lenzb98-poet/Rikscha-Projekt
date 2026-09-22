@@ -141,7 +141,7 @@ export async function logoHochladen(datei: File): Promise<void> {
   await entferneDatei(alt as string | null)
 }
 
-/** Zurück zum Standard-Logo. */
+/** Entfernt das Logo; danach bleibt der Platz leer. */
 export async function logoEntfernen(): Promise<void> {
   const { data: alt, error } = await supabase.rpc('vereinslogo_setzen', { p_pfad: null })
   if (error) throw error
