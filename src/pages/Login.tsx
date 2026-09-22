@@ -11,6 +11,7 @@ import { toGermanError } from '../lib/errors'
 import { PasswordField, validatePassword } from '../components/PasswordField'
 import { Logo, RadelnLogo } from '../components/Marke'
 import { STANDARDNAME, useAppName } from '../lib/erscheinungsbild'
+import { organisationWechseln, useOrganisation } from '../lib/organisation'
 
 type Step = 'name' | 'password' | 'create-password' | 'confirm-mail'
 
@@ -27,6 +28,7 @@ export function Login() {
   // Die letzte Wahl ist beim nächsten Mal vorausgewählt
   const [bleiben, setBleiben] = useState(angemeldetBleiben)
   const appName = useAppName()
+  const organisation = useOrganisation()
 
   function reset() {
     setStep('name')
@@ -128,6 +130,14 @@ export function Login() {
             <RadelnLogo className="auth__radeln" />
             <h1>{appName ?? STANDARDNAME}</h1>
             <p className="auth__sub">Anmeldung für Fahrer:innen und Koordination</p>
+            {organisation && (
+              <p className="auth__org">
+                <span>{organisation.name}</span>
+                <button type="button" className="btn btn--link" onClick={organisationWechseln}>
+                  wechseln
+                </button>
+              </p>
+            )}
           </header>
 
         {!isSupabaseConfigured && (

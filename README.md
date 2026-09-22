@@ -23,6 +23,26 @@ Für die Veröffentlichung müssen unter *Settings → Secrets and variables →
 Actions* die Werte `VITE_SUPABASE_URL` und `VITE_SUPABASE_ANON_KEY` hinterlegt
 sein; *Settings → Pages → Source* steht auf „GitHub Actions".
 
+## Organisation wählen
+
+Vor der Anmeldung steht eine **Auswahl der Organisation**: oben das Logo von
+„Radeln ohne Alter", darunter alle Organisationen, die die App nutzen. Ein Tipp
+führt zur Anmeldung dieser Organisation. Die Wahl merkt sich der Browser; auf
+der Anmeldeseite lässt sie sich über *wechseln* ändern.
+
+Ein Link mit `?org=kürzel` (etwa `…/?org=melle`) wählt die Organisation gleich
+aus und überspringt die Liste – praktisch, um Pilot:innen den direkten Weg zur
+Anmeldung zu schicken.
+
+Die Organisationen stehen in der Tabelle `organisationen` (Migration `0036`),
+gelesen vor der Anmeldung über `list_organisationen()`, die nur Name und
+Kürzel herausgibt. Die erste ist die Hospiz-Initiative Melle e.V. (`melle`).
+
+**Noch nicht getrennt sind die Daten:** Fahrten, Personen, Chat und
+Einstellungen gehören allen gemeinsam. Solange es nur eine Organisation gibt,
+macht das keinen Unterschied; vor einer zweiten bekommt jede Tabelle eine
+`org_id`.
+
 ## Anmeldung
 
 Angemeldet wird sich mit dem **vollen Namen**, nicht mit einer E-Mail-Adresse.

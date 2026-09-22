@@ -1559,3 +1559,43 @@ th.tab__kreuz--still { color: var(--muted); font-style: italic; }
 /* --- Name der App in den Admin Einstellungen ----------------------------- */
 .hint.appname__zaehler { margin: 0; text-align: right; }
 .appname__knoepfe { margin-top: 16px; }
+
+/* --- Auswahl der Organisation vor der Anmeldung -------------------------- */
+.orgwahl__logo { width: 168px; height: auto; display: block; }
+.orgwahl { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.orgwahl__eintrag {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--card);
+  color: var(--text);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+.orgwahl__eintrag:hover { border-color: var(--blau); background: var(--blau-zart); }
+.orgwahl__eintrag:focus-visible { outline: 2px solid var(--blau); outline-offset: 2px; }
+.orgwahl__pfeil { color: var(--blau); font-size: 20px; flex-shrink: 0; }
+.orgwahl__hinweis { margin: 12px 0 16px; }
+.orgwahl__lade { text-align: center; }
+
+/* Gewählte Organisation auf der Anmeldekarte, mit Wechsel-Link */
+.auth__org {
+  margin: 12px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+.auth__org .btn--link { padding: 0; font-size: 13px; }
