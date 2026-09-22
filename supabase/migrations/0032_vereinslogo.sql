@@ -105,4 +105,8 @@ begin
 end;
 $$;
 
+-- Supabase gibt neuen Funktionen von selbst auch anon das Ausführrecht. Die
+-- Funktion wiese Nicht-Angemeldete zwar ab, aufrufbar sein muss sie für sie
+-- aber gar nicht erst.
+revoke execute on function public.vereinslogo_setzen(text) from public, anon;
 grant execute on function public.vereinslogo_setzen(text) to authenticated;
