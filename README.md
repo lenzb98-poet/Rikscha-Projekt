@@ -193,8 +193,7 @@ Fahrgäste dabei waren und **welche Rikscha** sie hatte.
 Die **Fahrzeit wird in Stunden erfasst** (2,5 für zweieinhalb), wie im
 bisherigen Fahrtenbuch. Gespeichert wird weiterhin in Minuten – die Umrechnung
 passiert bei der Eingabe, sodass Auswertung und vorhandene Daten unverändert
-bleiben. Zur Auswahl stehen die
-vier Rikschas des Vereins: **Fritz, Fred, Liese und Lotte**.
+bleiben. Zur Auswahl stehen die Rikschas im Dienst (siehe *Rikschas verwalten*).
 
 Es genügt, **einzelne Angaben** zu machen und zu speichern – die übrigen können
 später folgen. Bereits Eingetragenes bleibt stehen; ein ausgefülltes Feld
@@ -206,12 +205,37 @@ abgeschlossen. Der Dialog nennt, wie lange noch Zeit bleibt; der Zeitpunkt kommt
 aus der Datenbank, damit er nicht von der Zustandsgrenze abweicht. Nach Ablauf
 lässt sich weiterhin nachtragen.
 
+### Rikschas verwalten
+
+Die Rikschas stehen in der Tabelle `rikschas` (Migration `0034`) und werden in
+den **Admin Einstellungen** gepflegt – nur von der Administration.
+
+- **Anlegen / Bearbeiten**: Name, höchstens 40 Zeichen, jeder Name nur einmal.
+- **Stilllegen**: Die Rikscha steht beim Nachtragen nicht mehr zur Wahl, alle
+  bisherigen Einträge bleiben. Jederzeit mit *Wieder in Dienst* umkehrbar. Ein
+  Platz, der schon eine stillgelegte Rikscha trägt, behält sie.
+- **Löschen**: endgültig, mit drei Bestätigungen – die Unterweisung mit den
+  Zahlen dieser Rikscha lesen und abhaken, den Namen eintippen, zuletzt
+  *Endgültig löschen*. Den Namen prüft auch die Datenbank
+  (`rikscha_loeschen`). Die betroffenen Einträge behalten Kilometer, Dauer und
+  Fahrgäste, stehen im Fahrtenbuch unter „gelöscht" und gelten weiter als
+  vollständig (`ride_slots.rikscha_entfernt`) – sonst müssten Pilot:innen alte
+  Fahrten erneut nachtragen.
+
+Bis Migration `0034` waren die vier Rikschas der feste Datentyp `rikscha_name`.
+Die Migration hat Fritz, Fred, Liese und Lotte samt allen Zuordnungen
+übernommen und den Datentyp danach entfernt.
+
 ## Fahrtenbuch und Statistik
 
 Der Knopf **Fahrtenbuch / Statistik** führt zu einer Tabelle im gewohnten
 Aufbau:
 
-| Nr. | Datum | Fahrer / Fahrerin | Fritz · Fred · Liese · Lotte | Passagiere | Gefahrene KM | Dauer / Zeit | Wo | Infotext |
+| Nr. | Datum | Fahrer / Fahrerin | je Rikscha eine Spalte | Passagiere | Gefahrene KM | Dauer / Zeit | Wo | Infotext |
+
+Die Rikscha-Spalten kommen aus der Datenbank, stillgelegte stehen blasser mit
+dabei. Gibt es Einträge, deren Rikscha gelöscht wurde, kommt eine Spalte
+**gelöscht** hinzu.
 
 **Jede gefahrene Rikscha steht einzeln.** Fahren zwei Personen gemeinsam, gibt
 es zwei Zeilen mit demselben Datum. Die gefahrene Rikscha wird mit einem **X**
