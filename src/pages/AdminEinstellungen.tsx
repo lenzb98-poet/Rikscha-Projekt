@@ -2,13 +2,14 @@ import { useEffect, useState } from 'react'
 import { listUsers, raeumeBildspeicherAuf, type Rolle, type TeamMember } from '../lib/supabase'
 import { toGermanError } from '../lib/errors'
 import { HeimVorlagen } from '../components/HeimVorlagen'
+import { LogoEinstellung } from '../components/LogoEinstellung'
 
 /**
  * Die Verwaltungsseite: alles, was die Leitung betrifft, an einer Stelle.
  *
- * Bewusst keine neuen Einstellungen in der Datenbank - die Seite fasst
- * zusammen, was es schon gibt: den Stand der Zugänge, wer was darf und die
- * Wartungsaufgaben, die sonst nirgends sichtbar sind.
+ * Die Seite fasst zusammen, was es schon gibt: den Stand der Zugänge, wer was
+ * darf und die Wartungsaufgaben, die sonst nirgends sichtbar sind. Dazu kommt
+ * das Erscheinungsbild der Organisation, zuerst das Logo.
  *
  * Nur für die Administration: die Koordination darf zwar fast dasselbe, diese
  * Seite bleibt aber der Administration vorbehalten.
@@ -84,6 +85,8 @@ export function AdminEinstellungen({ onZurueck }: Props) {
 
       {hinweis && <p className="alert alert--ok">{hinweis}</p>}
       {error && <p className="alert alert--error">{error}</p>}
+
+      <LogoEinstellung />
 
       <section className="card">
         <h3>Zugänge</h3>

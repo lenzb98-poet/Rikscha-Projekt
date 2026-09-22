@@ -345,6 +345,20 @@ Die Oberfläche folgt dem Auftritt des Vereins:
 
 Farben sind als CSS-Variablen in `src/styles.css` unter `:root` gesammelt.
 
+### Eigenes Logo
+
+In den **Admin Einstellungen** lädt die Administration das Logo der
+Organisation hoch (PNG, JPG oder WebP, höchstens 2 MB). Es ersetzt die
+Wortmarke oben links in der Leiste und auf der Anmeldeseite; die Möwe
+erscheint dann nicht mehr. „Standard-Logo verwenden" stellt die Wortmarke
+wieder her.
+
+Das Logo liegt im Speicherort `vereinslogo`, der Pfad in der Tabelle
+`einstellungen` (Migration `0032`). Beides ist öffentlich lesbar, weil die
+Anmeldeseite das Logo vor der Anmeldung zeigt; hochladen und ändern darf nur
+die Administration. SVG ist ausgeschlossen, weil solche Dateien Skripte
+enthalten können.
+
 ## Fehleranzeige
 
 Eine Start-Diagnose in `index.html` läuft vor der App und fängt ab, was das

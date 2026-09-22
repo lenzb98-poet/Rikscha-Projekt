@@ -20,5 +20,9 @@ export function toGermanError(error: unknown): string {
   if (m.includes('rate limit') || m.includes('too many')) return 'Zu viele Versuche. Bitte warte einen Moment.'
   if (m.includes('failed to fetch') || m.includes('networkerror'))
     return 'Keine Verbindung zum Server. Bitte Internetverbindung prüfen.'
+  if (m.includes('bucket not found'))
+    return 'Der Speicherort fehlt noch. Bitte die neueste Migration in Supabase ausführen.'
+  if (m.includes('row-level security'))
+    return 'Dafür fehlt dir die Berechtigung.'
   return message
 }
