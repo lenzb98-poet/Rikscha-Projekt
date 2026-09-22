@@ -49,8 +49,6 @@ export function Chat({ onZurueck, darfVerwalten }: Props) {
   const [antwortAuf, setAntwortAuf] = useState<ChatNachricht | null>(null)
   /** Nachricht, für die gerade die Zeichenauswahl offen steht. */
   const [reaktionFuer, setReaktionFuer] = useState<string | null>(null)
-  /** Welche Namensliste gerade offen steht: Nachricht und Zeichen. */
-  const [namenFuer, setNamenFuer] = useState<{ id: string; emoji: string } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const dateiRef = useRef<HTMLInputElement>(null)
@@ -376,14 +374,7 @@ export function Chat({ onZurueck, darfVerwalten }: Props) {
                         <button
                           key={r.emoji}
                           className={r.ist_meine ? 'reaktion reaktion--meine' : 'reaktion'}
-                          // Antippen zeigt, wer reagiert hat - zum Setzen oder
-                          // Zurücknehmen der eigenen Reaktion dient "Reagieren"
-                          // mit derselben Zeichenauswahl.
-                          onClick={() =>
-                            setNamenFuer((f) =>
-                              f?.id === n.id && f.emoji === r.emoji ? null : { id: n.id, emoji: r.emoji },
-                            )
-                          }
+                          onClick={() => handleReaktion(n.id, r.emoji)}
                         >
                           <span aria-hidden="true">{r.emoji}</span> {r.anzahl}
                         </button>
@@ -391,12 +382,14 @@ export function Chat({ onZurueck, darfVerwalten }: Props) {
                     </div>
                   )}
 
-                  {namenFuer?.id === n.id && (
-                    <p className="reaktion__namen">
-                      <span aria-hidden="true">{namenFuer.emoji}</span>{' '}
-                      {n.reaktionen.find((r) => r.emoji === namenFuer.emoji)?.namen}
+                  {/* Wer reagiert hat, steht immer da - auf dem Handy gibt es
+                      für ein title-Attribut keinen Hover, also keine andere
+                      verlässliche Stelle dafür. */}
+                  {n.reaktionen.map((r) => (
+                    <p key={r.emoji} className="reaktion__namen">
+                      <span aria-hidden="true">{r.emoji}</span> {r.namen}
                     </p>
-                  )}
+                  ))}
 
                   {reaktionFuer === n.id && (
                     <div className="reaktionswahl">
@@ -417,10 +410,7 @@ export function Chat({ onZurueck, darfVerwalten }: Props) {
                     <span>{uhrzeit(datum)}</span>
                     <button
                       className="blase__aktion"
-                      onClick={() => {
-                        setReaktionFuer((f) => (f === n.id ? null : n.id))
-                        setNamenFuer(null)
-                      }}
+                      onClick={() => setReaktionFuer((f) => (f === n.id ? null : n.id))}
                       title="Mit einem Zeichen reagieren"
                     >
                       Reagieren

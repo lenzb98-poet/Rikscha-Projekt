@@ -458,16 +458,17 @@ body {
 /* Die eigene hervorheben, damit man sieht, wo man selbst mitgezählt wird */
 .reaktion--meine { border-color: var(--blau); background: var(--z-offen-bg); font-weight: 700; }
 
-/* Wer mit diesem Zeichen reagiert hat - erscheint nach Antippen der Reaktion.
-   Auf dem Handy gibt es keinen Hover für den title-Text, daher als eigene,
-   antippbare Zeile statt als Tooltip. */
+/* Wer mit welchem Zeichen reagiert hat - steht immer da, nicht erst auf
+   Antippen: Auf dem Handy gibt es für ein title-Attribut keinen Hover, das
+   wäre sonst gar nicht zu sehen gewesen. Je Zeichen eine Zeile. */
 .reaktion__namen {
-  margin: 4px 0 0;
+  margin: 3px 0 0;
   font-size: 12px;
   line-height: 1.4;
   color: inherit;
   opacity: 0.85;
 }
+.reaktion__namen + .reaktion__namen { margin-top: 1px; }
 
 /* Auswahlleiste, erscheint auf "Reagieren" */
 .reaktionswahl {
