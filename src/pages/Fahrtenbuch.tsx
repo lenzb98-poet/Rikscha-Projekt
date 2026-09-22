@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
 import {
-  RIKSCHAS,
   deleteUebernahme,
   formatiereKomma,
   formatiereZahl,
@@ -14,6 +13,7 @@ import {
   type Platz,
   type Uebernahme,
 } from '../lib/fahrten'
+import { listRikschas, type Rikscha } from '../lib/rikschas'
 import { toGermanError } from '../lib/errors'
 import { UebernahmeDialog } from '../components/UebernahmeDialog'
 
@@ -80,6 +80,7 @@ export function Fahrtenbuch({ onZurueck }: { onZurueck: () => void }) {
   const [error, setError] = useState<string | null>(null)
   const [hinweis, setHinweis] = useState<string | null>(null)
   const [dialog, setDialog] = useState<{ offen: boolean; eintrag?: Uebernahme } | null>(null)
+  const [rikschas, setRikschas] = useState<Rikscha[]>([])
 
   const laden = useCallback(() => {
     listRides('alle')
@@ -88,6 +89,9 @@ export function Fahrtenbuch({ onZurueck }: { onZurueck: () => void }) {
     listUebernahmen()
       .then(setUebernahmen)
       .catch(() => setUebernahmen([]))
+    listRikschas()
+      .then(setRikschas)
+      .catch((err) => setError(toGermanError(err)))
   }, [])
 
   useEffect(() => {
@@ -95,9 +99,9 @@ export function Fahrtenbuch({ onZurueck }: { onZurueck: () => void }) {
     return watchRides(laden)
   }, [laden])
 
-  async function speichern(slotId: string, werte: Werte, rikscha: Platz['rikscha']) {
+  async function speichern(slotId: string, werte: Werte, rikschaId: Platz['rikscha_id']) {
     try {
-      await slotReport(slotId, { ...werte, rikscha: rikscha ?? '' })
+      await slotReport(slotId, { ...werte, rikscha_id: rikschaId ?? '' })
       laden()
     } catch (err) {
       setError(toGermanError(err))
@@ -125,6 +129,29 @@ export function Fahrtenbuch({ onZurueck }: { onZurueck: () => void }) {
       ? belegt.map((platz) => ({ fahrt, platz }))
       : [{ fahrt, platz: null }]
   })
+
+  // Je Rikscha eine Spalte, auch für stillgelegte - ihre alten Einträge
+  // sollen sichtbar bleiben. Einträge, deren Rikscha gelöscht wurde, bekommen
+  // eine eigene Spalte, aber nur, wenn es solche gibt.
+  const mitGeloeschten = zeilen.some(({ platz }) => platz?.rikscha_entfernt)
+  const spalten: { id: string; name: string; titel?: string }[] = [
+    ...rikschas.map((r) => ({
+      id: r.id,
+      name: r.name,
+      titel: r.aktiv ? undefined : 'stillgelegt',
+    })),
+    ...(mitGeloeschten
+      ? [{ id: 'geloescht', name: 'gelöscht', titel: 'Die eingetragene Rikscha wurde gelöscht' }]
+      : []),
+  ]
+  // Ohne jede Rikscha bleibt eine leere Spalte stehen, damit die Tabelle hält
+  const rikschaSpalten = Math.max(spalten.length, 1)
+
+  function kreuz(platz: Platz | null, spalte: string): string {
+    if (!platz) return ''
+    if (spalte === 'geloescht') return platz.rikscha_entfernt ? 'X' : ''
+    return platz.rikscha_id === spalte ? 'X' : ''
+  }
 
   return (
     <>
@@ -155,7 +182,7 @@ export function Fahrtenbuch({ onZurueck }: { onZurueck: () => void }) {
                   <th rowSpan={2} className="tab__fix">Nr.</th>
                   <th rowSpan={2}>Datum</th>
                   <th rowSpan={2}>Fahrer / Fahrerin</th>
-                  <th colSpan={4} className="tab__gruppe">Rikscha</th>
+                  <th colSpan={rikschaSpalten} className="tab__gruppe">Rikscha</th>
                   <th rowSpan={2} className="tab__zahl">Passagiere</th>
                   <th rowSpan={2} className="tab__zahl">Gefahrene KM</th>
                   <th rowSpan={2} className="tab__zahl">Dauer / Zeit</th>
@@ -163,11 +190,16 @@ export function Fahrtenbuch({ onZurueck }: { onZurueck: () => void }) {
                   <th rowSpan={2}>Infotext</th>
                 </tr>
                 <tr>
-                  {RIKSCHAS.map((r) => (
-                    <th key={r} className="tab__kreuz">
-                      {r}
+                  {spalten.map((r) => (
+                    <th
+                      key={r.id}
+                      className={r.titel ? 'tab__kreuz tab__kreuz--still' : 'tab__kreuz'}
+                      title={r.titel}
+                    >
+                      {r.name}
                     </th>
                   ))}
+                  {spalten.length === 0 && <th className="tab__kreuz">–</th>}
                 </tr>
               </thead>
 
@@ -178,8 +210,8 @@ export function Fahrtenbuch({ onZurueck }: { onZurueck: () => void }) {
                     <td className="tab__fix">–</td>
                     <td>–</td>
                     <td>{u.bezeichnung}</td>
-                    {RIKSCHAS.map((r) => (
-                      <td key={r} className="tab__kreuz" />
+                    {Array.from({ length: rikschaSpalten }, (_, k) => (
+                      <td key={k} className="tab__kreuz" />
                     ))}
                     <td className="tab__zahl">{formatiereZahl(u.personen)}</td>
                     <td className="tab__zahl">{formatiereKomma(Number(u.km))}</td>
@@ -223,18 +255,19 @@ export function Fahrtenbuch({ onZurueck }: { onZurueck: () => void }) {
                       <td>{datum(fahrt.starts_at)}</td>
                       <td>{platz?.pilot_name ?? <span className="tab__leer">nicht besetzt</span>}</td>
 
-                      {RIKSCHAS.map((r) => (
-                        <td key={r} className="tab__kreuz">
-                          {platz?.rikscha === r ? 'X' : ''}
+                      {spalten.map((r) => (
+                        <td key={r.id} className="tab__kreuz">
+                          {kreuz(platz, r.id)}
                         </td>
                       ))}
+                      {spalten.length === 0 && <td className="tab__kreuz" />}
 
                       <td className="tab__zahl">
                         {ziel ? (
                           <Zelle
                             wert={werte.personen}
                             onSpeichern={(neu) =>
-                              speichern(ziel.id, { ...werte, personen: neu }, ziel.rikscha)
+                              speichern(ziel.id, { ...werte, personen: neu }, ziel.rikscha_id)
                             }
                           />
                         ) : (
@@ -246,7 +279,7 @@ export function Fahrtenbuch({ onZurueck }: { onZurueck: () => void }) {
                           <Zelle
                             wert={werte.km}
                             onSpeichern={(neu) =>
-                              speichern(ziel.id, { ...werte, km: neu }, ziel.rikscha)
+                              speichern(ziel.id, { ...werte, km: neu }, ziel.rikscha_id)
                             }
                           />
                         ) : (
@@ -258,7 +291,7 @@ export function Fahrtenbuch({ onZurueck }: { onZurueck: () => void }) {
                           <Zelle
                             wert={werte.stunden}
                             onSpeichern={(neu) =>
-                              speichern(ziel.id, { ...werte, stunden: neu }, ziel.rikscha)
+                              speichern(ziel.id, { ...werte, stunden: neu }, ziel.rikscha_id)
                             }
                           />
                         ) : (
@@ -281,7 +314,7 @@ export function Fahrtenbuch({ onZurueck }: { onZurueck: () => void }) {
 
                 {zeilen.length === 0 && uebernahmen.length === 0 && (
                   <tr>
-                    <td colSpan={12} className="tab__leerzeile">
+                    <td colSpan={8 + rikschaSpalten} className="tab__leerzeile">
                       Noch keine Fahrten und keine übernommenen Zahlen.
                     </td>
                   </tr>
@@ -291,7 +324,7 @@ export function Fahrtenbuch({ onZurueck }: { onZurueck: () => void }) {
               <tfoot>
                 <tr>
                   <td className="tab__fix">Summe</td>
-                  <td colSpan={6}>
+                  <td colSpan={2 + rikschaSpalten}>
                     {formatiereZahl(zeilen.length)}{' '}
                     {zeilen.length === 1 ? 'Eintrag' : 'Einträge'}
                     {uebernahmen.length > 0 &&

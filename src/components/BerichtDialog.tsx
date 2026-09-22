@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   fehlendeAngaben,
   formatiereFrist,
@@ -7,12 +7,11 @@ import {
   platzVollstaendig,
   slotReport,
   verbleibendeFrist,
-  RIKSCHAS,
   type Bericht,
   type Fahrt,
   type Platz,
-  type RikschaName,
 } from '../lib/fahrten'
+import { listRikschas, type Rikscha } from '../lib/rikschas'
 import { toGermanError } from '../lib/errors'
 
 type Props = {
@@ -30,17 +29,31 @@ export function BerichtDialog({ fahrt, platz, onClose, onGespeichert }: Props) {
     km: platz.report_km !== null ? String(platz.report_km).replace('.', ',') : '',
     stunden: minutenAlsStunden(platz.report_minutes),
     personen: platz.report_passengers !== null ? String(platz.report_passengers) : '',
-    rikscha: platz.rikscha ?? '',
+    rikscha_id: platz.rikscha_id ?? '',
     bemerkung: '',
   })
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [rikschas, setRikschas] = useState<Rikscha[] | null>(null)
+
+  useEffect(() => {
+    listRikschas()
+      .then(setRikschas)
+      .catch((err) => setError(toGermanError(err)))
+  }, [])
+
+  // Zur Wahl stehen die Rikschas im Dienst - und die schon eingetragene, auch
+  // wenn sie inzwischen stillgelegt ist, damit sie nicht stillschweigend fehlt.
+  const auswahl = (rikschas ?? []).filter((r) => r.aktiv || r.id === platz.rikscha_id)
 
   function setze<K extends keyof Bericht>(feld: K, wert: Bericht[K]) {
     setWerte((w) => ({ ...w, [feld]: wert }))
   }
 
-  const gefuellt = [werte.km, werte.stunden, werte.personen, werte.rikscha].filter(
+  // Eine gelöschte Rikscha zählt als angegeben, sonst ließe sich der Platz
+  // nie mehr vervollständigen
+  const rikschaWert = werte.rikscha_id || (platz.rikscha_entfernt ? 'gelöscht' : '')
+  const gefuellt = [werte.km, werte.stunden, werte.personen, rikschaWert].filter(
     (w) => w.trim() !== '',
   )
   const mindestensEine = gefuellt.length > 0
@@ -121,17 +134,23 @@ export function BerichtDialog({ fahrt, platz, onClose, onGespeichert }: Props) {
             <div className="field__wrap">
               <select
                 id="bericht-rikscha"
-                value={werte.rikscha}
-                onChange={(e) => setze('rikscha', e.target.value as RikschaName | '')}
+                value={werte.rikscha_id}
+                onChange={(e) => setze('rikscha_id', e.target.value)}
+                disabled={rikschas === null}
               >
-                <option value="">Bitte auswählen</option>
-                {RIKSCHAS.map((r) => (
-                  <option key={r} value={r}>
-                    {r}
+                <option value="">{rikschas === null ? 'Lade …' : 'Bitte auswählen'}</option>
+                {auswahl.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.aktiv ? r.name : `${r.name} (stillgelegt)`}
                   </option>
                 ))}
               </select>
             </div>
+            {platz.rikscha_entfernt && !werte.rikscha_id && (
+              <span className="hint">
+                Die hier eingetragene Rikscha wurde inzwischen gelöscht. Du musst nichts nachtragen.
+              </span>
+            )}
           </label>
 
           <label className="field" htmlFor="bericht-km">

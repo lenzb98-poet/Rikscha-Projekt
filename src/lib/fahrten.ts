@@ -6,10 +6,6 @@ export type RideStatus = 'geplant' | 'abgesagt' | 'abgeschlossen'
 
 export type Pilot = { id: string; name: string }
 
-/** Die vier Rikschas des Vereins. */
-export const RIKSCHAS = ['Fritz', 'Fred', 'Liese', 'Lotte'] as const
-export type RikschaName = (typeof RIKSCHAS)[number]
-
 /** Ein einzeln buchbarer Rikscha-Platz einer Fahrt, mit eigener Nacherfassung. */
 export type Platz = {
   id: string
@@ -21,7 +17,12 @@ export type Platz = {
   report_minutes: number | null
   report_passengers: number | null
   report_bemerkung: string | null
-  rikscha: RikschaName | null
+  /** Die gefahrene Rikscha; die Liste steht in lib/rikschas.ts. */
+  rikscha_id: string | null
+  /** Ihr Name, zum Anzeigen. */
+  rikscha: string | null
+  /** Die eingetragene Rikscha wurde gelöscht; der Eintrag gilt trotzdem als vollständig. */
+  rikscha_entfernt: boolean
   report_at: string | null
 }
 export type Notiz = { id: string; name: string; body: string; created_at: string }
@@ -265,7 +266,8 @@ export type Bericht = {
   /** Eingabe in Stunden, etwa "2,5" – gespeichert wird in Minuten. */
   stunden: string
   personen: string
-  rikscha: RikschaName | ''
+  /** id der Rikscha, '' für keine Angabe. */
+  rikscha_id: string
   bemerkung: string
 }
 
@@ -294,7 +296,7 @@ export async function slotReport(slotId: string, b: Bericht): Promise<void> {
     p_km: zahl(b.km),
     p_minutes: stunden === null ? null : Math.round(stunden * 60),
     p_passengers: zahl(b.personen),
-    p_rikscha: b.rikscha || null,
+    p_rikscha_id: b.rikscha_id || null,
     p_bemerkung: bemerkung === '' ? null : bemerkung,
   })
   if (error) throw error
@@ -306,13 +308,18 @@ export function minutenAlsStunden(minuten: number | null): string {
   return String(Math.round((minuten / 60) * 100) / 100).replace('.', ',')
 }
 
+/** Eine gelöschte Rikscha zählt als angegeben - sonst gälten alte Fahrten wieder als offen. */
+export function rikschaAngegeben(p: Platz): boolean {
+  return p.rikscha_id !== null || p.rikscha_entfernt
+}
+
 /** Sind alle Angaben zu diesem Platz vorhanden? */
 export function platzVollstaendig(p: Platz): boolean {
   return (
     p.report_km !== null &&
     p.report_minutes !== null &&
     p.report_passengers !== null &&
-    p.rikscha !== null
+    rikschaAngegeben(p)
   )
 }
 
@@ -347,7 +354,7 @@ export function fehlendeAngaben(p: Platz): string[] {
   if (p.report_km === null) fehlt.push('Kilometer')
   if (p.report_minutes === null) fehlt.push('Dauer')
   if (p.report_passengers === null) fehlt.push('Fahrgäste')
-  if (p.rikscha === null) fehlt.push('Rikscha')
+  if (!rikschaAngegeben(p)) fehlt.push('Rikscha')
   return fehlt
 }
 

@@ -1431,6 +1431,8 @@ body {
   font-weight: 700;
   color: var(--blau-dunkel);
 }
+/* Stillgelegte oder gelöschte Rikscha: alte Einträge bleiben, blasser */
+th.tab__kreuz--still { color: var(--muted); font-style: italic; }
 .tab--buch tbody td { vertical-align: middle; }
 
 /* Breitere Ansicht für das Fahrtenbuch */
@@ -1512,3 +1514,44 @@ body {
   background: currentColor;
   opacity: 0.45;
 }
+
+/* --- Rikschas in den Admin Einstellungen --------------------------------- */
+.vorlage--still .vorlage__text > strong { color: var(--muted); }
+.rikscha__still {
+  margin-left: 8px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #f2f4f7;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Löschen: eigener, deutlich abgesetzter Bereich unter der Rikscha */
+.loeschen {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--error);
+  border-radius: 10px;
+  background: #fdf6f5;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.loeschen__schritt {
+  margin: 0;
+  color: var(--error);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.loeschen__titel { margin: 0; font-size: 15px; color: var(--text); }
+.loeschen__folgen { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+.loeschen__tipp { margin: 0; padding: 10px 12px; border-radius: 8px; background: var(--card); }
+.loeschen__tipp .btn--link { padding: 0; }
+.loeschen__letzte { margin: 0; font-size: 15px; }
+.loeschen .check { background: var(--card); }
+.loeschen__knoepfe { margin-left: 0; justify-content: flex-end; }

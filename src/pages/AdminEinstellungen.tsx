@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { listUsers, raeumeBildspeicherAuf, type Rolle, type TeamMember } from '../lib/supabase'
 import { toGermanError } from '../lib/errors'
 import { HeimVorlagen } from '../components/HeimVorlagen'
+import { RikschaVerwaltung } from '../components/RikschaVerwaltung'
 import { LogoEinstellung } from '../components/LogoEinstellung'
 import { AkzentfarbeEinstellung } from '../components/AkzentfarbeEinstellung'
 
@@ -142,6 +143,8 @@ export function AdminEinstellungen({ onZurueck }: Props) {
           ))}
         </ul>
       </section>
+
+      <RikschaVerwaltung />
 
       <HeimVorlagen />
 
