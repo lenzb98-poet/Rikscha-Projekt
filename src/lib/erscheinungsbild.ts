@@ -2,8 +2,8 @@ import { useSyncExternalStore } from 'react'
 import { supabase } from './supabase'
 
 /**
- * Das Erscheinungsbild der Organisation: Logo und Akzentfarbe, beide von der
- * Administration in den Admin Einstellungen festgelegt.
+ * Das Erscheinungsbild der Organisation: Logo, Akzentfarbe und Name der App,
+ * alle von der Administration in den Admin Einstellungen festgelegt.
  *
  * Alle Stellen lesen denselben Stand. Ändert die Administration etwas, wechselt
  * es überall sofort, ohne die Seite neu zu laden.
@@ -18,6 +18,9 @@ export const LOGO_TYPEN = ['image/png', 'image/jpeg', 'image/webp']
 
 /** Das Blau des Vereins - gilt, solange keine eigene Farbe gewählt ist. */
 export const STANDARDFARBE = '#245892'
+/** Name der App, solange kein eigener gewählt ist. */
+export const STANDARDNAME = 'Rikscha-Fahrten'
+export const NAME_MAX = 40
 /** Mindestkontrast für weiße Schrift auf der Akzentfarbe (WCAG AA). */
 export const MIN_KONTRAST = 4.5
 
@@ -27,33 +30,41 @@ const MERKEN = 'rikscha.erscheinungsbild'
 type Stand = {
   logo: string | null | undefined
   farbe: string | null | undefined
+  name: string | null | undefined
 }
 
 let stand: Stand = gemerkt()
 let geladen = false
 const hoerer = new Set<() => void>()
 
-// Die gemerkte Farbe gleich beim Start setzen, noch bevor React zeichnet
+// Die gemerkte Farbe und den Namen gleich beim Start setzen, noch bevor
+// React zeichnet
 wendeFarbeAn(stand.farbe ?? null)
+wendeNamenAn(stand.name ?? null)
 
 function gemerkt(): Stand {
   try {
     const roh = localStorage.getItem(MERKEN)
-    if (roh === null) return { logo: undefined, farbe: undefined }
-    const w = JSON.parse(roh) as { logo?: string | null; farbe?: string | null }
-    return { logo: w.logo ?? null, farbe: w.farbe ?? null }
+    if (roh === null) return { logo: undefined, farbe: undefined, name: undefined }
+    const w = JSON.parse(roh) as { logo?: string | null; farbe?: string | null; name?: string | null }
+    return { logo: w.logo ?? null, farbe: w.farbe ?? null, name: w.name ?? null }
   } catch {
-    return { logo: undefined, farbe: undefined }
+    return { logo: undefined, farbe: undefined, name: undefined }
   }
 }
 
 function setze(neu: Partial<Stand>) {
   stand = { ...stand, ...neu }
   if ('farbe' in neu) wendeFarbeAn(stand.farbe ?? null)
+  if ('name' in neu) wendeNamenAn(stand.name ?? null)
   try {
     localStorage.setItem(
       MERKEN,
-      JSON.stringify({ logo: stand.logo ?? null, farbe: stand.farbe ?? null }),
+      JSON.stringify({
+        logo: stand.logo ?? null,
+        farbe: stand.farbe ?? null,
+        name: stand.name ?? null,
+      }),
     )
   } catch {
     // Ohne Speicher wird das Erscheinungsbild eben bei jedem Öffnen neu erfragt
@@ -74,15 +85,16 @@ async function lade() {
   if (error) {
     // Datenbank noch ohne die Funktion oder offline: beim Bekannten bleiben
     geladen = false
-    setze({ logo: stand.logo ?? null, farbe: stand.farbe ?? null })
+    setze({ logo: stand.logo ?? null, farbe: stand.farbe ?? null, name: stand.name ?? null })
     return
   }
   const zeile = (Array.isArray(data) ? data[0] : data) as
-    | { logo_pfad: string | null; akzentfarbe: string | null }
+    | { logo_pfad: string | null; akzentfarbe: string | null; app_name?: string | null }
     | undefined
   setze({
     logo: logoAdresse(zeile?.logo_pfad ?? null),
     farbe: zeile?.akzentfarbe ?? null,
+    name: zeile?.app_name ?? null,
   })
 }
 
@@ -100,6 +112,26 @@ export function useVereinslogo(): string | null | undefined {
 /** Die eigene Akzentfarbe, null für das Standardblau, undefined solange unbekannt. */
 export function useAkzentfarbe(): string | null | undefined {
   return useSyncExternalStore(abonniere, () => stand.farbe)
+}
+
+/** Der eigene Name der App, null für „Rikscha-Fahrten“, undefined solange unbekannt. */
+export function useAppName(): string | null | undefined {
+  return useSyncExternalStore(abonniere, () => stand.name)
+}
+
+/* --- Name ---------------------------------------------------------------- */
+
+/** Speichert den Namen; null oder leer stellt „Rikscha-Fahrten“ wieder her. */
+export async function appNameSetzen(name: string | null): Promise<void> {
+  const { data, error } = await supabase.rpc('app_name_setzen', { p_name: name?.trim() || null })
+  if (error) throw error
+  setze({ name: (data as string | null) ?? null })
+}
+
+/** Der Browser-Tab trägt denselben Namen wie die Anmeldeseite. */
+function wendeNamenAn(name: string | null) {
+  if (typeof document === 'undefined') return
+  document.title = name ?? STANDARDNAME
 }
 
 /* --- Logo ---------------------------------------------------------------- */

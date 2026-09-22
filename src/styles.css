@@ -1555,3 +1555,7 @@ th.tab__kreuz--still { color: var(--muted); font-style: italic; }
 .loeschen__letzte { margin: 0; font-size: 15px; }
 .loeschen .check { background: var(--card); }
 .loeschen__knoepfe { margin-left: 0; justify-content: flex-end; }
+
+/* --- Name der App in den Admin Einstellungen ----------------------------- */
+.hint.appname__zaehler { margin: 0; text-align: right; }
+.appname__knoepfe { margin-top: 16px; }

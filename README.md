@@ -385,6 +385,18 @@ Anmeldeseite das Logo vor der Anmeldung zeigt; hochladen und ändern darf nur
 die Administration. SVG ist ausgeschlossen, weil solche Dateien Skripte
 enthalten können.
 
+### Name der App
+
+Ebenfalls in den **Admin Einstellungen** legt die Administration den Namen der
+App fest (höchstens 40 Zeichen). Er steht als Überschrift auf der
+Anmeldeseite und im Titel des Browser-Tabs; ohne eigenen Namen bleibt
+„Rikscha-Fahrten“. Gespeichert in `einstellungen.app_name` (Migration `0035`),
+gelesen über `erscheinungsbild()`.
+
+Der Name unter dem Symbol auf dem Startbildschirm kommt aus
+`manifest.webmanifest` und bleibt „Rikscha-Fahrten“: Das Handy liest ihn beim
+Installieren, bevor die App läuft.
+
 ### Akzentfarbe
 
 Ebenfalls in den **Admin Einstellungen** wählt die Administration die

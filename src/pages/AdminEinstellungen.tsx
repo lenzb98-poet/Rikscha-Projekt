@@ -3,6 +3,7 @@ import { listUsers, raeumeBildspeicherAuf, type Rolle, type TeamMember } from '.
 import { toGermanError } from '../lib/errors'
 import { HeimVorlagen } from '../components/HeimVorlagen'
 import { RikschaVerwaltung } from '../components/RikschaVerwaltung'
+import { AppNameEinstellung } from '../components/AppNameEinstellung'
 import { LogoEinstellung } from '../components/LogoEinstellung'
 import { AkzentfarbeEinstellung } from '../components/AkzentfarbeEinstellung'
 
@@ -11,7 +12,7 @@ import { AkzentfarbeEinstellung } from '../components/AkzentfarbeEinstellung'
  *
  * Die Seite fasst zusammen, was es schon gibt: den Stand der Zugänge, wer was
  * darf und die Wartungsaufgaben, die sonst nirgends sichtbar sind. Dazu kommt
- * das Erscheinungsbild der Organisation: Logo und Akzentfarbe.
+ * das Erscheinungsbild der Organisation: Name, Logo und Akzentfarbe.
  *
  * Nur für die Administration: die Koordination darf zwar fast dasselbe, diese
  * Seite bleibt aber der Administration vorbehalten.
@@ -88,6 +89,7 @@ export function AdminEinstellungen({ onZurueck }: Props) {
       {hinweis && <p className="alert alert--ok">{hinweis}</p>}
       {error && <p className="alert alert--error">{error}</p>}
 
+      <AppNameEinstellung />
       <LogoEinstellung />
       <AkzentfarbeEinstellung />
 

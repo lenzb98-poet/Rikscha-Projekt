@@ -10,6 +10,7 @@ import {
 import { toGermanError } from '../lib/errors'
 import { PasswordField, validatePassword } from '../components/PasswordField'
 import { Logo, RadelnLogo } from '../components/Marke'
+import { STANDARDNAME, useAppName } from '../lib/erscheinungsbild'
 
 type Step = 'name' | 'password' | 'create-password' | 'confirm-mail'
 
@@ -25,6 +26,7 @@ export function Login() {
   const [busy, setBusy] = useState(false)
   // Die letzte Wahl ist beim nächsten Mal vorausgewählt
   const [bleiben, setBleiben] = useState(angemeldetBleiben)
+  const appName = useAppName()
 
   function reset() {
     setStep('name')
@@ -124,7 +126,7 @@ export function Login() {
         <div className="auth__card">
           <header className="auth__header">
             <RadelnLogo className="auth__radeln" />
-            <h1>Rikscha-Fahrten</h1>
+            <h1>{appName ?? STANDARDNAME}</h1>
             <p className="auth__sub">Anmeldung für Fahrer:innen und Koordination</p>
           </header>
 
