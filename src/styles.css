@@ -66,7 +66,27 @@ body {
   max-width: 340px;
   height: auto;
   display: block;
+  /* Ein hochgeladenes, eher quadratisches Logo soll die Karte nicht nach
+     unten schieben */
+  max-height: 160px;
+  object-fit: contain;
 }
+
+/* --- Logo in den Admin Einstellungen ------------------------------------- */
+/* Vorschau auf demselben Blau wie Leiste und Anmeldeseite */
+.logo-vorschau {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 96px;
+  margin: 0 0 16px;
+  padding: 16px;
+  border-radius: 10px;
+  background: var(--blau);
+}
+.logo-vorschau img { max-width: 100%; max-height: 80px; object-fit: contain; display: block; }
+.logo-knoepfe { display: flex; flex-wrap: wrap; gap: 8px; }
+.logo-datei { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 
 .auth__card {
   width: 100%;
