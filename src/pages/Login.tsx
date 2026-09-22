@@ -42,7 +42,7 @@ export function Login() {
       const check = await checkLoginName(name)
       if (!check.found || !check.login_email) {
         setError(
-          'Dieser Name ist nicht hinterlegt. Bitte achte auf die genaue Schreibweise oder wende dich an die Koordination der Hospizinitiative Melle.',
+          'Dieser Name ist nicht hinterlegt. Bitte achte auf die genaue Schreibweise oder wende dich an eure Koordination.',
         )
         return
       }

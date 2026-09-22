@@ -279,7 +279,7 @@ export function FahrtDialog({ fahrt, onClose, onGespeichert }: Props) {
                     id="fahrt-ort"
                     type="text"
                     value={werte.location}
-                    placeholder="z. B. Seniorenheim Melle, Haupteingang"
+                    placeholder="z. B. Seniorenzentrum am Park, Haupteingang"
                     onChange={(e) => setze('location', e.target.value)}
                     required
                   />

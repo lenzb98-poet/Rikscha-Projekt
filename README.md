@@ -343,7 +343,9 @@ ein `DELETE` in der Datenbank die Datei im Speicher nicht mit entfernt.
 ## Als App auf dem Handy
 
 Die Seite lässt sich zum Startbildschirm hinzufügen und startet dann ohne
-Browserleiste, mit dem Logo von „Radeln ohne Alter – Melle" als Symbol. Auf der
+Browserleiste, unter dem Namen **Rikscha-Fahrten** und mit dem Logo des
+Projekts „Radeln ohne Alter" als Symbol (ohne Ortsnamen, für alle Standorte
+gleich). Auf der
 Startseite steht dafür der Knopf **App auf dem Handy einrichten** mit einer
 Anleitung für iPhone und Android.
 

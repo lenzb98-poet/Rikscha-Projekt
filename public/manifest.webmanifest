@@ -1,7 +1,7 @@
 {
-  "name": "Rikscha-Fahrten – Hospiz-Initiative Melle",
-  "short_name": "Rikscha Melle",
-  "description": "Fahrten und Pilot:innen der Aktion Radeln ohne Alter in Melle verwalten.",
+  "name": "Rikscha-Fahrten",
+  "short_name": "Rikscha-Fahrten",
+  "description": "Fahrten und Pilot:innen der Aktion Radeln ohne Alter verwalten.",
   "lang": "de",
   "dir": "ltr",
   "start_url": "./",

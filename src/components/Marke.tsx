@@ -11,7 +11,7 @@ export function Logo({ className }: { className?: string }) {
   return <img src={eigenes} className={className} alt="Logo der Organisation" />
 }
 
-/** Logo der Aktion „Radeln ohne Alter“, Standort Melle. */
+/** Logo des Projekts „Radeln ohne Alter“, für alle Standorte gleich. */
 export function RadelnLogo({ className }: { className?: string }) {
-  return <img src={radeln} className={className} alt="Radeln ohne Alter – Melle" />
+  return <img src={radeln} className={className} alt="Radeln ohne Alter" />
 }
