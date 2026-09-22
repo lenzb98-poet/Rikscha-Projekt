@@ -3,6 +3,7 @@ import { listUsers, raeumeBildspeicherAuf, type Rolle, type TeamMember } from '.
 import { toGermanError } from '../lib/errors'
 import { HeimVorlagen } from '../components/HeimVorlagen'
 import { RikschaVerwaltung } from '../components/RikschaVerwaltung'
+import { istBetreiber } from '../lib/betreiber'
 import { AppNameEinstellung } from '../components/AppNameEinstellung'
 import { LogoEinstellung } from '../components/LogoEinstellung'
 import { AkzentfarbeEinstellung } from '../components/AkzentfarbeEinstellung'
@@ -19,6 +20,8 @@ import { AkzentfarbeEinstellung } from '../components/AkzentfarbeEinstellung'
  */
 type Props = {
   onZurueck: () => void
+  /** Öffnet die Betreiber Einstellungen - der Knopf erscheint nur für den Betreiber. */
+  onBetreiber: () => void
 }
 
 const ROLLENNAME: Record<Rolle, string> = {
@@ -38,11 +41,16 @@ const RECHTE: { was: string; wer: string }[] = [
   { was: 'Pilot/-innen Liste ansehen, Chat lesen und schreiben', wer: 'alle' },
 ]
 
-export function AdminEinstellungen({ onZurueck }: Props) {
+export function AdminEinstellungen({ onZurueck, onBetreiber }: Props) {
   const [leute, setLeute] = useState<TeamMember[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [hinweis, setHinweis] = useState<string | null>(null)
   const [raeumtAuf, setRaeumtAuf] = useState(false)
+  const [betreiber, setBetreiber] = useState(false)
+
+  useEffect(() => {
+    void istBetreiber().then(setBetreiber)
+  }, [])
 
   useEffect(() => {
     listUsers()
@@ -88,6 +96,20 @@ export function AdminEinstellungen({ onZurueck }: Props) {
 
       {hinweis && <p className="alert alert--ok">{hinweis}</p>}
       {error && <p className="alert alert--error">{error}</p>}
+
+      {betreiber && (
+        <button className="card betreiber-feld" onClick={onBetreiber}>
+          <span>
+            <strong className="betreiber-feld__titel">Betreiber Einstellungen</strong>
+            <span className="muted betreiber-feld__text">
+              Organisationen anlegen, bearbeiten, stilllegen und löschen, Speicher im Blick
+            </span>
+          </span>
+          <span className="betreiber-feld__pfeil" aria-hidden="true">
+            →
+          </span>
+        </button>
+      )}
 
       <AppNameEinstellung />
       <LogoEinstellung />

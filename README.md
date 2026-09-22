@@ -43,6 +43,39 @@ Einstellungen gehören allen gemeinsam. Solange es nur eine Organisation gibt,
 macht das keinen Unterschied; vor einer zweiten bekommt jede Tabelle eine
 `org_id`.
 
+## Betreiber
+
+Der **Betreiber** steht über den Organisationen. Wer es ist, steht in der
+Tabelle `betreiber` (Migration `0037`) – ohne jede Schreibregel, aus der App
+lässt sich dort niemand eintragen. Eingetragen ist Lenz Becker.
+
+Der Betreiber sieht in den **Admin Einstellungen** ganz oben das Feld
+**Betreiber Einstellungen**. Dort:
+
+- **Organisation hinzufügen** mit *Name der Organisation* und *Erster Admin und
+  Benutzer*. Das Kürzel für den Anmeldelink entsteht aus dem Namen
+  („Rikscha-Verein Osnabrück e.V.“ → `rikscha-verein-osnabrueck`). Die erste
+  Administration meldet sich nur mit ihrem Namen an und vergibt beim ersten
+  Mal selbst ein Passwort; ihre technische Kennung trägt das Kürzel
+  (`…@kürzel.rikscha-fahrten.de`).
+- **Bearbeiten**: Name und Kürzel.
+- **Stilllegen**: nicht mehr in der Auswahl, keine Anmeldung, Daten bleiben.
+- **Löschen**: mit allen Daten und Anmeldekonten, nach drei Bestätigungen
+  (Unterweisung, Namen eintippen, endgültig löschen). Den Namen prüft auch die
+  Datenbank.
+- **Speicher**: je Organisation Personen, Fahrten, Nachrichten sowie grob der
+  Speicher – Bilder im Chat und geschätzte Datenmenge (Summe der Zeilen).
+
+Die eigene Organisation lässt sich weder stilllegen noch löschen.
+
+**Sperre bis zur Trennung der Daten:** Personen, Fahrten, Chat, Heime, Rikschas
+und übernommene Zahlen tragen seit `0037` eine `org_id`, die übrigen
+Funktionen filtern aber noch nicht danach. Bis dahin gilt nur als
+freigeschaltet, wer zur **Stammorganisation** gehört (`current_app_user_id`,
+`is_admin`, `darf_verwalten`); die Anmeldung für andere Organisationen meldet
+„wird gerade eingerichtet“. Personenliste und Personenverwaltung zeigen schon
+jetzt nur die eigene Organisation, Namen sind je Organisation eindeutig.
+
 ## Anmeldung
 
 Angemeldet wird sich mit dem **vollen Namen**, nicht mit einer E-Mail-Adresse.

@@ -1599,3 +1599,55 @@ th.tab__kreuz--still { color: var(--muted); font-style: italic; }
   color: var(--text);
 }
 .auth__org .btn--link { padding: 0; font-size: 13px; }
+
+/* --- Betreiber ------------------------------------------------------------ */
+/* Anklickbares Feld oben in den Admin Einstellungen */
+.betreiber-feld {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  border: 2px solid var(--blau);
+  background: var(--blau-zart);
+}
+.betreiber-feld:hover { background: var(--card); }
+.betreiber-feld:focus-visible { outline: 2px solid var(--blau); outline-offset: 2px; }
+.betreiber-feld__titel { display: block; font-size: 16px; color: var(--blau-dunkel); }
+.betreiber-feld__text { display: block; margin-top: 4px; font-size: 14px; line-height: 1.4; }
+.betreiber-feld__pfeil { font-size: 22px; color: var(--blau); flex-shrink: 0; }
+
+.betreiber__gesamt { font-size: 13px; }
+.betreiber__sperre { margin: 0 0 8px; }
+.betreiber__hinweis { word-break: break-word; }
+
+.org__text { gap: 4px; min-width: 0; flex: 1 1 260px; }
+.org__marke {
+  margin-left: 8px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--blau-zart);
+  color: var(--blau-dunkel);
+  font-size: 12px;
+  font-weight: 600;
+}
+.org__speicher { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
+.org__balken {
+  display: block;
+  width: 100%;
+  max-width: 260px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--border);
+  overflow: hidden;
+}
+.org__balken span { display: block; height: 100%; background: var(--blau); border-radius: 999px; }
+.org__link { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; font-size: 13px; }
+.org__link code { color: var(--muted); }
+.org__link .btn--link { padding: 0; font-size: 13px; }
+.org__neu-titel { margin: 0; font-size: 15px; color: var(--blau-dunkel); }
+.hint.org__hinweis { margin: 0; }

@@ -92,10 +92,11 @@ export type LoginCheck = {
   login_email: string | null
 }
 
-/** Prüft, ob der Name in der Benutzertabelle hinterlegt ist. */
-export async function checkLoginName(fullName: string): Promise<LoginCheck> {
+/** Prüft, ob der Name in der gewählten Organisation hinterlegt ist. */
+export async function checkLoginName(fullName: string, orgId: string | null): Promise<LoginCheck> {
   const { data, error } = await supabase.rpc('check_login_name', {
     p_full_name: fullName.trim(),
+    p_org_id: orgId,
   })
   if (error) throw error
   const row = Array.isArray(data) ? data[0] : data

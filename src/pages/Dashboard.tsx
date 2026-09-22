@@ -13,6 +13,7 @@ import { Fahrtenkalender } from './Fahrtenkalender'
 import { FahrtenVerwaltung } from './FahrtenVerwaltung'
 import { Fahrtenbuch } from './Fahrtenbuch'
 import { AdminEinstellungen } from './AdminEinstellungen'
+import { BetreiberEinstellungen } from './BetreiberEinstellungen'
 
 type Props = {
   profile: AppUser | null
@@ -34,6 +35,7 @@ type Ansicht =
   | 'team'
   | 'chat'
   | 'admin'
+  | 'betreiber'
 
 /** "3 offene Fahrten", "1 offene Fahrt", "Zurzeit keine" */
 function anzahlText(anzahl: number | null, einzahl: string, mehrzahl: string): string {
@@ -75,7 +77,12 @@ export function Dashboard({ profile, onSignOut }: Props) {
           />
         )
       case 'admin':
-        return istAdmin ? <AdminEinstellungen onZurueck={zurueck} /> : null
+        return istAdmin ? (
+          <AdminEinstellungen onZurueck={zurueck} onBetreiber={() => setAnsicht('betreiber')} />
+        ) : null
+      case 'betreiber':
+        // Ob jemand Betreiber ist, prüft die Datenbank bei jedem Aufruf selbst
+        return istAdmin ? <BetreiberEinstellungen onZurueck={() => setAnsicht('admin')} /> : null
       case 'chat':
         return <Chat onZurueck={zurueck} darfVerwalten={darfVerwalten} />
       default:
