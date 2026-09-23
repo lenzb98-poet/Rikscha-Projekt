@@ -332,11 +332,16 @@ stehen hier nur zum Lesen – sonst änderte eine Zeile auch alle anderen Zeilen
 derselben Fahrt mit.
 
 Die Tabelle lässt sich waagerecht schieben, die Nummernspalte bleibt stehen.
-Unten fasst eine Summenzeile alles zusammen.
+
+**Das Neueste steht oben:** Ganz oben, gleich unter den Überschriften, fasst
+eine Summenzeile alles zusammen. Darunter folgen die Fahrten von der neuesten
+bis zur ersten; die Plätze einer Fahrt behalten ihre Reihenfolge. Die Nummer
+zählt von der ersten Fahrt an und bleibt fest – die neueste trägt die höchste.
 
 ### Bisherige Zahlen übernehmen
 
-Ganz oben stehen die übernommenen Zahlen aus der Zeit vor dieser App –
+Ganz unten, als ältester Teil, stehen die übernommenen Zahlen aus der Zeit vor
+dieser App –
 eingetragen über **Zahlen übernehmen** als eine zusammengefasste Zeile mit
 Bezeichnung. Sie zählen in der Summenzeile und in der Auswertung mit. Mehrere
 Übernahmen sind möglich, etwa je Jahr.

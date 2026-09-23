@@ -26,8 +26,11 @@ function alsStundenZahl(minuten: number | null): string {
   return formatiereKomma(Math.round((minuten / 60) * 100) / 100)
 }
 
-/** Eine Zeile der Tabelle: ein Rikscha-Platz einer Fahrt. */
-type Zeile = { fahrt: Fahrt; platz: Platz | null }
+/**
+ * Eine Zeile der Tabelle: ein Rikscha-Platz einer Fahrt. nr zählt von der
+ * ersten Fahrt an und bleibt fest, auch wenn Neues dazukommt.
+ */
+type Zeile = { fahrt: Fahrt; platz: Platz | null; nr: number; fahrtIndex: number }
 
 type Werte = { km: string; stunden: string; personen: string; bemerkung: string }
 
@@ -122,13 +125,19 @@ export function Fahrtenbuch({ onZurueck }: { onZurueck: () => void }) {
   const summe = werteAusGesamt(fahrten ?? [], uebernahmen)
 
   // Je belegtem Platz eine Zeile. Fahrten ohne eingetragene Person erscheinen
-  // mit einer Zeile, damit sie im Buch nicht fehlen.
-  const zeilen: Zeile[] = (fahrten ?? []).flatMap<Zeile>((fahrt) => {
+  // mit einer Zeile, damit sie im Buch nicht fehlen. Nummeriert wird von der
+  // ersten Fahrt an.
+  const chronologisch = (fahrten ?? []).flatMap<Omit<Zeile, 'nr'>>((fahrt, fahrtIndex) => {
     const belegt = fahrt.plaetze.filter((p) => p.pilot_id !== null)
     return belegt.length > 0
-      ? belegt.map((platz) => ({ fahrt, platz }))
-      : [{ fahrt, platz: null }]
+      ? belegt.map((platz) => ({ fahrt, platz, fahrtIndex }))
+      : [{ fahrt, platz: null, fahrtIndex }]
   })
+  // Angezeigt wird die neueste Fahrt zuerst; die Plätze einer Fahrt behalten
+  // ihre Reihenfolge
+  const zeilen: Zeile[] = chronologisch
+    .map((z, i) => ({ ...z, nr: i + 1 }))
+    .sort((a, b) => b.fahrtIndex - a.fahrtIndex || a.nr - b.nr)
 
   // Je Rikscha eine Spalte, auch für stillgelegte - ihre alten Einträge
   // sollen sichtbar bleiben. Einträge, deren Rikscha gelöscht wurde, bekommen
@@ -204,40 +213,23 @@ export function Fahrtenbuch({ onZurueck }: { onZurueck: () => void }) {
               </thead>
 
               <tbody>
-                {/* Übernommene Zahlen stehen ganz oben, vor den einzelnen Fahrten */}
-                {uebernahmen.map((u) => (
-                  <tr key={u.id} className="tab__uebernahme">
-                    <td className="tab__fix">–</td>
-                    <td>–</td>
-                    <td>{u.bezeichnung}</td>
-                    {Array.from({ length: rikschaSpalten }, (_, k) => (
-                      <td key={k} className="tab__kreuz" />
-                    ))}
-                    <td className="tab__zahl">{formatiereZahl(u.personen)}</td>
-                    <td className="tab__zahl">{formatiereKomma(Number(u.km))}</td>
-                    <td className="tab__zahl">{alsStundenZahl(u.minuten)}</td>
-                    <td>
-                      Aus der bisherigen Statistik
-                      {u.fahrten > 0 &&
-                        ` · ${formatiereZahl(u.fahrten)} ${
-                          u.fahrten === 1 ? 'Fahrt' : 'Fahrten'
-                        }`}
-                    </td>
-                    <td>
-                      <button
-                        className="tab__knopf"
-                        onClick={() => setDialog({ offen: true, eintrag: u })}
-                      >
-                        Bearbeiten
-                      </button>
-                      <button className="tab__knopf tab__knopf--weg" onClick={() => entfernen(u)}>
-                        Entfernen
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-
-                {zeilen.map(({ fahrt, platz }, i) => {
+                {/* Die Auswertung steht ganz oben, gleich unter den Überschriften */}
+                <tr className="tab__summe">
+                  <td className="tab__fix">Summe</td>
+                  <td colSpan={2 + rikschaSpalten}>
+                    {formatiereZahl(zeilen.length)}{' '}
+                    {zeilen.length === 1 ? 'Eintrag' : 'Einträge'}
+                    {uebernahmen.length > 0 &&
+                      ` und ${formatiereZahl(uebernahmen.length)} ${
+                        uebernahmen.length === 1 ? 'Übernahme' : 'Übernahmen'
+                      }`}
+                  </td>
+                  <td className="tab__zahl">{formatiereZahl(summe.personen)}</td>
+                  <td className="tab__zahl">{formatiereKomma(summe.km)}</td>
+                  <td className="tab__zahl">{alsStundenZahl(summe.minuten)}</td>
+                  <td colSpan={2} />
+                </tr>
+                {zeilen.map(({ fahrt, platz, nr }) => {
                   // Ohne Eintrag den ersten Platz der Fahrt zum Nachtragen nutzen,
                   // damit sich auch unbesetzte Fahrten von Hand ergänzen lassen.
                   // Die Datenbank nimmt Angaben nur zu stattgefundenen, nicht
@@ -251,7 +243,7 @@ export function Fahrtenbuch({ onZurueck }: { onZurueck: () => void }) {
 
                   return (
                     <tr key={zeilenSchluessel}>
-                      <td className="tab__fix">{i + 1}</td>
+                      <td className="tab__fix">{nr}</td>
                       <td>{datum(fahrt.starts_at)}</td>
                       <td>{platz?.pilot_name ?? <span className="tab__leer">nicht besetzt</span>}</td>
 
@@ -312,6 +304,40 @@ export function Fahrtenbuch({ onZurueck }: { onZurueck: () => void }) {
                   )
                 })}
 
+                {/* Übernommene Zahlen aus der bisherigen Statistik sind das Älteste und
+                    stehen deshalb ganz unten */}
+                {uebernahmen.map((u) => (
+                  <tr key={u.id} className="tab__uebernahme">
+                    <td className="tab__fix">–</td>
+                    <td>–</td>
+                    <td>{u.bezeichnung}</td>
+                    {Array.from({ length: rikschaSpalten }, (_, k) => (
+                      <td key={k} className="tab__kreuz" />
+                    ))}
+                    <td className="tab__zahl">{formatiereZahl(u.personen)}</td>
+                    <td className="tab__zahl">{formatiereKomma(Number(u.km))}</td>
+                    <td className="tab__zahl">{alsStundenZahl(u.minuten)}</td>
+                    <td>
+                      Aus der bisherigen Statistik
+                      {u.fahrten > 0 &&
+                        ` · ${formatiereZahl(u.fahrten)} ${
+                          u.fahrten === 1 ? 'Fahrt' : 'Fahrten'
+                        }`}
+                    </td>
+                    <td>
+                      <button
+                        className="tab__knopf"
+                        onClick={() => setDialog({ offen: true, eintrag: u })}
+                      >
+                        Bearbeiten
+                      </button>
+                      <button className="tab__knopf tab__knopf--weg" onClick={() => entfernen(u)}>
+                        Entfernen
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+
                 {zeilen.length === 0 && uebernahmen.length === 0 && (
                   <tr>
                     <td colSpan={8 + rikschaSpalten} className="tab__leerzeile">
@@ -321,23 +347,6 @@ export function Fahrtenbuch({ onZurueck }: { onZurueck: () => void }) {
                 )}
               </tbody>
 
-              <tfoot>
-                <tr>
-                  <td className="tab__fix">Summe</td>
-                  <td colSpan={2 + rikschaSpalten}>
-                    {formatiereZahl(zeilen.length)}{' '}
-                    {zeilen.length === 1 ? 'Eintrag' : 'Einträge'}
-                    {uebernahmen.length > 0 &&
-                      ` und ${formatiereZahl(uebernahmen.length)} ${
-                        uebernahmen.length === 1 ? 'Übernahme' : 'Übernahmen'
-                      }`}
-                  </td>
-                  <td className="tab__zahl">{formatiereZahl(summe.personen)}</td>
-                  <td className="tab__zahl">{formatiereKomma(summe.km)}</td>
-                  <td className="tab__zahl">{alsStundenZahl(summe.minuten)}</td>
-                  <td colSpan={2} />
-                </tr>
-              </tfoot>
             </table>
           </div>
 

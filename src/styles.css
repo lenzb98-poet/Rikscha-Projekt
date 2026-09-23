@@ -1351,14 +1351,6 @@ body {
 }
 .tab__markierung { color: var(--z-abgesagt); font-size: 12px; white-space: nowrap; }
 
-.tab tfoot td {
-  background: var(--z-offen-bg);
-  font-weight: 700;
-  color: var(--blau-dunkel);
-  border-bottom: 0;
-  position: sticky;
-  bottom: 0;
-}
 
 .tab__knopf {
   background: none;
@@ -1691,3 +1683,13 @@ th.tab__kreuz--still { color: var(--muted); font-style: italic; }
 .budget__form { margin-top: 18px; }
 .budget__felder { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
 .budget__knoepfe { margin-top: 14px; }
+
+/* Auswertung als erste Zeile im Fahrtenbuch, gleich unter den Überschriften.
+   Schlägt die Streifen und das Hervorheben beim Überfahren. */
+.tab tbody tr.tab__summe td,
+.tab tbody tr.tab__summe .tab__fix {
+  background: var(--z-offen-bg);
+  font-weight: 700;
+  color: var(--blau-dunkel);
+  border-bottom: 2px solid var(--border);
+}
