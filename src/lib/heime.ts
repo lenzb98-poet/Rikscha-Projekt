@@ -13,6 +13,8 @@ export type Heim = {
   name: string
   anschrift: string
   telefon: string
+  /** Eigener Hinweis zum Haus, kommt wie die Telefonnummer in den Infotext. */
+  info: string
 }
 
 /** Lesen dürfen alle Freigeschalteten - jede Person legt mal eine Fahrt an. */
@@ -28,12 +30,14 @@ export async function speichereHeim(h: {
   name: string
   anschrift: string
   telefon: string
+  info: string
 }): Promise<Heim> {
   const { data, error } = await supabase.rpc('heim_speichern', {
     p_id: h.id ?? null,
     p_name: h.name.trim(),
     p_anschrift: h.anschrift.trim(),
     p_telefon: h.telefon.trim(),
+    p_info: h.info.trim(),
   })
   if (error) throw error
   const row = Array.isArray(data) ? data[0] : data
@@ -55,27 +59,34 @@ export function heimOrt(h: Heim): string {
   return h.anschrift.trim() === '' ? h.name : `${h.name}, ${h.anschrift}`
 }
 
-/** Die Telefonzeile für den Infotext. */
-export function heimTelefonzeile(h: Heim): string {
-  return `Tel. ${h.name}: ${h.telefon}`
+/** Die Telefonzeile für den Infotext; ohne Nummer keine Zeile. */
+export function heimTelefonzeile(h: Heim): string | null {
+  return h.telefon.trim() === '' ? null : `Tel. ${h.name}: ${h.telefon}`
+}
+
+/** Was ein Haus in den Infotext schreibt: Telefonzeile und eigener Hinweis. */
+export function heimInfozeilen(h: Heim): string[] {
+  const zeilen = [heimTelefonzeile(h), ...h.info.split('\n')]
+  return zeilen.map((z) => z?.trim() ?? '').filter((z) => z !== '')
 }
 
 /**
- * Setzt die Telefonzeile des gewählten Hauses in den Infotext.
+ * Setzt Telefonzeile und Hinweis des gewählten Hauses in den Infotext.
  *
- * Selbst geschriebene Hinweise bleiben stehen; nur eine Telefonzeile, die
- * von einem anderen Haus stammt, wird ersetzt. Sonst sammelten sich beim
- * Umwählen alte Nummern an. Dafür braucht es die ganze Liste - `alle` sind
+ * Selbst geschriebene Hinweise bleiben stehen; nur Zeilen, die von einer
+ * Vorlage stammen, werden ersetzt. Sonst sammelten sich beim Umwählen alte
+ * Nummern und Hinweise an. Dafür braucht es die ganze Liste - `alle` sind
  * die aktuell geladenen Vorlagen.
  */
-export function infoMitTelefon(info: string, h: Heim, alle: Heim[]): string {
-  const bekannt = new Set(alle.map(heimTelefonzeile))
+export function infoMitHeim(info: string, h: Heim, alle: Heim[]): string {
+  const bekannt = new Set(alle.flatMap(heimInfozeilen))
   const rest = info
     .split('\n')
     .filter((zeile) => !bekannt.has(zeile.trim()))
     .join('\n')
     .trim()
 
-  const zeile = heimTelefonzeile(h)
-  return rest === '' ? zeile : `${zeile}\n${rest}`
+  const neu = heimInfozeilen(h).join('\n')
+  if (neu === '') return rest
+  return rest === '' ? neu : `${neu}\n${rest}`
 }

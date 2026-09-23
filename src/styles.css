@@ -1483,6 +1483,7 @@ th.tab__kreuz--still { color: var(--muted); font-style: italic; }
 .vorlage--neu { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
 .vorlage__text { display: flex; flex-direction: column; gap: 2px; font-size: 14px; line-height: 1.4; }
 .vorlage__text .muted { font-size: 13px; }
+.vorlage__info { white-space: pre-line; }
 .vorlage__knoepfe { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-left: auto; }
 .vorlage__knoepfe .btn { font-size: 14px; padding: 7px 12px; }
 .vorlage__form { width: 100%; display: flex; flex-direction: column; gap: 12px; }

@@ -202,16 +202,16 @@ Koordination und Administration sehen zusätzlich **Fahrten verwalten** und
 
 ### Seniorenheime als Vorlage
 
-Beim Anlegen einer Fahrt stehen über dem Feld *Wo* die vier Meller
-Seniorenheime zur Auswahl. Ein Tipp darauf trägt Name und Anschrift als Ort
-ein und die Telefonnummer in den Infotext; beides bleibt danach frei
-änderbar. Wechselt man das Haus, wird die alte Telefonzeile ersetzt – selbst
-geschriebene Hinweise bleiben stehen.
+Beim Anlegen einer Fahrt stehen über dem Feld *Wo* die Seniorenheime der
+eigenen Organisation zur Auswahl. Ein Tipp darauf trägt Name und Anschrift als
+Ort ein, dazu Telefonnummer und den eigenen Infotext des Hauses in den
+Infotext der Fahrt; alles bleibt danach frei änderbar. Wechselt man das Haus,
+werden die Zeilen der alten Vorlage ersetzt – selbst geschriebene Hinweise
+bleiben stehen.
 
-Die Liste steht in `src/lib/heime.ts`. Sie liegt bewusst im Programm und
-nicht in der Datenbank: vier Häuser vor Ort, die sich kaum ändern, brauchen
-keine eigene Verwaltung. Zieht ein Haus um oder kommt eines dazu, wird die
-Datei angepasst.
+Gepflegt wird die Liste in den Admin Einstellungen unter *Vorlagen:
+Seniorenheime*: Name, Anschrift, Telefon und ein optionaler Infotext (bis 500
+Zeichen, z. B. „Treffpunkt am Haupteingang, bitte an der Pforte melden“).
 
 ### Rikscha-Plätze
 

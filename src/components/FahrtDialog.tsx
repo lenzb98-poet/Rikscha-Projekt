@@ -13,7 +13,7 @@ import {
   type RideStatus,
 } from '../lib/fahrten'
 import { toGermanError } from '../lib/errors'
-import { listHeime, heimOrt, infoMitTelefon, type Heim } from '../lib/heime'
+import { listHeime, heimOrt, infoMitHeim, type Heim } from '../lib/heime'
 
 type Props = {
   /** Fehlt beim Anlegen einer neuen Fahrt. */
@@ -95,12 +95,12 @@ export function FahrtDialog({ fahrt, onClose, onGespeichert }: Props) {
     setWerte((w) => ({ ...w, [feld]: wert }))
   }
 
-  /** Ort und Telefonnummer des Hauses in einem Schritt übernehmen. */
+  /** Ort, Telefonnummer und Hinweis des Hauses in einem Schritt übernehmen. */
   function waehleHeim(h: Heim) {
     setWerte((w) => ({
       ...w,
       location: heimOrt(h),
-      info: infoMitTelefon(w.info, h, heime),
+      info: infoMitHeim(w.info, h, heime),
     }))
   }
 
@@ -266,8 +266,8 @@ export function FahrtDialog({ fahrt, onClose, onGespeichert }: Props) {
                   ))}
                 </div>
                 <span className="hint">
-                  Ein Tipp darauf trägt Anschrift und Telefonnummer ein. Beides lässt sich
-                  danach noch ändern.
+                  Ein Tipp darauf trägt Anschrift, Telefonnummer und Hinweis zum Haus ein.
+                  Alles lässt sich danach noch ändern.
                 </span>
               </div>
               )}

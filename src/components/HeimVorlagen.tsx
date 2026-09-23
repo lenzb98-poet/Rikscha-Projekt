@@ -5,15 +5,15 @@ import { toGermanError } from '../lib/errors'
 /**
  * Die Vorlagen der Seniorenheime pflegen.
  *
- * Beim Anlegen einer Fahrt trägt ein Tipp auf so eine Vorlage Anschrift und
- * Telefonnummer ein. Was hier steht, steht dort zur Auswahl.
+ * Beim Anlegen einer Fahrt trägt ein Tipp auf so eine Vorlage Anschrift,
+ * Telefonnummer und den Hinweis zum Haus ein. Was hier steht, steht dort zur Auswahl.
  *
  * Bearbeitet wird immer nur ein Eintrag: So ist klar, was gerade offen ist,
  * und ein versehentlich geänderter zweiter Eintrag kann nicht mitgehen.
  */
-type Entwurf = { name: string; anschrift: string; telefon: string }
+type Entwurf = { name: string; anschrift: string; telefon: string; info: string }
 
-const LEER: Entwurf = { name: '', anschrift: '', telefon: '' }
+const LEER: Entwurf = { name: '', anschrift: '', telefon: '', info: '' }
 
 export function HeimVorlagen() {
   const [heime, setHeime] = useState<Heim[] | null>(null)
@@ -40,7 +40,7 @@ export function HeimVorlagen() {
       setEntwurf(LEER)
     } else {
       setOffen(h.id)
-      setEntwurf({ name: h.name, anschrift: h.anschrift, telefon: h.telefon })
+      setEntwurf({ name: h.name, anschrift: h.anschrift, telefon: h.telefon, info: h.info })
     }
   }
 
@@ -122,6 +122,18 @@ export function HeimVorlagen() {
             inputMode="tel"
           />
         </label>
+        <label className="field">
+          <span className="field__label">
+            Infotext <span className="field__optional">optional, kommt in den Infotext</span>
+          </span>
+          <textarea
+            value={entwurf.info}
+            onChange={(e) => setEntwurf({ ...entwurf, info: e.target.value })}
+            maxLength={500}
+            rows={3}
+            placeholder="z. B. Treffpunkt am Haupteingang, bitte an der Pforte melden"
+          />
+        </label>
         <div className="vorlage__knoepfe">
           <button className="btn btn--ghost" type="button" onClick={abbrechen} disabled={busy}>
             Abbrechen
@@ -138,8 +150,8 @@ export function HeimVorlagen() {
     <section className="card">
       <h3>Vorlagen: Seniorenheime</h3>
       <p className="muted card__text">
-        Beim Anlegen einer Fahrt lässt sich ein Haus antippen – Anschrift und Telefonnummer
-        werden dann von selbst eingetragen. Änderungen hier gelten sofort für alle.
+        Beim Anlegen einer Fahrt lässt sich ein Haus antippen – Anschrift, Telefonnummer und
+        Infotext werden dann von selbst eingetragen. Änderungen hier gelten sofort für alle.
       </p>
 
       {hinweis && <p className="alert alert--ok">{hinweis}</p>}
@@ -158,6 +170,7 @@ export function HeimVorlagen() {
                   <strong>{h.name}</strong>
                   {h.anschrift && <span className="muted">{h.anschrift}</span>}
                   {h.telefon && <span className="muted">Tel. {h.telefon}</span>}
+                  {h.info && <span className="muted vorlage__info">{h.info}</span>}
                 </div>
                 {loeschen === h.id ? (
                   <div className="vorlage__knoepfe">
