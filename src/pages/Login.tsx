@@ -129,7 +129,6 @@ export function Login() {
           <header className="auth__header">
             <RadelnLogo className="auth__radeln" />
             <h1>{appName ?? STANDARDNAME}</h1>
-            <p className="auth__sub">Anmeldung für Fahrer:innen und Koordination</p>
             {organisation && (
               <p className="auth__org">
                 <span>{organisation.name}</span>
