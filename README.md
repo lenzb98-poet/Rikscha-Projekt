@@ -546,6 +546,12 @@ auf dem Startbildschirm liegt (ab iOS 16.4).
   nach („💬 3 neue Nachrichten im Chat“).
 - Auf dem Handy ersetzt eine neue Chat-Mitteilung die vorige, statt sich zu
   stapeln.
+- **Antippen** (`public/sw.js`): Ist die installierte App schon offen, holt der
+  Service Worker sie nach vorn – vorher fragt er das Fenster, ob es die App ist
+  (Antwort aus `src/main.tsx`). Ein Browser-Tab mit der Seite zählt nicht, sonst
+  öffnete Android den Browser statt der App. Sonst öffnet er die Adresse neu;
+  Android gibt sie an die installierte App weiter. Scheitert ein Schritt, kommt
+  der nächste.
 - Wie weit gemeldet ist, steht je Verein in `push_chat_stand`.
 - Der Anfang der Nachricht reist verschlüsselt über den Push-Dienst (Apple,
   Google, Mozilla), ist aber auf dem Sperrbildschirm sichtbar.
