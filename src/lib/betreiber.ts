@@ -15,8 +15,10 @@ export type OrgUebersicht = {
   /** Die Stammorganisation, zu der alle bisherigen Daten gehören. */
   stamm: boolean
   created_at: string
-  /** Namen der aktiven Administration, mit Komma getrennt. */
+  /** Namen der aktiven Administration ohne den Betreiber, mit Komma getrennt. */
   administration: string | null
+  /** Der Betreiber, falls er zu dieser Organisation gehört. */
+  betreiber: string | null
   personen: number
   fahrten: number
   nachrichten: number

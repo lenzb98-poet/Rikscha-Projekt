@@ -46,6 +46,20 @@ Der **Betreiber** steht über den Organisationen. Wer es ist, steht in der
 Tabelle `betreiber` (Migration `0037`) – ohne jede Schreibregel, aus der App
 lässt sich dort niemand eintragen. Eingetragen ist Lenz Becker.
 
+**Nach außen heißt er „Betreiber“** (Migration `0046`): auf der Startseite
+(„Angemeldet als Betreiber“), in der Team-Liste, im Bearbeiten-Dialog und in der
+Übersicht der Organisationen, wo er nicht mehr unter „Administration“ steht.
+Technisch hat er in seiner Organisation weiter die Rolle `admin` – daran hängen
+seine Rechte dort.
+
+**Schutz:** Rolle, Freischaltung, Namen, Organisation und Anmeldekonto des
+Betreibers ändert nur ein Betreiber selbst; löschen lässt er sich über die App
+nicht (Trigger `betreiber_schutz` auf `app_users`). Sonst könnte die
+Administration seiner Organisation ihn herabstufen oder sein Passwort
+zurücksetzen – und wer sich danach zuerst mit dem Namen anmeldet, wäre
+Betreiber. Telefon und E-Mail darf die Administration weiter pflegen. Die App
+blendet die gesperrten Felder und Knöpfe aus; die Datenbank prüft es trotzdem.
+
 Der Betreiber sieht in den **Admin Einstellungen** ganz oben das Feld
 **Betreiber Einstellungen**. Dort:
 
@@ -61,7 +75,7 @@ Der Betreiber sieht in den **Admin Einstellungen** ganz oben das Feld
   (Unterweisung, Namen eintippen, endgültig löschen). Den Namen prüft auch die
   Datenbank.
 - **Speicher**: je Organisation Personen, Fahrten, Nachrichten sowie grob der
-  Speicher – Bilder im Chat und geschätzte Datenmenge (Summe der Zeilen).
+  Speicher – Bilder, Text und Fahrten, übrige Daten (siehe *Speicher-Budget*).
 
 Die eigene Organisation lässt sich weder stilllegen noch löschen.
 

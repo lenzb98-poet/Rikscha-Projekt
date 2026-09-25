@@ -14,16 +14,21 @@ type Props = {
   autoFocus?: boolean
   /** Die Administrationsrolle vergibt und entzieht nur die Administration. */
   istAdmin: boolean
+  /** Eintrag des Betreibers: Name und Rolle stehen fest (schützt die Datenbank). */
+  betreiberEintrag?: boolean
 }
 
 /** Die Stammdatenfelder, gemeinsam genutzt von Anlegen und Bearbeiten. */
-export function StammdatenFelder({ praefix, werte, onChange, autoFocus, istAdmin }: Props) {
+export function StammdatenFelder({ praefix, werte, onChange, autoFocus, istAdmin, betreiberEintrag }: Props) {
   // Für die Koordination ist die Administrationsrolle keine Wahl: weder
   // vergeben noch entziehen. Steht sie schon, bleibt das Feld sichtbar,
   // aber gesperrt - sonst ginge sie beim Speichern still verloren.
   const istAdminEintrag = werte.role === 'admin'
-  const rollenGesperrt = !istAdmin && istAdminEintrag
-  const rollen = ROLLEN.filter((r) => r.wert !== 'admin' || istAdmin || istAdminEintrag)
+  const rollenGesperrt = betreiberEintrag || (!istAdmin && istAdminEintrag)
+  // Der Betreiber ist technisch Administration, heißt nach außen aber Betreiber
+  const rollen = betreiberEintrag
+    ? [{ wert: werte.role, text: 'Betreiber' }]
+    : ROLLEN.filter((r) => r.wert !== 'admin' || istAdmin || istAdminEintrag)
   function setze<K extends keyof Stammdaten>(feld: K, wert: Stammdaten[K]) {
     onChange({ ...werte, [feld]: wert })
   }
@@ -41,6 +46,7 @@ export function StammdatenFelder({ praefix, werte, onChange, autoFocus, istAdmin
             placeholder="z. B. Maria Müller"
             autoFocus={autoFocus}
             onChange={(e) => setze('fullName', e.target.value)}
+            disabled={betreiberEintrag}
             required
           />
         </div>
@@ -63,10 +69,16 @@ export function StammdatenFelder({ praefix, werte, onChange, autoFocus, istAdmin
             ))}
           </select>
         </div>
-        {rollenGesperrt && (
+        {betreiberEintrag ? (
           <span className="hint">
-            Die Administrationsrolle ändert nur die Administration.
+            Name und Rolle des Betreibers stehen fest. Telefon und E-Mail lassen sich ändern.
           </span>
+        ) : (
+          rollenGesperrt && (
+            <span className="hint">
+              Die Administrationsrolle ändert nur die Administration.
+            </span>
+          )
         )}
       </label>
 

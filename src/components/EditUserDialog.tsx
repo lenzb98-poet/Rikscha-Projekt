@@ -162,6 +162,7 @@ export function EditUserDialog({
                 onChange={setWerte}
                 autoFocus
                 istAdmin={istAdmin}
+                betreiberEintrag={member.ist_betreiber}
               />
 
               <label className="check" htmlFor="edit-active">
@@ -169,6 +170,7 @@ export function EditUserDialog({
                   id="edit-active"
                   type="checkbox"
                   checked={aktiv}
+                  disabled={member.ist_betreiber}
                   onChange={(e) => setAktiv(e.target.checked)}
                 />
                 <span>
@@ -198,7 +200,9 @@ export function EditUserDialog({
                   : 'Noch kein Passwort vergeben – die Person legt es bei der ersten Anmeldung fest.'}
               </p>
 
-              {hatPasswort(member) && (
+              {/* Den Zugang des Betreibers setzt niemand sonst zurück - wer sich
+                  danach zuerst mit dem Namen anmeldet, wäre sonst Betreiber */}
+              {hatPasswort(member) && !member.ist_betreiber && (
                 <button
                   type="button"
                   className="btn btn--ghost"
@@ -213,7 +217,7 @@ export function EditUserDialog({
 
               {/* Zugänge der Administration entfernt nur die Administration;
                   die Datenbank lehnt es sonst ohnehin ab. */}
-              {(istAdmin || member.role !== 'admin') && (
+              {(istAdmin || member.role !== 'admin') && !member.ist_betreiber && (
                 <button
                   type="button"
                   className="btn btn--linkdanger"

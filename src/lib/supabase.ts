@@ -145,6 +145,11 @@ export type TeamMember = {
    * das ist Verwaltungswissen und wird ihnen gar nicht erst geliefert.
    */
   hat_passwort?: boolean | null
+  /**
+   * Der Betreiber der App. Technisch hat er in seiner Organisation die Rolle
+   * `admin`, angezeigt wird aber „Betreiber“; seinen Zugang ändert nur er selbst.
+   */
+  ist_betreiber?: boolean
 }
 
 /**

@@ -324,7 +324,8 @@ export function BetreiberEinstellungen({ onZurueck }: { onZurueck: () => void })
                         {!o.aktiv && <span className="rikscha__still">stillgelegt</span>}
                       </strong>
                       <span className="muted">
-                        Administration: {o.administration ?? 'keine aktive'} · seit {datum(o.created_at)}
+                        Administration: {o.administration ?? 'keine aktive'}
+                        {o.betreiber && <> · Betreiber: {o.betreiber}</>} · seit {datum(o.created_at)}
                       </span>
                       <span className="muted">
                         {formatiereZahl(o.personen)} {o.personen === 1 ? 'Person' : 'Personen'} ·{' '}

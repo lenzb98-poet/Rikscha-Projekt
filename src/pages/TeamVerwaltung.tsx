@@ -95,7 +95,7 @@ export function TeamVerwaltung({ onZurueck, darfVerwalten, istAdmin }: Props) {
                 <div className="team__info">
                   <span className="team__name">{m.full_name}</span>
                   <span className="team__meta">
-                    {ROLLEN_TEXT[m.role]}
+                    {m.ist_betreiber ? 'Betreiber' : ROLLEN_TEXT[m.role]}
                     {!m.is_active && <span className="badge">Deaktiviert</span>}
                     {/* Wer noch kein Passwort hat, geht nur die Verwaltung
                         etwas an – Fahrer:innen bekommen den Stand gar nicht

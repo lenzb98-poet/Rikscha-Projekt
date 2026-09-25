@@ -9,6 +9,7 @@ import { MeineFahrten } from '../components/MeineFahrten'
 import { AppEinrichten } from '../components/AppEinrichten'
 import { KurzanleitungDialog, KurzanleitungKnopf } from '../components/Kurzanleitung'
 import { PushErinnerung } from '../components/PushErinnerung'
+import { istBetreiber } from '../lib/betreiber'
 import { Auswertung } from '../components/Auswertung'
 import { TeamVerwaltung } from './TeamVerwaltung'
 import { Chat } from './Chat'
@@ -54,6 +55,11 @@ export function Dashboard({ profile, onSignOut }: Props) {
   // Zugänge der Administration löschen darf nur die Administration - dafür
   // wird istAdmin noch gebraucht.
   const istAdmin = profile?.role === 'admin'
+  // Nach außen tritt der Betreiber als Betreiber auf, nicht als Administration
+  const [betreiber, setBetreiber] = useState(false)
+  useEffect(() => {
+    if (istAdmin) void istBetreiber().then(setBetreiber)
+  }, [istAdmin])
   const darfVerwalten = istAdmin || profile?.role === 'koordinator'
   const zurueck = () => setAnsicht('start')
 
@@ -129,7 +135,7 @@ export function Dashboard({ profile, onSignOut }: Props) {
             <div className="seite__kopf">
               <div>
                 <h2>Hallo {profile?.full_name ?? 'zusammen'}!</h2>
-                {profile && <p className="muted">Angemeldet als {ROLLEN[profile.role]}</p>}
+                {profile && <p className="muted">Angemeldet als {betreiber ? 'Betreiber' : ROLLEN[profile.role]}</p>}
               </div>
               {/* Nur die Administration - Koordination und Fahrer:innen
                   sehen den Knopf nicht und kommen auch nicht in die Ansicht. */}
