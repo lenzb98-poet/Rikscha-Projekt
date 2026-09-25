@@ -493,9 +493,10 @@ Tipp). Beim Schließen geht es zurück.
 
 Ob jemand das Video schon gesehen hat, steht in `app_users.tutorial_gesehen_am`
 und gilt damit auf allen Geräten. Gesetzt wird es beim Schließen des Fensters
-(`tutorial_gesehen()`). Wer beim Einführen der Funktion schon ein
-Anmeldekonto hatte, gilt als „gesehen“ und bekommt das Video nicht mehr
-ungefragt – nur über den Knopf.
+(`tutorial_gesehen()`). Beim Einführen haben es alle einmal gezeigt
+bekommen – auch wer sich schon früher angemeldet hatte, so als wäre es der
+erste Login. Soll es noch einmal für alle erscheinen, reicht
+`update app_users set tutorial_gesehen_am = null;`.
 
 Das Video liegt in `public/tutorial/` als MP4 (H.264, spielen praktisch alle
 Handys) und als WebM für Browser ohne H.264; der Browser nimmt das erste, das

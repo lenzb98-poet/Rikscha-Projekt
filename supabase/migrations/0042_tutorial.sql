@@ -5,8 +5,9 @@
 -- von selbst. Ganz unten auf der Startseite lässt es sich jederzeit wieder
 -- aufrufen.
 --
--- Wer beim Einführen schon ein Anmeldekonto hat, hat seinen ersten Login
--- hinter sich und bekommt das Video nicht mehr ungefragt gezeigt.
+-- Das Feld beginnt für alle leer: Beim Einführen bekommen alle - auch wer
+-- sich schon früher angemeldet hat - das Video einmal gezeigt, als wäre es
+-- ihr erster Login.
 --
 -- Wiederholbar.
 
@@ -17,7 +18,6 @@ begin
      where table_schema = 'public' and table_name = 'app_users' and column_name = 'tutorial_gesehen_am'
   ) then
     alter table public.app_users add column tutorial_gesehen_am timestamptz;
-    update public.app_users set tutorial_gesehen_am = now() where auth_user_id is not null;
   end if;
 end;
 $$;
