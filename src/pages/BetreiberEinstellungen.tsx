@@ -12,13 +12,15 @@ import { formatiereGroesse } from '../lib/bilder'
 import { formatiereZahl } from '../lib/fahrten'
 import { toGermanError } from '../lib/errors'
 import { SpeicherBudget } from '../components/SpeicherBudget'
+import { BildKompression } from '../components/BildKompression'
 
 /**
  * Die Betreiber Einstellungen: alle Organisationen, die die App nutzen.
  *
  * Anlegen (mit erster Administration), bearbeiten, stilllegen, löschen, ein
- * grober Blick auf den Speicher je Organisation und das Speicher-Budget für
- * alle zusammen. Die eigene Organisation lässt sich weder
+ * grober Blick auf den Speicher je Organisation (Bilder, Text und Fahrten,
+ * übrige Daten), das Speicher-Budget und die Bildkompression für alle
+ * zusammen. Die eigene Organisation lässt sich weder
  * stilllegen noch löschen - sonst sperrte sich der Betreiber selbst aus.
  *
  * Löschen entfernt eine Organisation mit allem, was ihr gehört, und verlangt
@@ -117,7 +119,8 @@ export function BetreiberEinstellungen({ onZurueck }: { onZurueck: () => void })
     }
   }
 
-  const gesamt = (orgs ?? []).reduce((s, o) => s + o.daten_bytes + o.bilder_bytes, 0)
+  const summe = (o: OrgUebersicht) => o.bilder_bytes + o.text_bytes + o.uebrige_bytes
+  const gesamt = (orgs ?? []).reduce((s, o) => s + summe(o), 0)
 
   function loeschDialog(o: OrgUebersicht, l: Loeschen) {
     const nameStimmt = l.name.trim() === o.name
@@ -251,6 +254,7 @@ export function BetreiberEinstellungen({ onZurueck }: { onZurueck: () => void })
       {error && <p className="alert alert--error">{error}</p>}
 
       <SpeicherBudget />
+      <BildKompression />
 
       <section className="card">
         <div className="card__head">
@@ -267,8 +271,9 @@ export function BetreiberEinstellungen({ onZurueck }: { onZurueck: () => void })
 
         <ul className="vorlagen">
           {orgs?.map((o) => {
-            const speicher = o.daten_bytes + o.bilder_bytes
+            const speicher = summe(o)
             const anteil = gesamt > 0 ? Math.max(2, Math.round((speicher / gesamt) * 100)) : 0
+            const teil = (bytes: number) => (speicher > 0 ? `${(bytes / speicher) * 100}%` : '0%')
             return (
               <li key={o.id} className={o.aktiv ? 'vorlage org' : 'vorlage org vorlage--still'}>
                 {bearbeiten?.id === o.id ? (
@@ -329,11 +334,26 @@ export function BetreiberEinstellungen({ onZurueck }: { onZurueck: () => void })
                       </span>
                       <span className="org__speicher">
                         <span className="org__balken" aria-hidden="true">
-                          <span style={{ width: `${anteil}%` }} />
+                          <span style={{ width: `${anteil}%` }}>
+                            <span style={{ width: teil(o.bilder_bytes), background: 'var(--speicher-bilder)' }} />
+                            <span style={{ width: teil(o.text_bytes), background: 'var(--speicher-text)' }} />
+                            <span style={{ width: teil(o.uebrige_bytes), background: 'var(--speicher-uebrige)' }} />
+                          </span>
                         </span>
-                        <span className="muted">
-                          Speicher etwa {formatiereGroesse(speicher)} (Daten{' '}
-                          {formatiereGroesse(o.daten_bytes)}, Bilder {formatiereGroesse(o.bilder_bytes)})
+                        <span className="muted">Speicher etwa {formatiereGroesse(speicher)}</span>
+                        <span className="org__arten">
+                          <span>
+                            <span className="budget__punkt budget__punkt--bilder" aria-hidden="true" />
+                            Bilder {formatiereGroesse(o.bilder_bytes)}
+                          </span>
+                          <span>
+                            <span className="budget__punkt budget__punkt--text" aria-hidden="true" />
+                            Text und Fahrten {formatiereGroesse(o.text_bytes)}
+                          </span>
+                          <span>
+                            <span className="budget__punkt budget__punkt--uebrige" aria-hidden="true" />
+                            Übrige {formatiereGroesse(o.uebrige_bytes)}
+                          </span>
                         </span>
                       </span>
                       <span className="org__link">

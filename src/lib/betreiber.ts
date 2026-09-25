@@ -20,9 +20,12 @@ export type OrgUebersicht = {
   personen: number
   fahrten: number
   nachrichten: number
+  /** Chat-Bilder und Logo im Speicher. */
   bilder_bytes: number
-  /** Geschätzt: Summe der gespeicherten Zeilen. */
-  daten_bytes: number
+  /** Personen, Fahrten, Nachrichten usw. - geschätzt aus den gespeicherten Zeilen. */
+  text_bytes: number
+  /** Anmeldekonten, Sitzungen und Push-Geräte der Personen - geschätzt. */
+  uebrige_bytes: number
 }
 
 export async function istBetreiber(): Promise<boolean> {
@@ -37,7 +40,8 @@ export async function listOrganisationenBetreiber(): Promise<OrgUebersicht[]> {
   return ((data ?? []) as OrgUebersicht[]).map((o) => ({
     ...o,
     bilder_bytes: Number(o.bilder_bytes),
-    daten_bytes: Number(o.daten_bytes),
+    text_bytes: Number(o.text_bytes),
+    uebrige_bytes: Number(o.uebrige_bytes),
   }))
 }
 
@@ -91,13 +95,26 @@ export type SpeicherStand = {
   gesamt_budget: number
   /** Höchstens so viel für Chat-Bilder aller Organisationen. */
   bilder_budget: number
-  /** Übrige Daten: die ganze Datenbank und die Logos. */
+  /** Die ganze Datenbank: Text- und Fahrtdaten plus übrige Daten. */
   daten_bytes: number
+  /** Bilder: Chat-Bilder und Logos. */
   bilder_bytes: number
+  chat_bytes: number
+  logo_bytes: number
+  /** Die Tabellen der Vereine: Personen, Fahrten, Nachrichten usw. */
+  text_bytes: number
+  /** Der Rest der Datenbank: Anmeldekonten, Sitzungen, Protokolle, Verwaltung. */
+  uebrige_bytes: number
   /** Was für Bilder tatsächlich gilt: das Kleinere aus Bildbudget und Restbudget. */
   bilder_grenze: number
   /** Geräumte Dateien, die noch aus dem Speicher entfernt werden müssen. */
   ausstehend: number
+  /** Bildkompression: längste Kante in Pixeln, JPEG-Qualität in Prozent. */
+  bild_max_kante: number
+  bild_qualitaet: number
+  /** Durchschnittsgröße der letzten (höchstens 20) Chat-Bilder; 0, wenn es keine gibt. */
+  bild_schnitt_bytes: number
+  bild_schnitt_anzahl: number
 }
 
 export const MB = 1024 * 1024
@@ -113,6 +130,14 @@ export async function speicherStand(): Promise<SpeicherStand> {
     bilder_bytes: Number(z.bilder_bytes),
     bilder_grenze: Number(z.bilder_grenze),
     ausstehend: Number(z.ausstehend),
+    chat_bytes: Number(z.chat_bytes),
+    logo_bytes: Number(z.logo_bytes),
+    text_bytes: Number(z.text_bytes),
+    uebrige_bytes: Number(z.uebrige_bytes),
+    bild_max_kante: Number(z.bild_max_kante),
+    bild_qualitaet: Number(z.bild_qualitaet),
+    bild_schnitt_bytes: Number(z.bild_schnitt_bytes ?? 0),
+    bild_schnitt_anzahl: Number(z.bild_schnitt_anzahl ?? 0),
   }
 }
 
@@ -121,6 +146,15 @@ export async function speicherBudgetSetzen(gesamtMb: number, bilderMb: number): 
   const { error } = await supabase.rpc('speicher_budget_setzen', {
     p_gesamt_mb: Math.round(gesamtMb),
     p_bilder_mb: Math.round(bilderMb),
+  })
+  if (error) throw error
+}
+
+/** Bildkompression für alle Organisationen; gilt für neu hochgeladene Bilder. */
+export async function bildKompressionSetzen(maxKante: number, qualitaet: number): Promise<void> {
+  const { error } = await supabase.rpc('bild_einstellungen_setzen', {
+    p_max_kante: Math.round(maxKante),
+    p_qualitaet: Math.round(qualitaet),
   })
   if (error) throw error
 }

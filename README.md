@@ -418,8 +418,9 @@ ungelesen am Knopf.
 ### Bilder
 
 Über das Kamerasymbol lassen sich Fotos anhängen. Vor dem Hochladen verkleinert
-die App sie auf höchstens 1600 px – ein Handyfoto schrumpft dadurch von mehreren
-Megabyte auf unter 100 KB.
+die App sie und speichert sie als JPEG – ein Handyfoto schrumpft dadurch von
+mehreren Megabyte auf einige hundert KB. Wie stark, stellt der Betreiber ein
+(siehe *Bildkompression*); Vorgabe 1600 px längste Kante, Qualität 82 %.
 
 Wie viel Platz Bilder haben, legt der Betreiber im **Speicher-Budget** fest
 (siehe unten). Wird die Grenze überschritten, verschwinden die **ältesten Bilder
@@ -434,11 +435,43 @@ zusammen (Migration `0040`, Tabelle `speicher_budget`):
 - **Gesamtbudget**, Vorgabe **1 GB** (1024 MB), mindestens 100 MB
 - **Bildspeicher**: höchstens so viel für Chat-Bilder, Vorgabe 750 MB
 
-Für Bilder gilt stets die **kleinere** der beiden: der eingestellte
-Bildspeicher oder das, was das Gesamtbudget nach den **übrigen Daten** lässt –
-der ganzen Datenbank (auch Anmeldekonten und Verwaltung) und den Logos.
-Wachsen die übrigen Daten, schrumpft der Platz für Bilder mit, und die ältesten
-verschwinden (FIFO über alle Organisationen).
+Der Speicher ist in **drei Arten** aufgeteilt, überall gleich gezählt und mit
+denselben Farben gezeigt (Migration `0045`):
+
+| Art | Was dazugehört | Farbe |
+|---|---|---|
+| **Bilder** | Chat-Bilder und Logos im Speicher | blau |
+| **Text- und Fahrtdaten** | Tabellen der Vereine: Personen, Fahrten, Plätze, Notizen, Nachrichten, Reaktionen, Heime, Rikschas, Statistik, Einstellungen, Organisationen (`speicher_text_tabellen()`) | grün |
+| **Übrige Daten** | der Rest der Datenbank: Anmeldekonten, Sitzungen, Protokolle, Push-Geräte, Verwaltung der Datenbank | grau |
+
+Für Bilder gilt stets die **kleinere** Grenze: der eingestellte Bildspeicher
+oder das, was das Gesamtbudget nach der **Datenbank** (Text- und Fahrtdaten plus
+übrige Daten) lässt. Wächst die Datenbank, schrumpft der Platz für Bilder mit,
+und die ältesten Chat-Bilder verschwinden (FIFO über alle Organisationen).
+Logos zählen zu den Bildern, werden aber nie geräumt.
+
+In der Liste der **Organisationen** steht dieselbe Aufteilung je
+Organisation: Bilder (ihre Chat-Bilder und ihr Logo), Text und Fahrten
+(geschätzt aus den gespeicherten Zeilen) und Übrige (geschätzt aus
+Anmeldekonten, Sitzungen und Push-Geräten ihrer Personen). Die Zeilen der
+Datenbank sind je Organisation nur geschätzt; die Summen oben im Budget sind
+die echten Größen, samt Verwaltungsaufwand der Datenbank.
+
+### Bildkompression
+
+Ebenfalls in den **Betreiber Einstellungen**, für alle Organisationen:
+
+- **Stufen** zum schnellen Wählen: *Stark* (1280 px, 70 %), *Ausgewogen*
+  (1600 px, 82 %, Vorgabe), *Gering* (2048 px, 88 %)
+- oder frei: **längste Kante** (640–4096 px) und **Qualität** (30–95 %)
+- **Probefoto:** zeigt vor dem Speichern, wie groß ein Foto mit den gewählten
+  Werten würde und wie es aussieht. Das Foto verlässt das Gerät dabei nicht.
+- Darunter steht, wie groß die letzten Chat-Bilder im Schnitt wirklich sind.
+
+Die Werte liegen in `speicher_budget` (`bild_max_kante`, `bild_qualitaet`); die
+App liest sie beim Hochladen über `bild_einstellungen()` (fünf Minuten
+zwischengespeichert, bei einem Fehler gilt die Vorgabe). Sie gelten nur für
+neue Bilder.
 
 Geräumt wird in zwei Schritten, weil eine Datenbankfunktion Dateien im
 Speicher nicht selbst löschen kann:

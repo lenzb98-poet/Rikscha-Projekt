@@ -8,11 +8,12 @@ import { toGermanError } from '../lib/errors'
 /**
  * Das Speicher-Budget aller Organisationen zusammen.
  *
- * Der Balken zeigt, wie sich das Gesamtbudget aufteilt: übrige Daten
- * (Datenbank und Logos), Chat-Bilder und was frei ist. Für Bilder gilt stets
- * die kleinere Grenze - der eingestellte Bildspeicher oder das, was nach den
- * übrigen Daten vom Gesamtbudget bleibt. Geräumt wird nach FIFO: das älteste
- * Bild aller Organisationen zuerst.
+ * Der Balken zeigt, wie sich das Gesamtbudget aufteilt: Text- und Fahrtdaten,
+ * übrige Daten (der Rest der Datenbank), Bilder (Chat-Bilder und Logos) und
+ * was frei ist. Für Bilder gilt stets die kleinere Grenze - der eingestellte
+ * Bildspeicher oder das, was nach der Datenbank vom Gesamtbudget bleibt.
+ * Geräumt werden nur Chat-Bilder, nach FIFO: das älteste aller Organisationen
+ * zuerst.
  */
 export function SpeicherBudget() {
   const [stand, setStand] = useState<SpeicherStand | null>(null)
@@ -115,9 +116,9 @@ export function SpeicherBudget() {
     <section className="card">
       <h3>Speicher-Budget</h3>
       <p className="muted card__text">
-        Gilt für alle Organisationen zusammen. Brauchen die übrigen Daten mehr Platz oder ist der
+        Gilt für alle Organisationen zusammen. Braucht die Datenbank mehr Platz oder ist der
         Bildspeicher voll, verschwinden die ältesten Chat-Bilder zuerst – egal aus welcher
-        Organisation. Die Nachrichten bleiben stehen.
+        Organisation. Die Nachrichten bleiben stehen, Logos bleiben immer.
       </p>
 
       {!stand && !error && <p className="muted">Lade Speicherstand …</p>}
@@ -127,11 +128,12 @@ export function SpeicherBudget() {
           <div
             className="budget__balken"
             role="img"
-            aria-label={`Übrige Daten ${formatiereGroesse(stand.daten_bytes)}, Chat-Bilder ${formatiereGroesse(stand.bilder_bytes)}, frei ${formatiereGroesse(frei)} von ${formatiereGroesse(stand.gesamt_budget)}`}
+            aria-label={`Text- und Fahrtdaten ${formatiereGroesse(stand.text_bytes)}, übrige Daten ${formatiereGroesse(stand.uebrige_bytes)}, Bilder ${formatiereGroesse(stand.bilder_bytes)}, frei ${formatiereGroesse(frei)} von ${formatiereGroesse(stand.gesamt_budget)}`}
           >
-            <span className="budget__teil budget__teil--daten" style={{ width: `${anteil(stand.daten_bytes)}%` }} />
+            <span className="budget__teil budget__teil--text" style={{ width: `${anteil(stand.text_bytes)}%` }} />
+            <span className="budget__teil budget__teil--uebrige" style={{ width: `${anteil(stand.uebrige_bytes)}%` }} />
             <span className="budget__teil budget__teil--bilder" style={{ width: `${anteil(stand.bilder_bytes)}%` }} />
-            {/* Wo die Grenze für Bilder liegt, gezählt ab dem Ende der übrigen Daten */}
+            {/* Wo die Grenze für Bilder liegt, gezählt ab dem Ende der Datenbank */}
             <span
               className="budget__grenze"
               style={{ left: `${anteil(stand.daten_bytes + stand.bilder_grenze)}%` }}
@@ -141,14 +143,23 @@ export function SpeicherBudget() {
 
           <ul className="budget__legende">
             <li>
-              <span className="budget__punkt budget__punkt--daten" aria-hidden="true" />
-              Übrige Daten <strong>{formatiereGroesse(stand.daten_bytes)}</strong>
-              <span className="muted"> (Datenbank und Logos)</span>
+              <span className="budget__punkt budget__punkt--bilder" aria-hidden="true" />
+              Bilder <strong>{formatiereGroesse(stand.bilder_bytes)}</strong>
+              <span className="muted">
+                {' '}
+                von höchstens {formatiereGroesse(stand.bilder_grenze)} (Chat{' '}
+                {formatiereGroesse(stand.chat_bytes)}, Logos {formatiereGroesse(stand.logo_bytes)})
+              </span>
             </li>
             <li>
-              <span className="budget__punkt budget__punkt--bilder" aria-hidden="true" />
-              Chat-Bilder <strong>{formatiereGroesse(stand.bilder_bytes)}</strong>
-              <span className="muted"> von höchstens {formatiereGroesse(stand.bilder_grenze)}</span>
+              <span className="budget__punkt budget__punkt--text" aria-hidden="true" />
+              Text- und Fahrtdaten <strong>{formatiereGroesse(stand.text_bytes)}</strong>
+              <span className="muted"> (Personen, Fahrten, Nachrichten, Heime …)</span>
+            </li>
+            <li>
+              <span className="budget__punkt budget__punkt--uebrige" aria-hidden="true" />
+              Übrige Daten <strong>{formatiereGroesse(stand.uebrige_bytes)}</strong>
+              <span className="muted"> (Anmeldekonten, Protokolle, Verwaltung der Datenbank)</span>
             </li>
             <li>
               <span className="budget__punkt" aria-hidden="true" />
@@ -160,7 +171,7 @@ export function SpeicherBudget() {
           {grenzeDurchRest && (
             <p className="hint budget__erklaerung">
               Für Bilder gilt gerade der Rest des Gesamtbudgets, nicht der eingestellte
-              Bildspeicher – die übrigen Daten brauchen den Platz.
+              Bildspeicher – die Text-, Fahrt- und übrigen Daten brauchen den Platz.
             </p>
           )}
 

@@ -20,6 +20,10 @@
   --error: #b3261e;
   --ok: var(--blau);
   --warn: #8a6100;
+  /* Speicherarten in den Betreiber Einstellungen */
+  --speicher-bilder: var(--blau);
+  --speicher-text: #1e7a4d;
+  --speicher-uebrige: #8a97a8;
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
 
@@ -1637,7 +1641,10 @@ th.tab__kreuz--still { color: var(--muted); font-style: italic; }
   background: var(--border);
   overflow: hidden;
 }
-.org__balken span { display: block; height: 100%; background: var(--blau); border-radius: 999px; }
+.org__balken > span { display: flex; height: 100%; border-radius: 999px; overflow: hidden; }
+.org__balken > span > span { display: block; height: 100%; }
+.org__arten { display: flex; flex-wrap: wrap; gap: 2px 12px; font-size: 13px; color: var(--muted); }
+.org__arten .budget__punkt { width: 8px; height: 8px; margin-right: 5px; }
 .org__link { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; font-size: 13px; }
 .org__link code { color: var(--muted); }
 .org__link .btn--link { padding: 0; font-size: 13px; }
@@ -1655,8 +1662,9 @@ th.tab__kreuz--still { color: var(--muted); font-style: italic; }
 }
 .budget__teil { display: block; height: 100%; min-width: 2px; }
 .budget__teil:first-child { border-radius: 999px 0 0 999px; }
-.budget__teil--daten { background: var(--muted); }
-.budget__teil--bilder { background: var(--blau); }
+.budget__teil--text { background: var(--speicher-text); }
+.budget__teil--uebrige { background: var(--speicher-uebrige); }
+.budget__teil--bilder { background: var(--speicher-bilder); }
 /* Senkrechter Strich: bis hierhin dürfen Bilder reichen */
 .budget__grenze {
   position: absolute;
@@ -1677,13 +1685,48 @@ th.tab__kreuz--still { color: var(--muted); font-style: italic; }
   background: var(--border);
   vertical-align: baseline;
 }
-.budget__punkt--daten { background: var(--muted); }
-.budget__punkt--bilder { background: var(--blau); }
+.budget__punkt--text { background: var(--speicher-text); }
+.budget__punkt--uebrige { background: var(--speicher-uebrige); }
+.budget__punkt--bilder { background: var(--speicher-bilder); }
+.budget__legende .muted { font-size: 13px; }
 .hint.budget__erklaerung { margin: 10px 0 0; }
 .budget__ausstehend .btn--link { padding: 0; }
 .budget__form { margin-top: 18px; }
-.budget__felder { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+.budget__felder { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.budget__felder .field, .kompression__regler .field { min-width: 0; }
 .budget__knoepfe { margin-top: 14px; }
+
+/* --- Bildkompression in den Betreiber Einstellungen ---------------------- */
+.kompression__stufen { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.kompression__stufe {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 11px 13px;
+  text-align: left;
+  font: inherit;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+}
+.kompression__stufe:hover { background: #f5f8fc; }
+.kompression__stufe--an { border-color: var(--blau); background: var(--blau-zart); }
+.kompression__stufe--an:hover { background: var(--blau-zart); }
+.kompression__stufe strong { color: var(--blau-dunkel); }
+.kompression__stufe-text { color: var(--muted); font-size: 12px; }
+.kompression__regler { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-top: 14px; }
+.kompression__schieber { width: 100%; margin: 10px 0 2px; accent-color: var(--blau); }
+.kompression__skala { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); }
+.hint.kompression__hinweis { margin: 12px 0 0; }
+.kompression__probe { margin-top: 14px; display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+.kompression__probe-knopf { cursor: pointer; }
+.kompression__vorschau { margin: 0; display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+.kompression__vorschau img { max-width: 100%; max-height: 320px; border-radius: 12px; border: 1px solid var(--border); }
+.kompression .alert { margin: 12px 0 0; }
+.kompression__knoepfe { margin-top: 14px; }
 
 /* Auswertung als erste Zeile im Fahrtenbuch, gleich unter den Überschriften.
    Schlägt die Streifen und das Hervorheben beim Überfahren. */
