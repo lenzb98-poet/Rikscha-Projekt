@@ -489,11 +489,11 @@ nur, wenn die App auf dem Startbildschirm liegt (ab iOS 16.4).
 
 | Feld | Bedeutung |
 |---|---|
-| `erinnerung_nach` | Abstand zum Fahrtbeginn – zum Testen `0 minutes`, später z. B. `3 hours` |
+| `erinnerung_nach` | Abstand zum Fahrtbeginn – aktuell `45 minutes` |
 | `ruhezeit` | `true`: zwischen 21 und 8 Uhr nichts schicken, sondern danach |
 | `aktiv_seit` | nur Fahrten ab diesem Zeitpunkt werden erinnert |
 
-Umstellen etwa mit `update push_einstellungen set erinnerung_nach = '3 hours', ruhezeit = true;`
+Umstellen etwa mit `update push_einstellungen set erinnerung_nach = '1 hour', ruhezeit = true;`
 – ohne neue App-Version.
 
 **So funktioniert es:** pg_cron prüft jede Minute (`push_hat_faellige`) und ruft

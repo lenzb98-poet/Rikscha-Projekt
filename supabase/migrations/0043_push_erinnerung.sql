@@ -26,8 +26,8 @@ create extension if not exists pg_net with schema extensions;
 -- ---------------------------------------------------------------------------
 create table if not exists public.push_einstellungen (
   id               integer primary key default 1 check (id = 1),
-  -- Zum Testen 0: die Erinnerung kommt zum Fahrtbeginn. Später z. B. '3 hours'.
-  erinnerung_nach  interval not null default '0 minutes',
+  -- 45 Minuten nach Fahrtbeginn (zum Testen war es 0).
+  erinnerung_nach  interval not null default '45 minutes',
   -- Nachts (21 bis 8 Uhr) nichts schicken; zum Testen aus.
   ruhezeit         boolean not null default false,
   aktiv_seit       timestamptz not null default now(),
