@@ -552,6 +552,11 @@ auf dem Startbildschirm liegt (ab iOS 16.4).
   öffnete Android den Browser statt der App. Sonst öffnet er die Adresse neu;
   Android gibt sie an die installierte App weiter. Scheitert ein Schritt, kommt
   der nächste.
+- **Firefox für Android** zeigt die Mitteilungen an, reicht das Antippen aber
+  nicht an die Seite weiter – es öffnet sich nur Firefox (bekannter Fehler in
+  Firefox: Bugzilla 1880000, Fenix #18663 und #24139). Von der Seite aus lässt
+  sich das nicht umgehen. Die Karte weist Firefox-Nutzer auf Android darauf hin
+  und empfiehlt, die App über Chrome zu installieren.
 - Wie weit gemeldet ist, steht je Verein in `push_chat_stand`.
 - Der Anfang der Nachricht reist verschlüsselt über den Push-Dienst (Apple,
   Google, Mozilla), ist aber auf dem Sperrbildschirm sichtbar.

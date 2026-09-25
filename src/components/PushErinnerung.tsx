@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import {
+  istFirefoxAndroid,
   pushAusschalten,
   pushEinschalten,
   pushOptionen,
@@ -157,6 +158,16 @@ export function PushErinnerung() {
       {zustand === 'nicht-moeglich' && (
         <p className="hint erinnerung__hinweis">
           Dieser Browser kann leider keine Mitteilungen empfangen.
+        </p>
+      )}
+
+      {istFirefoxAndroid() && (zustand === 'an' || zustand === 'aus') && (
+        <p className="hint erinnerung__hinweis erinnerung__firefox">
+          <strong>Hinweis zu Firefox:</strong> Die Mitteilungen kommen an, aber ein Tipp darauf
+          öffnet nur Firefox – nicht die App und nicht den Chat. Das ist ein Fehler in Firefox für
+          Android, den die App nicht umgehen kann. Mit <strong>Chrome</strong> klappt es: die Seite
+          in Chrome öffnen, über das Menü ⋮ „App installieren“ wählen und die Mitteilungen dort
+          einschalten.
         </p>
       )}
 

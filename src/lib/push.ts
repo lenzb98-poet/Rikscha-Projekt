@@ -47,6 +47,17 @@ function schluesselZuBytes(b64url: string): Uint8Array<ArrayBuffer> {
   return Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)) as Uint8Array<ArrayBuffer>
 }
 
+/**
+ * Firefox für Android zeigt Mitteilungen an, reicht das Antippen aber nicht an
+ * die Seite weiter (bekannter Fehler in Firefox, Bugzilla 1880000 und Fenix
+ * #18663/#24139): Es öffnet sich nur Firefox, nicht die App und nicht der Chat.
+ * Beheben lässt sich das von der Seite aus nicht - die App weist nur darauf hin.
+ */
+export function istFirefoxAndroid(): boolean {
+  const ua = navigator.userAgent
+  return /Android/.test(ua) && /Firefox\//.test(ua)
+}
+
 export async function pushZustand(): Promise<PushZustand> {
   if (istIPhone() && !alsApp()) return 'iphone-startbildschirm'
   if (!technischMoeglich()) return 'nicht-moeglich'

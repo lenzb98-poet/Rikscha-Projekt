@@ -1785,4 +1785,5 @@ th.tab__kreuz--still { color: var(--muted); font-style: italic; }
 .erinnerung__wahl { display: grid; gap: 8px; margin: 0 0 12px; }
 .erinnerung__knoepfe { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
 .hint.erinnerung__hinweis { margin: 0; }
+.hint.erinnerung__firefox { margin-top: 12px; }
 .erinnerung .alert { margin: 12px 0 0; }
