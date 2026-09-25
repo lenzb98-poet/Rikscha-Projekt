@@ -1,23 +1,54 @@
 import { useEffect, useState } from 'react'
-import { pushAusschalten, pushEinschalten, pushTesten, pushZustand, type PushZustand } from '../lib/push'
+import {
+  pushAusschalten,
+  pushEinschalten,
+  pushOptionen,
+  pushOptionSetzen,
+  pushTesten,
+  pushZustand,
+  type PushOptionen,
+  type PushZustand,
+} from '../lib/push'
 import { toGermanError } from '../lib/errors'
 
 /**
- * "Erinnerung nach der Fahrt" auf der Startseite: einschalten, testen,
- * ausschalten. Gilt je Gerät - wer Handy und Rechner nutzt, schaltet beide
- * einzeln ein.
+ * "Mitteilungen aufs Handy" auf der Startseite: einschalten, wählen was kommt
+ * (Erinnerung nach der Fahrt, neue Chat-Nachrichten), testen, ausschalten.
+ * Gilt je Gerät - wer Handy und Rechner nutzt, schaltet beide einzeln ein.
  */
 export function PushErinnerung() {
   const [zustand, setZustand] = useState<PushZustand | null>(null)
   const [busy, setBusy] = useState(false)
   const [hinweis, setHinweis] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [optionen, setOptionen] = useState<PushOptionen | null>(null)
 
   useEffect(() => {
     pushZustand()
       .then(setZustand)
       .catch(() => setZustand('nicht-moeglich'))
   }, [])
+
+  useEffect(() => {
+    if (zustand !== 'an') return
+    pushOptionen()
+      .then(setOptionen)
+      .catch(() => setOptionen(null))
+  }, [zustand])
+
+  async function umschalten(neu: Partial<PushOptionen>) {
+    if (!optionen) return
+    const vorher = optionen
+    setOptionen({ ...optionen, ...neu })
+    setError(null)
+    setHinweis(null)
+    try {
+      await pushOptionSetzen(neu)
+    } catch (err) {
+      setOptionen(vorher)
+      setError(toGermanError(err))
+    }
+  }
 
   async function ausfuehren(aktion: () => Promise<void>, erfolg: string) {
     setBusy(true)
@@ -45,15 +76,41 @@ export function PushErinnerung() {
 
   return (
     <section className="card erinnerung">
-      <h3>🔔 Erinnerung nach der Fahrt</h3>
+      <h3>🔔 Mitteilungen aufs Handy</h3>
       <p className="muted card__text">
-        Fehlen nach einer Fahrt noch deine Angaben, schickt dir die App eine kurze Nachricht aufs
-        Handy.
+        Die App meldet sich kurz, wenn nach einer Fahrt noch deine Angaben fehlen oder im Chat
+        etwas Neues steht.
       </p>
 
       {zustand === 'an' && (
         <>
           <p className="erinnerung__status">✓ Auf diesem Gerät eingeschaltet</p>
+          {optionen && (
+            <div className="erinnerung__wahl">
+              <label className="check check--schlank">
+                <input
+                  type="checkbox"
+                  checked={optionen.fahrt}
+                  onChange={(e) => umschalten({ fahrt: e.target.checked })}
+                />
+                <span>
+                  <strong>Erinnerung nach der Fahrt</strong>
+                  <span className="check__hint">45 Minuten nach Fahrtbeginn, falls noch Angaben fehlen</span>
+                </span>
+              </label>
+              <label className="check check--schlank">
+                <input
+                  type="checkbox"
+                  checked={optionen.chat}
+                  onChange={(e) => umschalten({ chat: e.target.checked })}
+                />
+                <span>
+                  <strong>Neue Chat-Nachrichten</strong>
+                  <span className="check__hint">Wer geschrieben hat und der Anfang der Nachricht</span>
+                </span>
+              </label>
+            </div>
+          )}
           <div className="erinnerung__knoepfe">
             <button
               className="btn btn--ghost"
@@ -65,7 +122,7 @@ export function PushErinnerung() {
             <button
               className="btn btn--link"
               disabled={busy}
-              onClick={() => ausfuehren(pushAusschalten, 'Erinnerungen sind auf diesem Gerät ausgeschaltet.')}
+              onClick={() => ausfuehren(pushAusschalten, 'Mitteilungen sind auf diesem Gerät ausgeschaltet.')}
             >
               Ausschalten
             </button>
@@ -79,14 +136,14 @@ export function PushErinnerung() {
           disabled={busy}
           onClick={() => ausfuehren(pushEinschalten, 'Eingeschaltet! Du kannst jetzt eine Probenachricht senden.')}
         >
-          {busy ? 'Einen Moment …' : 'Erinnerungen einschalten'}
+          {busy ? 'Einen Moment …' : 'Mitteilungen einschalten'}
         </button>
       )}
 
       {zustand === 'verweigert' && (
         <p className="hint erinnerung__hinweis">
           Mitteilungen für diese Seite sind blockiert. Erlaube sie in den Einstellungen deines
-          Browsers oder Handys, dann kannst du die Erinnerungen hier einschalten.
+          Browsers oder Handys, dann kannst du die Mitteilungen hier einschalten.
         </p>
       )}
 
@@ -99,7 +156,7 @@ export function PushErinnerung() {
 
       {zustand === 'nicht-moeglich' && (
         <p className="hint erinnerung__hinweis">
-          Dieser Browser kann leider keine Erinnerungen empfangen.
+          Dieser Browser kann leider keine Mitteilungen empfangen.
         </p>
       )}
 

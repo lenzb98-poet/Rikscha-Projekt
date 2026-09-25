@@ -474,16 +474,34 @@ Fläche. Im Browser bleibt es beim gewohnten Verhalten.
 
 Offline funktioniert die App nicht – dafür wäre ein Service Worker nötig.
 
-## Erinnerung nach der Fahrt (Push)
+## Mitteilungen aufs Handy (Push)
 
-Fehlen nach einer Fahrt noch Angaben, schickt die App eine Mitteilung aufs
-Handy: **„🚲 Wie war die Fahrt? Bitte trag noch deine Angaben ein …“**. Ein
-Tipp darauf öffnet die App. Jeder belegte Platz wird höchstens einmal
-erinnert.
+Zwei Arten, je Gerät einzeln wählbar:
 
-**Einschalten** je Gerät auf der Startseite unter *Erinnerung nach der Fahrt*
-(dort auch eine Probenachricht). Android: in jedem gängigen Browser. iPhone:
-nur, wenn die App auf dem Startbildschirm liegt (ab iOS 16.4).
+- **Erinnerung nach der Fahrt:** Fehlen noch Angaben, kommt **„🚲 Wie war die
+  Fahrt? Bitte trag noch deine Angaben ein …“**. Jeder belegte Platz wird
+  höchstens einmal erinnert.
+- **Neue Chat-Nachrichten:** **„💬 Anna im Chat“** mit dem Anfang der
+  Nachricht (bei einem Bild „📷 Bild“). Ein Tipp darauf öffnet direkt den Chat.
+
+**Einschalten** je Gerät auf der Startseite unter *Mitteilungen aufs Handy*;
+danach lassen sich beide Arten dort an- und abhaken (dazu eine
+Probenachricht). Android: in jedem gängigen Browser. iPhone: nur, wenn die App
+auf dem Startbildschirm liegt (ab iOS 16.4).
+
+**Chat im Einzelnen** (Migration `0044`):
+
+- Niemand bekommt seine eigenen Nachrichten gemeldet, und nichts, was er im
+  Chat schon gelesen hat (`app_users.chat_gesehen_bis`).
+- Eine neue Nachricht meldet sich **sofort** (Trigger `push_chat_neu` auf
+  `messages`). Danach gilt für den Verein eine **Pause von 30 Sekunden**; was
+  darin geschrieben wird, holt der Minuten-Zeitplan als eine Sammel-Mitteilung
+  nach („💬 3 neue Nachrichten im Chat“).
+- Auf dem Handy ersetzt eine neue Chat-Mitteilung die vorige, statt sich zu
+  stapeln.
+- Wie weit gemeldet ist, steht je Verein in `push_chat_stand`.
+- Der Anfang der Nachricht reist verschlüsselt über den Push-Dienst (Apple,
+  Google, Mozilla), ist aber auf dem Sperrbildschirm sichtbar.
 
 **Zeitpunkt** steht in der Datenbank, Tabelle `push_einstellungen`:
 
@@ -498,7 +516,8 @@ Umstellen etwa mit `update push_einstellungen set erinnerung_nach = '1 hour', ru
 
 **So funktioniert es:** pg_cron prüft jede Minute (`push_hat_faellige`) und ruft
 nur bei Bedarf die Edge Function `push-erinnerung`
-(`supabase/functions/push-erinnerung`). Die holt die fälligen Erinnerungen,
+(`supabase/functions/push-erinnerung`); bei neuen Chat-Nachrichten ruft der
+Trigger sie direkt. Sie holt alles Fällige (`push_faellige`),
 verschlüsselt sie je Gerät (Web Push, RFC 8291/8292, ohne Fremdbibliothek)
 und schickt sie an den Push-Dienst des Geräts. Geräte, die der Dienst nicht
 mehr kennt, werden entfernt. Die Schlüssel liegen im Vault der Datenbank; die

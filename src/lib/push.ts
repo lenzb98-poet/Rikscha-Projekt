@@ -1,12 +1,14 @@
 import { supabase } from './supabase'
 
 /**
- * Push-Erinnerungen auf diesem Gerät ein- und ausschalten.
+ * Push-Mitteilungen auf diesem Gerät ein- und ausschalten.
  *
  * Das Gerät meldet sich beim Push-Dienst seines Browsers an (Apple, Google,
  * Mozilla) und hinterlegt die Anschrift in der Datenbank (push_abos). Nach
- * einer Fahrt, bei der noch Angaben fehlen, schickt die Edge Function
- * push-erinnerung dorthin eine Nachricht; public/sw.js zeigt sie an.
+ * einer Fahrt, bei der noch Angaben fehlen, und bei neuen Chat-Nachrichten
+ * schickt die Edge Function push-erinnerung dorthin eine Nachricht;
+ * public/sw.js zeigt sie an. Was ein Gerät bekommt, steht in push_abos
+ * (fahrt, chat).
  */
 export type PushZustand =
   /** Browser kann keine Push-Nachrichten */
@@ -59,11 +61,11 @@ export async function pushZustand(): Promise<PushZustand> {
 /** Muss direkt aus einem Tipp heraus aufgerufen werden - sonst fragt das Handy nicht nach. */
 export async function pushEinschalten(): Promise<void> {
   const erlaubnis = await Notification.requestPermission()
-  if (erlaubnis !== 'granted') throw new Error('Ohne deine Erlaubnis kann die App keine Erinnerungen schicken.')
+  if (erlaubnis !== 'granted') throw new Error('Ohne deine Erlaubnis kann die App keine Mitteilungen schicken.')
 
   const { data: schluessel, error } = await supabase.rpc('push_vapid_schluessel')
   if (error) throw error
-  if (!schluessel) throw new Error('Erinnerungen sind auf dem Server noch nicht eingerichtet.')
+  if (!schluessel) throw new Error('Mitteilungen sind auf dem Server noch nicht eingerichtet.')
 
   const reg = await registrierung()
   await navigator.serviceWorker.ready
@@ -91,6 +93,28 @@ export async function pushAusschalten(): Promise<void> {
   await abo.unsubscribe()
 }
 
+/** Was dieses Gerät bekommt: Erinnerung nach der Fahrt, neue Chat-Nachrichten. */
+export type PushOptionen = { fahrt: boolean; chat: boolean }
+
+export async function pushOptionen(): Promise<PushOptionen | null> {
+  const abo = await (await registrierung()).pushManager.getSubscription()
+  if (!abo) return null
+  const { data, error } = await supabase.rpc('push_abo_optionen', { p_endpoint: abo.endpoint })
+  if (error) throw error
+  return (data as PushOptionen | null) ?? null
+}
+
+export async function pushOptionSetzen(neu: Partial<PushOptionen>): Promise<void> {
+  const abo = await (await registrierung()).pushManager.getSubscription()
+  if (!abo) return
+  const { error } = await supabase.rpc('push_abo_setzen', {
+    p_endpoint: abo.endpoint,
+    p_fahrt: neu.fahrt ?? null,
+    p_chat: neu.chat ?? null,
+  })
+  if (error) throw error
+}
+
 /** Schickt eine Probenachricht an alle eigenen Geräte. */
 export async function pushTesten(): Promise<void> {
   const { data, error } = await supabase.functions.invoke('push-erinnerung', { body: { test: true } })
@@ -101,6 +125,6 @@ export async function pushTesten(): Promise<void> {
     throw new Error(text?.fehler ?? 'Die Probenachricht ließ sich nicht senden.')
   }
   if (!data || (data as { gesendet?: number }).gesendet === 0) {
-    throw new Error('Der Push-Dienst hat die Nachricht nicht angenommen. Bitte Erinnerungen aus- und wieder einschalten.')
+    throw new Error('Der Push-Dienst hat die Nachricht nicht angenommen. Bitte Mitteilungen aus- und wieder einschalten.')
   }
 }

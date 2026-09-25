@@ -62,6 +62,22 @@ export function Dashboard({ profile, onSignOut }: Props) {
   // Die Ansicht als Anlass: zurück aus dem Chat wird sofort neu gezählt
   const ungelesen = useUngelesen(Boolean(profile), ansicht)
 
+  // Angetippte Chat-Mitteilung: Die App startet mit ?ansicht=chat, oder das
+  // schon offene Fenster bekommt vom Service Worker Bescheid (public/sw.js).
+  useEffect(() => {
+    const url = new URL(window.location.href)
+    if (url.searchParams.get('ansicht') === 'chat') {
+      url.searchParams.delete('ansicht')
+      history.replaceState(history.state, '', url)
+      setAnsicht('chat')
+    }
+    const beiNachricht = (e: MessageEvent) => {
+      if (e.data?.rikschaAnsicht === 'chat') setAnsicht('chat')
+    }
+    navigator.serviceWorker?.addEventListener('message', beiNachricht)
+    return () => navigator.serviceWorker?.removeEventListener('message', beiNachricht)
+  }, [setAnsicht])
+
   // Bei jedem Start den Bildspeicher nach dem Speicher-Budget aufräumen. Leise:
   // Scheitert es, läuft es beim nächsten Start oder Hochladen erneut.
   useEffect(() => {

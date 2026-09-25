@@ -1,9 +1,11 @@
-// Push-Erinnerungen: "Wie war die Fahrt? Bitte Angaben eintragen."
+// Push-Mitteilungen: "Wie war die Fahrt? Bitte Angaben eintragen." und
+// neue Chat-Nachrichten.
 //
 // Zwei Wege hierher:
 // - Der Zeitplan in der Datenbank (pg_cron) ruft jede Minute auf, sobald
-//   etwas fällig ist, mit dem Geheimnis im Kopf x-geheimnis. Dann holt die
-//   Funktion die fälligen Erinnerungen (push_faellige) und verschickt sie.
+//   etwas fällig ist, mit dem Geheimnis im Kopf x-geheimnis. Eine neue
+//   Chat-Nachricht ruft ebenso auf (Trigger push_chat_neu). Dann holt die
+//   Funktion alles Fällige (push_faellige) und verschickt es.
 // - Die App ruft mit { test: true } und der Anmeldung der Person auf. Dann
 //   geht eine Probenachricht an alle Geräte dieser Person.
 //
@@ -23,7 +25,7 @@ const admin = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE
 })
 
 type Konfig = { vapid_privat: string; vapid_oeffentlich: string; geheimnis: string; kontakt: string }
-type Faellig = Abo & { abo_id: string; titel: string; nachricht: string; link: string }
+type Faellig = Abo & { abo_id: string; titel: string; nachricht: string; link: string; thema: string }
 
 async function konfig(): Promise<Konfig> {
   const { data, error } = await admin.rpc('push_konfig')
@@ -48,7 +50,7 @@ async function verschicken(liste: Faellig[], k: Konfig) {
   let ok = 0
   for (const f of liste) {
     try {
-      const status = await senden(f, { titel: f.titel, text: f.nachricht, url: f.link }, vapid)
+      const status = await senden(f, { titel: f.titel, text: f.nachricht, url: f.link, thema: f.thema }, vapid)
       if (status === 404 || status === 410) await admin.rpc('push_abo_verfallen', { p_id: f.abo_id })
       else if (status < 300) ok++
       else console.warn('Push abgelehnt', status, new URL(f.endpoint).host)
