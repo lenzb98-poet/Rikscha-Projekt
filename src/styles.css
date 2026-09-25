@@ -1735,3 +1735,10 @@ th.tab__kreuz--still { color: var(--muted); font-style: italic; }
 .anleitung__fuss .btn { width: 100%; max-width: 420px; }
 .anleitung__hinweis { margin: 0 0 10px; font-size: 13px; color: rgba(255, 255, 255, 0.72); }
 .einrichten + .einrichten { margin-top: 10px; }
+
+/* --- Erinnerung nach der Fahrt (Push) ----------------------------------- */
+.erinnerung { margin-top: 16px; }
+.erinnerung__status { margin: 0 0 10px; font-weight: 600; color: var(--gruen, #1f7a4d); }
+.erinnerung__knoepfe { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.hint.erinnerung__hinweis { margin: 0; }
+.erinnerung .alert { margin: 12px 0 0; }

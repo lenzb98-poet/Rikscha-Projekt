@@ -474,6 +474,37 @@ Fläche. Im Browser bleibt es beim gewohnten Verhalten.
 
 Offline funktioniert die App nicht – dafür wäre ein Service Worker nötig.
 
+## Erinnerung nach der Fahrt (Push)
+
+Fehlen nach einer Fahrt noch Angaben, schickt die App eine Mitteilung aufs
+Handy: **„🚲 Wie war die Fahrt? Bitte trag noch deine Angaben ein …“**. Ein
+Tipp darauf öffnet die App. Jeder belegte Platz wird höchstens einmal
+erinnert.
+
+**Einschalten** je Gerät auf der Startseite unter *Erinnerung nach der Fahrt*
+(dort auch eine Probenachricht). Android: in jedem gängigen Browser. iPhone:
+nur, wenn die App auf dem Startbildschirm liegt (ab iOS 16.4).
+
+**Zeitpunkt** steht in der Datenbank, Tabelle `push_einstellungen`:
+
+| Feld | Bedeutung |
+|---|---|
+| `erinnerung_nach` | Abstand zum Fahrtbeginn – zum Testen `0 minutes`, später z. B. `3 hours` |
+| `ruhezeit` | `true`: zwischen 21 und 8 Uhr nichts schicken, sondern danach |
+| `aktiv_seit` | nur Fahrten ab diesem Zeitpunkt werden erinnert |
+
+Umstellen etwa mit `update push_einstellungen set erinnerung_nach = '3 hours', ruhezeit = true;`
+– ohne neue App-Version.
+
+**So funktioniert es:** pg_cron prüft jede Minute (`push_hat_faellige`) und ruft
+nur bei Bedarf die Edge Function `push-erinnerung`
+(`supabase/functions/push-erinnerung`). Die holt die fälligen Erinnerungen,
+verschlüsselt sie je Gerät (Web Push, RFC 8291/8292, ohne Fremdbibliothek)
+und schickt sie an den Push-Dienst des Geräts. Geräte, die der Dienst nicht
+mehr kennt, werden entfernt. Die Schlüssel liegen im Vault der Datenbank; die
+Edge Function erzeugt sie beim ersten Aufruf selbst. `public/sw.js` zeigt die
+Mitteilung auf dem Gerät an.
+
 ## Kurzanleitung (Video)
 
 Beim **ersten Login** öffnet sich ein Video von knapp fünf Minuten, das alles

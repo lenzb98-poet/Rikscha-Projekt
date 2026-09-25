@@ -8,6 +8,7 @@ import { Logo, RadelnLogo } from '../components/Marke'
 import { MeineFahrten } from '../components/MeineFahrten'
 import { AppEinrichten } from '../components/AppEinrichten'
 import { KurzanleitungDialog, KurzanleitungKnopf } from '../components/Kurzanleitung'
+import { PushErinnerung } from '../components/PushErinnerung'
 import { Auswertung } from '../components/Auswertung'
 import { TeamVerwaltung } from './TeamVerwaltung'
 import { Chat } from './Chat'
@@ -199,6 +200,8 @@ export function Dashboard({ profile, onSignOut }: Props) {
             </section>
 
             <Auswertung alle={fahrten} uebernahmen={uebernahmen} />
+
+            <PushErinnerung />
 
             <KurzanleitungKnopf />
             <AppEinrichten />
