@@ -31,11 +31,30 @@ type Props = {
   onClose: () => void
 }
 
+/**
+ * Echtes Vollbild des Browsers. Das erlauben Browser nur direkt nach einem
+ * Tipp - beim Knopf also sofort, beim ersten Login erst mit dem Tipp auf
+ * Abspielen. Wo es fehlt (iPhone), füllt die Ebene trotzdem den Bildschirm.
+ */
+function vollbildAn() {
+  const el = document.documentElement
+  if (!document.fullscreenElement && el.requestFullscreen) {
+    el.requestFullscreen().catch(() => {})
+  }
+}
+
+function vollbildAus() {
+  if (document.fullscreenElement && document.exitFullscreen) {
+    document.exitFullscreen().catch(() => {})
+  }
+}
+
 export function KurzanleitungDialog({ willkommen, onClose }: Props) {
   const video = useRef<HTMLVideoElement>(null)
 
   function schliessen() {
     video.current?.pause()
+    vollbildAus()
     void alsGesehenMerken()
     onClose()
   }
@@ -50,51 +69,41 @@ export function KurzanleitungDialog({ willkommen, onClose }: Props) {
   }, [])
 
   return (
-    <div
-      className="overlay"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="anleitung-titel"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) schliessen()
-      }}
-    >
-      <div className="overlay__card anleitung">
-        <div className="einrichten__kopf">
-          <RadelnLogo className="einrichten__logo" />
-          <div>
-            <h3 id="anleitung-titel">{willkommen ? 'Willkommen bei den Rikscha-Fahrten!' : 'Kurzanleitung'}</h3>
-            <p className="muted einrichten__unter">
-              In knapp fünf Minuten zeigt dir das Video alles, was du als Pilotin oder Pilot
-              brauchst.
-            </p>
-          </div>
+    <div className="anleitung" role="dialog" aria-modal="true" aria-labelledby="anleitung-titel">
+      <div className="anleitung__kopf">
+        <RadelnLogo className="anleitung__logo" />
+        <div className="anleitung__titel">
+          <h3 id="anleitung-titel">{willkommen ? 'Willkommen bei den Rikscha-Fahrten!' : 'Kurzanleitung'}</h3>
+          <p>Alles, was du als Pilotin oder Pilot brauchst – in knapp fünf Minuten.</p>
         </div>
+        <button className="anleitung__zu" onClick={schliessen} aria-label="Kurzanleitung schließen">
+          ✕
+        </button>
+      </div>
 
-        <video
-          ref={video}
-          className="anleitung__video"
-          poster={VORSCHAU}
-          controls
-          playsInline
-          preload="metadata"
-        >
-          <source src={VIDEO_MP4} type="video/mp4" />
-          <source src={VIDEO_WEBM} type="video/webm" />
-          Dein Browser kann das Video leider nicht abspielen.
-        </video>
+      <video
+        ref={video}
+        className="anleitung__video"
+        poster={VORSCHAU}
+        controls
+        playsInline
+        preload="metadata"
+        onPlay={vollbildAn}
+      >
+        <source src={VIDEO_MP4} type="video/mp4" />
+        <source src={VIDEO_WEBM} type="video/webm" />
+        Dein Browser kann das Video leider nicht abspielen.
+      </video>
 
+      <div className="anleitung__fuss">
         {willkommen && (
-          <p className="hint anleitung__hinweis">
+          <p className="anleitung__hinweis">
             Du kannst das Video jederzeit wieder ansehen – ganz unten auf der Startseite.
           </p>
         )}
-
-        <div className="overlay__actions">
-          <button className="btn" onClick={schliessen}>
-            {willkommen ? 'Los geht’s' : 'Schließen'}
-          </button>
-        </div>
+        <button className="btn" onClick={schliessen}>
+          {willkommen ? 'Los geht’s' : 'Schließen'}
+        </button>
       </div>
     </div>
   )
@@ -106,7 +115,13 @@ export function KurzanleitungKnopf() {
   return (
     <>
       <div className="einrichten">
-        <button className="btn btn--ghost" onClick={() => setOffen(true)}>
+        <button
+          className="btn btn--ghost"
+          onClick={() => {
+            vollbildAn()
+            setOffen(true)
+          }}
+        >
           🎬 Kurzanleitung ansehen
         </button>
       </div>

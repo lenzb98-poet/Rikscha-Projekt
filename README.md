@@ -485,6 +485,12 @@ Koordination kommen darin nicht vor.
 Ganz unten auf der Startseite steht der Knopf **Kurzanleitung ansehen** – dort
 lässt sich das Video jederzeit wieder aufrufen.
 
+Das Video erscheint im **Vollbild**: Die Ebene füllt den ganzen Bildschirm,
+mit Kopfzeile (Titel und ✕) und einem Knopf darunter. Wo der Browser es
+erlaubt, schaltet die App zusätzlich ins echte Vollbild – beim Knopf sofort,
+beim ersten Login mit dem Tipp auf Abspielen (Browser verlangen dafür einen
+Tipp). Beim Schließen geht es zurück.
+
 Ob jemand das Video schon gesehen hat, steht in `app_users.tutorial_gesehen_am`
 und gilt damit auf allen Geräten. Gesetzt wird es beim Schließen des Fensters
 (`tutorial_gesehen()`). Wer beim Einführen der Funktion schon ein

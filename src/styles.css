@@ -1696,15 +1696,42 @@ th.tab__kreuz--still { color: var(--muted); font-style: italic; }
 }
 
 /* --- Kurzanleitung (Video) ---------------------------------------------- */
-.anleitung { max-width: 460px; }
-.anleitung__video {
-  display: block;
-  width: 100%;
-  max-height: min(52dvh, calc(90dvh - 310px));
-  margin: 0 auto 14px;
-  border-radius: 12px;
+/* Füllt den ganzen Bildschirm; das Video nimmt allen Platz zwischen Kopf und Fuß. */
+.anleitung {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
   background: #0f223a;
+  color: #fff;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+.anleitung__kopf { display: flex; align-items: center; gap: 12px; padding: 12px 14px; }
+.anleitung__logo { width: 42px; height: 42px; flex-shrink: 0; }
+.anleitung__titel { flex: 1; min-width: 0; }
+.anleitung__titel h3 { margin: 0; font-size: 17px; line-height: 1.25; color: #fff; }
+.anleitung__titel p { margin: 2px 0 0; font-size: 13px; color: rgba(255, 255, 255, 0.72); }
+.anleitung__zu {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+}
+.anleitung__zu:hover, .anleitung__zu:focus-visible { background: rgba(255, 255, 255, 0.26); }
+.anleitung__video {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  background: #000;
   object-fit: contain;
 }
-.hint.anleitung__hinweis { margin: 0 0 16px; text-align: center; }
+.anleitung__fuss { padding: 12px 16px 16px; text-align: center; }
+.anleitung__fuss .btn { width: 100%; max-width: 420px; }
+.anleitung__hinweis { margin: 0 0 10px; font-size: 13px; color: rgba(255, 255, 255, 0.72); }
 .einrichten + .einrichten { margin-top: 10px; }
