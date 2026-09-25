@@ -576,52 +576,19 @@ Fehler ohne Herkunft oder aus fremden Dateien werden ignoriert – Safari meldet
 Fehler aus Erweiterungen als bloßes „Script error.". Läuft die App bereits,
 übernimmt die Diagnose nicht mehr; dann fängt die ErrorBoundary in React.
 
-## Datensicherung und Wachhalten
+## Supabase wach halten
 
-Zwei automatische Abläufe auf GitHub (unter **Actions**) sichern den Betrieb:
-
-**Supabase wach halten** (`wachhalten.yml`, montags und donnerstags):
 Supabase legt kostenlose Projekte nach etwa einer Woche ohne Nutzung
 schlafen – in der fahrtenfreien Zeit startete die App dann nicht mehr. Der
-Ablauf stellt zweimal pro Woche dieselbe harmlose Anfrage wie die App vor der
-Anmeldung. Scheitert sie, schickt GitHub eine E-Mail; dann im
+GitHub-Ablauf **Supabase wach halten** (`.github/workflows/wachhalten.yml`)
+stellt deshalb montags und donnerstags dieselbe harmlose Anfrage wie die App
+vor der Anmeldung. Scheitert sie, schickt GitHub eine E-Mail; dann im
 Supabase-Dashboard auf **Restore project** klicken. Er nutzt die Secrets, die
 es für das Veröffentlichen ohnehin gibt.
 
-**Datensicherung** (`sicherung.yml`, sonntags): sichert die ganze Datenbank –
-Fahrten, Personen, Chat, Einstellungen und Anmeldekonten – verschlüsselt mit
-einem eigenen Passwort. Jede Sicherung liegt **90 Tage** unter
-*Actions → Datensicherung → (Lauf) → Artifacts*. Nicht enthalten sind die
-Dateien selbst (Chat-Bilder, Logos); die Nachrichten verweisen nur auf sie.
-
 GitHub schaltet zeitgesteuerte Abläufe ab, wenn im Repository 60 Tage lang
-nichts passiert. Beide Abläufe schalten sich deshalb bei jedem Lauf selbst
+nichts passiert. Der Ablauf schaltet sich deshalb bei jedem Lauf selbst
 wieder ein.
-
-### Einrichten (einmalig)
-
-Unter *Settings → Secrets and variables → Actions → New repository secret*:
-
-| Secret | Inhalt |
-|---|---|
-| `SUPABASE_DB_URL` | Supabase-Dashboard → **Connect** → **Session pooler** → die Verbindungszeichenkette (`postgresql://postgres.…@…pooler.supabase.com:5432/postgres`), mit dem Datenbank-Passwort statt `[YOUR-PASSWORD]` |
-| `BACKUP_PASSWORT` | ein frei gewähltes, langes Passwort – **gut aufbewahren** (z. B. im Passwort-Safe des Vereins), ohne es lässt sich keine Sicherung öffnen |
-
-Wichtig ist der *Session pooler*: Die direkte Verbindung funktioniert von
-GitHub aus nicht (sie braucht IPv6). Danach unter *Actions → Datensicherung →
-Run workflow* einmal von Hand starten und prüfen, dass der Lauf grün wird.
-
-### Wiederherstellen
-
-1. Unter *Actions → Datensicherung* den gewünschten Lauf öffnen und unter
-   *Artifacts* die Sicherung herunterladen und entpacken.
-2. Entschlüsseln: `gpg -d rikscha-sicherung-JJJJ-MM-TT.dump.gpg > sicherung.dump`
-3. In die Datenbank zurückspielen – bei einem neuen Supabase-Projekt vorher
-   alle Migrationen einspielen:
-   `pg_restore --data-only --no-owner --no-privileges --schema=public -d "$SUPABASE_DB_URL" sicherung.dump`
-   (für die Anmeldekonten zusätzlich `--schema=auth`).
-
-Welche Tabellen enthalten sind, zeigt `pg_restore --list sicherung.dump`.
 
 ## Migrationen
 
