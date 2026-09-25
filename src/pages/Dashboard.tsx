@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import type { AppUser } from '../lib/useAuth'
 import { useFahrten } from '../lib/fahrten'
 import { useUngelesen } from '../lib/chatGelesen'
@@ -7,6 +7,7 @@ import { raeumeBildspeicherAuf } from '../lib/supabase'
 import { Logo, RadelnLogo } from '../components/Marke'
 import { MeineFahrten } from '../components/MeineFahrten'
 import { AppEinrichten } from '../components/AppEinrichten'
+import { KurzanleitungDialog, KurzanleitungKnopf } from '../components/Kurzanleitung'
 import { Auswertung } from '../components/Auswertung'
 import { TeamVerwaltung } from './TeamVerwaltung'
 import { Chat } from './Chat'
@@ -65,6 +66,18 @@ export function Dashboard({ profile, onSignOut }: Props) {
   useEffect(() => {
     if (profile) raeumeBildspeicherAuf().catch(() => {})
   }, [profile])
+
+  // Beim ersten Login öffnet sich die Kurzanleitung von selbst - einmal.
+  // Nach dem Schließen steht sie in der Datenbank als gesehen; das geladene
+  // Profil weiß davon nichts, deshalb merkt sich `anleitungGezeigt` es hier.
+  const [anleitungOffen, setAnleitungOffen] = useState(false)
+  const [anleitungGezeigt, setAnleitungGezeigt] = useState(false)
+  useEffect(() => {
+    if (profile && profile.tutorial_gesehen_am == null && !anleitungGezeigt) {
+      setAnleitungOffen(true)
+      setAnleitungGezeigt(true)
+    }
+  }, [profile, anleitungGezeigt])
 
   function inhalt() {
     switch (ansicht) {
@@ -187,6 +200,7 @@ export function Dashboard({ profile, onSignOut }: Props) {
 
             <Auswertung alle={fahrten} uebernahmen={uebernahmen} />
 
+            <KurzanleitungKnopf />
             <AppEinrichten />
           </>
         )
@@ -209,6 +223,8 @@ export function Dashboard({ profile, onSignOut }: Props) {
       <main className={ansicht === 'fahrtenbuch' ? 'content content--breit' : 'content'}>
         {inhalt()}
       </main>
+
+      {anleitungOffen && <KurzanleitungDialog willkommen onClose={() => setAnleitungOffen(false)} />}
     </div>
   )
 }

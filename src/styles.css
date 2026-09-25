@@ -1694,3 +1694,17 @@ th.tab__kreuz--still { color: var(--muted); font-style: italic; }
   color: var(--blau-dunkel);
   border-bottom: 2px solid var(--border);
 }
+
+/* --- Kurzanleitung (Video) ---------------------------------------------- */
+.anleitung { max-width: 460px; }
+.anleitung__video {
+  display: block;
+  width: 100%;
+  max-height: min(52dvh, calc(90dvh - 310px));
+  margin: 0 auto 14px;
+  border-radius: 12px;
+  background: #0f223a;
+  object-fit: contain;
+}
+.hint.anleitung__hinweis { margin: 0 0 16px; text-align: center; }
+.einrichten + .einrichten { margin-top: 10px; }

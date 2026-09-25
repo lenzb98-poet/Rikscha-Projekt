@@ -9,6 +9,8 @@ export type AppUser = {
   phone: string | null
   role: 'admin' | 'koordinator' | 'fahrer'
   is_active: boolean
+  /** Wann die Kurzanleitung zum ersten Mal geschlossen wurde; leer = noch nie. */
+  tutorial_gesehen_am: string | null
 }
 
 export function useAuth() {
@@ -36,7 +38,7 @@ export function useAuth() {
     let cancelled = false
     supabase
       .from('app_users')
-      .select('id, full_name, contact_email, phone, role, is_active')
+      .select('id, full_name, contact_email, phone, role, is_active, tutorial_gesehen_am')
       .eq('login_email', session.user.email?.toLowerCase() ?? '')
       .maybeSingle()
       .then(({ data }) => {

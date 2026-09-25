@@ -462,7 +462,7 @@ Browserleiste, unter dem Namen **Rikscha-Fahrten** und mit dem Logo des
 Projekts „Radeln ohne Alter" als Symbol (ohne Ortsnamen, für alle Standorte
 gleich). Auf der
 Startseite steht dafür der Knopf **App auf dem Handy einrichten** mit einer
-Anleitung für iPhone und Android.
+Anleitung für iPhone und Android (direkt unter **Kurzanleitung ansehen**).
 
 Zwei Feinheiten: Das Symbol für iOS hat **keinen Alphakanal** – bei Transparenz
 füllt iOS den Hintergrund schwarz. Für Android gibt es zusätzlich ein
@@ -473,6 +473,28 @@ gibt es keine vorher besuchte Seite, das Zurück führte sonst auf eine weiße
 Fläche. Im Browser bleibt es beim gewohnten Verhalten.
 
 Offline funktioniert die App nicht – dafür wäre ein Service Worker nötig.
+
+## Kurzanleitung (Video)
+
+Beim **ersten Login** öffnet sich ein Video von knapp fünf Minuten, das alles
+zeigt, was Pilotinnen und Piloten brauchen: Startseite, App aufs Handy,
+Fahrt finden, Kalender, Absagen (auch die ganze Fahrt wegen Regen), Angaben
+nach der Fahrt, Chat und Team. Die Anmeldung selbst und die Funktionen der
+Koordination kommen darin nicht vor.
+
+Ganz unten auf der Startseite steht der Knopf **Kurzanleitung ansehen** – dort
+lässt sich das Video jederzeit wieder aufrufen.
+
+Ob jemand das Video schon gesehen hat, steht in `app_users.tutorial_gesehen_am`
+und gilt damit auf allen Geräten. Gesetzt wird es beim Schließen des Fensters
+(`tutorial_gesehen()`). Wer beim Einführen der Funktion schon ein
+Anmeldekonto hatte, gilt als „gesehen“ und bekommt das Video nicht mehr
+ungefragt – nur über den Knopf.
+
+Das Video liegt in `public/tutorial/` als MP4 (H.264, spielen praktisch alle
+Handys) und als WebM für Browser ohne H.264; der Browser nimmt das erste, das
+er abspielen kann. Die Aufnahme zeigt Beispieldaten („Maria Muster“), keine
+echten Personen.
 
 ## Gestaltung
 
