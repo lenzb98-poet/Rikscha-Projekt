@@ -1,0 +1,51 @@
+name: Supabase wach halten
+
+# Supabase legt kostenlose Projekte nach etwa einer Woche ohne Nutzung
+# schlafen - in der fahrtenfreien Zeit startete die App dann nicht mehr.
+# Zweimal pro Woche fragt dieser Ablauf deshalb die Liste der Organisationen
+# ab. Das ist dieselbe Anfrage, die die App vor der Anmeldung stellt; sie
+# braucht keine Anmeldung und verändert nichts.
+#
+# Scheitert die Anfrage, schlägt der Ablauf fehl - GitHub schickt dann eine
+# E-Mail. Das ist gewollt: So fällt ein schlafendes Projekt sofort auf.
+
+on:
+  schedule:
+    - cron: '23 6 * * 1,4'   # montags und donnerstags, 06:23 UTC
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  anstupsen:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Supabase anfragen
+        env:
+          URL: ${{ secrets.VITE_SUPABASE_URL }}
+          KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        run: |
+          if [ -z "$URL" ] || [ -z "$KEY" ]; then
+            echo "::error::VITE_SUPABASE_URL oder VITE_SUPABASE_ANON_KEY fehlt in den Repository-Secrets."
+            exit 1
+          fi
+          code=$(curl -s -o antwort.json -w '%{http_code}' -X POST "$URL/rest/v1/rpc/list_organisationen" \
+            -H "apikey: $KEY" -H "Authorization: Bearer $KEY" -H 'Content-Type: application/json' -d '{}')
+          echo "Antwort: HTTP $code"
+          if [ "$code" != "200" ]; then
+            echo "::error::Supabase hat nicht geantwortet (HTTP $code). Schläft das Projekt? Im Supabase-Dashboard auf 'Restore project' klicken."
+            cat antwort.json || true
+            exit 1
+          fi
+          echo "Supabase ist wach: $(grep -o '"name"' antwort.json | wc -l) Organisation(en)."
+
+      # GitHub schaltet zeitgesteuerte Abläufe ab, wenn im Repository 60 Tage
+      # lang nichts passiert - genau in der Winterpause. Das erneute
+      # Einschalten setzt diese Frist jedes Mal zurück.
+      - name: Zeitplan eingeschaltet lassen
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api -X PUT "repos/${{ github.repository }}/actions/workflows/wachhalten.yml/enable" || echo "::warning::Zeitplan ließ sich nicht erneuern."
