@@ -74,7 +74,7 @@ export function KurzanleitungDialog({ willkommen, onClose }: Props) {
         <RadelnLogo className="anleitung__logo" />
         <div className="anleitung__titel">
           <h3 id="anleitung-titel">{willkommen ? 'Willkommen bei den Rikscha-Fahrten!' : 'Kurzanleitung'}</h3>
-          <p>Alles, was du als Pilotin oder Pilot brauchst – in knapp fünf Minuten.</p>
+          <p>Alles, was du als Pilotin oder Pilot brauchst – in knapp sechs Minuten.</p>
         </div>
         <button className="anleitung__zu" onClick={schliessen} aria-label="Kurzanleitung schließen">
           ✕

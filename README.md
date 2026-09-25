@@ -526,10 +526,10 @@ Mitteilung auf dem Gerät an.
 
 ## Kurzanleitung (Video)
 
-Beim **ersten Login** öffnet sich ein Video von knapp fünf Minuten, das alles
+Beim **ersten Login** öffnet sich ein Video von knapp sechs Minuten, das alles
 zeigt, was Pilotinnen und Piloten brauchen: Startseite, App aufs Handy,
 Fahrt finden, Kalender, Absagen (auch die ganze Fahrt wegen Regen), Angaben
-nach der Fahrt, Chat und Team. Die Anmeldung selbst und die Funktionen der
+nach der Fahrt, Chat, Mitteilungen aufs Handy (Push) und Team. Die Anmeldung selbst und die Funktionen der
 Koordination kommen darin nicht vor.
 
 Ganz unten auf der Startseite steht der Knopf **Kurzanleitung ansehen** – dort
